@@ -1,6 +1,8 @@
 from action import Action
 from size import Size
 
+from validator import Validator 
+
 class Entity:
     """
     Entity Class
@@ -9,15 +11,17 @@ class Entity:
         None for now
     """
 
-    def __init__(self):
-        self._type = None
-        self._name = None
+    def __init__(self, entityType, name, isTemplate):
+        self._type = entityType
+        self._name = name
         self._id = None
-        self._actions = None 
+        self._actions = [] 
         self._attributes = None 
         self._size = None 
-        self._isTemplate = None
-        self._currentStatuses: None
+        self._isTemplate = isTemplate
+        self._currentStatuses = []
+        self._location = None
+        Validator().add_entity(self)
     
     def get_type(self):
         return self._type
@@ -47,13 +51,22 @@ class Entity:
         return self._attributes
 
     def set_attributes(self, attributes):
-        self._atrributes = atrributes
+        self._attributes = attributes
+    
+    def add_attribute(self, attribute):
+        self._attributes.append(attribute)
 
     def get_size(self):
         return self._size
 
     def set_size(self, size):
         self._size = size
+
+    def get_location(self):
+        return self._location
+
+    def set_location(self, location):
+        self._location = location
     
     def get_is_template(self):
         return self._isTemplate

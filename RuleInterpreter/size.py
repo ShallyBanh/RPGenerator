@@ -3,9 +3,9 @@ class Size:
     Size Class
     """
 
-    def __init__(self):
-        self._width = None
-        self._height = None
+    def __init__(self, width, height):
+        self._width = width
+        self._height = height
     
     def get_width(self):
         return self._width

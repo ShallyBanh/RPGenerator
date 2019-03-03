@@ -4,10 +4,10 @@ class Attribute:
     Attribute Class
     """
 
-    def __init__(self):
-        self._attributeName = None
-        self._attributeType = None
-        self._attributeValue = None
+    def __init__(self, attributeName, attributeType, attributeValue):
+        self._attributeName = attributeName
+        self._attributeType = attributeType
+        self._attributeValue = attributeValue
     
     def get_attribute_name(self):
         return self._attributeName

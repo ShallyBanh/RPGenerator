@@ -3,9 +3,9 @@ class Ruleset:
     Ruleset Class
     """
 
-    def __init__(self):
-        self._entities = None
-        self._relationships = None
+    def __init__(self, entities, relationships):
+        self._entities = entities
+        self._relationships = relationships
         self._importerExporter = None
     
     def get_entities(self):
