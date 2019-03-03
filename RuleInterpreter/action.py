@@ -5,9 +5,9 @@ class Action:
     Action Class
     """
 
-    def __init__(self):
-        self._actionName = None
-        self._ruleContent = None
+    def __init__(self, name, content):
+        self._actionName = name
+        self._ruleContent = content
         self._validator = Validator()
     
     def get_action_name(self):
@@ -22,8 +22,8 @@ class Action:
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
 
-    def perform_action():
-        return
+    def perform_action(self):
+        exec(self._ruleContent)
     
-    def __do_perform_action():
+    def __do_perform_action(self):
         return
