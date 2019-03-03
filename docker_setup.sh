@@ -34,7 +34,7 @@ if [[ $# -eq 0 ]]; then
     launch_container
 fi
 
-while getopts ':bhldDih' OPT; do
+while getopts ':bhlih' OPT; do
     case "$OPT" in 
         b)
             build_image
