@@ -22,7 +22,7 @@ class Action:
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
 
-    def performAction():
+    def perform_action():
         return
     
     def __do_perform_action():
