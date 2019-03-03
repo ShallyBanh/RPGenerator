@@ -7,11 +7,10 @@ import pygame
 # Import pygameMenu
 import pygameMenu
 from pygameMenu.locals import *
+# PYGAMEMENU_TEXT_NEWLINE
 
-ABOUT = ['PygameMenu {0}'.format(pygameMenu.__version__),
-         'Author: {0}'.format(pygameMenu.__author__),
-         PYGAMEMENU_TEXT_NEWLINE,
-         'Email: {0}'.format(pygameMenu.__email__)]
+ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
+         'Author: {0}'.format("2019-Group-04")]
 COLOR_BACKGROUND = (128, 0, 128)
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
@@ -106,6 +105,7 @@ def play_function(difficulty, font):
         main_menu.mainloop(playevents)
 
         # Continue playing
+        bg_color = random_color()
         surface.fill(bg_color)
         surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
         pygame.display.flip()
@@ -140,7 +140,7 @@ play_menu = pygameMenu.Menu(surface,
                             )
 # When pressing return -> play(DIFFICULTY[0], font)
 play_menu.add_option('Start', play_function, DIFFICULTY,
-                     pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 30))
+                     pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 50))
 play_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
                                              ('Medium', 'MEDIUM'),
                                              ('Hard', 'HARD')],
