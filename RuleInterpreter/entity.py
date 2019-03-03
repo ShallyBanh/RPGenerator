@@ -55,16 +55,16 @@ class Entity:
     def set_size(self, size):
         self._size = size
     
-    def get_isTemplate(self):
+    def get_is_template(self):
         return self._isTemplate
 
-    def set_isTemplate(self, isTemplate):
+    def set_is_template(self, isTemplate):
         self._isTemplate = isTemplate
     
-    def get_currentStatuses(self):
+    def get_current_statuses(self):
         return self._currentStatuses
     
-    def set_currentStatuses(self, currentStatuses):
+    def set_current_statuses(self, currentStatuses):
         self._currentStatuses = currentStatuses
 
     def add_status(self, status):
