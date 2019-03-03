@@ -5,17 +5,17 @@ CONTAINER=capstone-dev
 
 build_image ()
 {
-    sudo docker build --rm -t $IMAGE:latest .
+    docker build --rm -t $IMAGE:latest .
 }
 
 launch_container ()
 {
-    sudo docker run -itd --name $CONTAINER $IMAGE
+    docker run -itd --name $CONTAINER $IMAGE
 }
 
 interactive_shell ()
 {
-    sudo docker exec -it $CONTAINER bash
+    docker exec -it $CONTAINER bash
 }
 
 usage ()
