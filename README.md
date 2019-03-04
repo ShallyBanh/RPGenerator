@@ -23,3 +23,17 @@ Test by running:
 ```
 py -m pygame.examples.aliens
 ```
+
+### Docker Image Instructions
+A Docker image exists for automated testing. It does not have graphical capability.
+
+Requirement: Docker must be installed.
+
+Pull the image:
+```
+docker pull ttetz/capstone-docker
+```
+Launch a container:
+```
+./docker_setup.sh -li
+```
