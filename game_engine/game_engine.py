@@ -1,13 +1,13 @@
 from map import Map
 
 class GameEngine:
-	"""
+    """
     Game Engine Class
     args:
         None for now
     """
 
-	def __init__(self):
+    def __init__(self):
         self._uniqueID = None
         self._name = None
         self._GM = None

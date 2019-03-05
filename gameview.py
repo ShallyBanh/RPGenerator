@@ -1,14 +1,16 @@
 # Import pygame and libraries
+import pygame
 from pygame.locals import *
 from random import randrange
 import os
-import pygame
 
 # Import pygameMenu
 import pygameMenu
 from pygameMenu.locals import *
 # PYGAMEMENU_TEXT_NEWLINE
 
+# Global variables
+DIFFICULTY = ['EASY']
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
 COLOR_BACKGROUND = (128, 0, 128)
@@ -29,12 +31,7 @@ pygame.display.set_caption('PygameMenu example 2')
 clock = pygame.time.Clock()
 dt = 1 / FPS
 
-# Global variables
-DIFFICULTY = ['EASY']
-
-
 # -----------------------------------------------------------------------------
-
 def change_difficulty(d):
     """
     Change difficulty of the game.
@@ -97,12 +94,10 @@ def play_function(difficulty, font):
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
                     main_menu.enable()
-
+                    # Pass events to main_menu
+                    main_menu.mainloop(playevents)
                     # Quit this function, then skip to loop of main-menu on line 217
                     return
-
-        # Pass events to main_menu
-        main_menu.mainloop(playevents)
 
         # Continue playing
         bg_color = random_color()
@@ -122,7 +117,7 @@ def main_background():
 
 # -----------------------------------------------------------------------------
 # PLAY MENU
-play_menu = pygameMenu.Menu(surface,
+login_menu = pygameMenu.Menu(surface,
                             bgfun=main_background,
                             color_selected=COLOR_WHITE,
                             font=pygameMenu.fonts.FONT_BEBAS,
@@ -134,19 +129,19 @@ play_menu = pygameMenu.Menu(surface,
                             menu_width=int(WINDOW_SIZE[0] * 0.6),
                             onclose=PYGAME_MENU_DISABLE_CLOSE,
                             option_shadow=False,
-                            title='Play menu',
+                            title='Login',
                             window_height=WINDOW_SIZE[1],
                             window_width=WINDOW_SIZE[0]
                             )
 # When pressing return -> play(DIFFICULTY[0], font)
-play_menu.add_option('Start', play_function, DIFFICULTY,
+login_menu.add_option('Start', play_function, DIFFICULTY,
                      pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 50))
-play_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
+login_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
                                              ('Medium', 'MEDIUM'),
                                              ('Hard', 'HARD')],
                        onreturn=None,
                        onchange=change_difficulty)
-play_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
+login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
 
 # ABOUT MENU
 about_menu = pygameMenu.TextMenu(surface,
@@ -171,7 +166,7 @@ about_menu = pygameMenu.TextMenu(surface,
 for m in ABOUT:
     about_menu.add_line(m)
 about_menu.add_line(PYGAMEMENU_TEXT_NEWLINE)
-about_menu.add_option('Return to menu', PYGAME_MENU_BACK)
+about_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
 
 # MAIN MENU
 main_menu = pygameMenu.Menu(surface,
@@ -186,29 +181,29 @@ main_menu = pygameMenu.Menu(surface,
                             menu_width=int(WINDOW_SIZE[0] * 0.6),
                             onclose=PYGAME_MENU_DISABLE_CLOSE,
                             option_shadow=False,
-                            title='Main menu',
+                            title='RPGenerator',
                             window_height=WINDOW_SIZE[1],
                             window_width=WINDOW_SIZE[0]
                             )
-main_menu.add_option('Play', play_menu)
+main_menu.add_option('Login', login_menu)
 main_menu.add_option('About', about_menu)
 main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 
 # -----------------------------------------------------------------------------
-# Main loop
-while True:
+if __name__ == "__main__":
+    while True:
 
-    # Tick
-    clock.tick(60)
+        # Tick
+        clock.tick(60)
 
-    # Application events
-    events = pygame.event.get()
-    for event in events:
-        if event.type == QUIT:
-            exit()
+        # Application events
+        events = pygame.event.get()
+        for event in events:
+            if event.type == QUIT:
+                exit()
 
-    # Main menu
-    main_menu.mainloop(events)
+        # Main menu
+        main_menu.mainloop(events)
 
-    # Flip surface
-    pygame.display.flip()
+        # Flip surface
+        pygame.display.flip()

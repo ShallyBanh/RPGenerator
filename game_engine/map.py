@@ -1,12 +1,12 @@
 
 class Map:
-	"""
+    """
     Map Class
     args:
         None for now
     """
 
-	def __init__(self, width, height):
+    def __init__(self, width, height):
         self._size = (width, height)
         self._tileset = None
 
