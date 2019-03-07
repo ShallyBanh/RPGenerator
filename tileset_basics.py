@@ -15,7 +15,7 @@ textures = {
 	"COAL": pygame.transform.scale(pygame.image.load("images/coal.png"), (myMap.tilesize,myMap.tilesize))
 }
 
-tilemap = [[0 for w in range(myMap.width)] for h in range(myMap.height)]
+# tilemap = [[0 for w in range(myMap.width)] for h in range(myMap.height)]
 
 pygame.init()
 DISPLAYSURF = pygame.display.set_mode((myMap.width*myMap.tilesize, myMap.height*myMap.tilesize))
@@ -31,8 +31,9 @@ for rw in range(myMap.height):
 			tile = "GRASS"
 		else:
 			tile = "ROCK"
-		tilemap[rw][cl] = tile
-		DISPLAYSURF.blit(textures[tilemap[rw][cl]], (cl*myMap.tilesize, rw*myMap.tilesize))
+		myMap._tileset[rw][cl] = tile
+		# myMap.set_tileset(row=rw, column=cl, tileset=tile)
+		DISPLAYSURF.blit(textures[myMap._tileset[rw][cl]], (cl*myMap.tilesize, rw*myMap.tilesize))
 
 while True:
 	for event in pygame.event.get():

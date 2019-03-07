@@ -3,6 +3,10 @@ import pygame
 from pygame.locals import *
 from random import randrange
 import os
+import pygame_textinput
+
+# Create TextInput-object
+textinput = pygame_textinput.TextInput()
 
 # Import pygameMenu
 import pygameMenu
@@ -80,6 +84,7 @@ def play_function(difficulty, font):
     # main_menu as the menu that will check all your input.
     main_menu.disable()
     main_menu.reset(1)
+    surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
 
     while True:
 
@@ -99,10 +104,15 @@ def play_function(difficulty, font):
                     # Quit this function, then skip to loop of main-menu on line 217
                     return
 
+        # Feed it with events every frame
+        textinput.update(playevents)        
+
         # Continue playing
-        bg_color = random_color()
+        # bg_color = random_color()
         surface.fill(bg_color)
         surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
+        surface.blit(textinput.get_surface(), (10,10))
+
         pygame.display.flip()
 
 
@@ -194,7 +204,7 @@ if __name__ == "__main__":
     while True:
 
         # Tick
-        clock.tick(60)
+        clock.tick(30)
 
         # Application events
         events = pygame.event.get()
@@ -202,8 +212,12 @@ if __name__ == "__main__":
             if event.type == QUIT:
                 exit()
 
+        # Feed it with events every frame
+        # textinput.update(events)
         # Main menu
         main_menu.mainloop(events)
+        
+        # surface.blit(textinput.get_surface(), (10,10))
 
         # Flip surface
         pygame.display.flip()

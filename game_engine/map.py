@@ -30,8 +30,15 @@ class Map:
     # def set_tilesize(self, tilesize):
     #     self._tilesize = tilesize
 
-    def get_tileset(self):
+    def get_tileset(self, row=None, column=None):
+        if row is not None and column is not None:
+            return self._tileset[row][column]
         return self._tileset
 
-    def set_tileset(self, tileset):
-        self._tileset = tileset
+    def set_tileset(self, tileset, row=None, column=None):
+        if row is not None and column is not None:
+            self._tileset[row][column] = tileset
+        else:
+            self._tileset = tileset
+
+
