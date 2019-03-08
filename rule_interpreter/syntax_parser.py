@@ -9,9 +9,10 @@ class SyntaxParser(object):
         self._conditionalIndicator = "__conditional_here__"
 
         self._keyWordsDict = { 
-            ('=', 'equal','is', 'are'): '==',
-            ('reduce', 'decrease', 'subtract'): '-',
-            ('increase', 'add'): '+'
+            ("=", "equal", "is", "are"): '==',
+            ("reduce", "decrease", "subtract"): '-',
+            ("increase", "add"): '+',
+            ("multiply", "times", "time"): "*"
         }
 
         self._workingKeyWordsDict = {}
@@ -104,14 +105,20 @@ class SyntaxParser(object):
             targetIndex = condition.find("target")
             if targetIndex != -1:
                 return(True, content[targetIndex + 6: firstCondition].strip())
+                #here we should send it to the game enginer and wait and then pray it comes to the other parse_target function
 
         return (False, False)
     
-    def is_rule_relationship():
+    def is_rule_relationship(self):
         return 
     
-    def parse_target(self, selectorEntity ,targetEntity, ruleSetContent):
-        return
+    def parse_target(self, targetName, selectorEntity ,targetEntity, ruleSetContent):
+        codeString = self.parse_code_from_rule(ruleSetContent)
+        #replace self with selectorEntity 
+        #replace target with target Entity
+        codeString = codeString.replace(targetName, 'targetEntity') 
+        codeString = codeString.replace('self', 'selectorEntity') 
+        return codeString
 
     
     def parse_rule(self, content):
@@ -136,7 +143,11 @@ class SyntaxParser(object):
         if content.find("if") == -1 or content.find("then") == -1:
             return (False, False)
 
-        isRuleAction, target = self.is_target_rule(content)
+        isTarget, targetName = self.is_target_rule(content)
+        if isTarget == False:
+            return (False, False)
+
+        print(self.parse_target(targetName, 1, 1, content))
 
         return (True, self.parse_code_from_rule(content))
     
@@ -148,17 +159,102 @@ class SyntaxParser(object):
         Returns:
             condition statement as python code string
         """
-        ifIndex = content.find("if")
-        thenIndex = content.find("then")
-
         content = self.parse_connectives(content)
         content = self.parse_keywords(content)
-        conditional = self.parse_conditional(content[ifIndex + 2: thenIndex].strip())
-        action = self.parse_action(content[thenIndex+ 5:])
 
-        return conditional + action     
+        return self.parse_conditionals_and_actions(content)   
+
+    def parse_conditionals_and_actions(self, content):
+        conditionalList = self.get_conditional_list(content)
+        conditionsAndActionString = ""
+
+        for conditionIndex in range(len(conditionalList)):
+            if conditionalList[conditionIndex][0] == "if":
+                conditional = self.parse_if_statement_conditional(content[conditionalList[conditionIndex][1] + 2: conditionalList[conditionIndex][2]].strip())
+
+                if conditionIndex < len(conditionalList) - 1:
+                    action = self.parse_action(content[conditionalList[conditionIndex][2]+ 4: conditionalList[conditionIndex + 1][1]])
+                else:
+                    action = self.parse_action(content[conditionalList[conditionIndex][2]+ 4:])
+
+                conditionsAndActionString += conditional + action + self.generate_new_line()
+
+            elif conditionalList[conditionIndex][0]  == "elif":
+                conditional = self.parse_elif_statement_conditional(content[conditionalList[conditionIndex][1] + 7: conditionalList[conditionIndex][2]].strip())
+
+                if conditionIndex < len(conditionalList) - 1:
+                    action = self.parse_action(content[conditionalList[conditionIndex][2]+ 4: conditionalList[conditionIndex + 1][1]])
+                else:
+                    action = self.parse_action(content[conditionalList[conditionIndex][2]+ 4:])
+
+                conditionsAndActionString += conditional + action + self.generate_new_line()
+
+            else:
+                conditional = self.parse_else_statement_conditional()
+                action = self.parse_action(content[conditionalList[conditionIndex][1]+ 4:])
+                conditionsAndActionString += conditional + action.strip("}") + self.generate_new_line()
+
+        return conditionsAndActionString
     
-    def parse_conditional(self, content):
+    def get_conditional_list(self, content):
+        """
+        Parses the condition statement assumes that the user enter syntax is:
+        if <condition>: <action>
+
+        Returns:
+            condition statement as python code string
+        """
+        conditionalIndex = 0
+        thenIndex = 0
+        conditionalsList = []
+
+        if content.find("if", conditionalIndex) != -1:
+            conditionalIndex = content.find("if", conditionalIndex) + 1
+            if content.find("then", thenIndex) != -1:
+                thenIndex = content.find("then", thenIndex) + 1
+                conditionalsList.append(("if", conditionalIndex, thenIndex))
+
+        while content.find("if", conditionalIndex) != -1:
+            conditionalIndex = content.find("if", conditionalIndex) + 1
+            if content.find("then", thenIndex) != -1:
+                thenIndex = content.find("then", thenIndex) + 1
+                conditionalsList.append(("elif", conditionalIndex - 5, thenIndex))
+            else:
+                return
+        
+        if content.find("else", conditionalIndex) != -1:
+            conditionalIndex = content.find("else", conditionalIndex) + 1
+            if content.find("then", thenIndex) != -1:
+                thenIndex = content.find("then", thenIndex) + 1
+                conditionalsList.append(("else", conditionalIndex, thenIndex))
+            else:
+                conditionalsList.append(("else", conditionalIndex, len(content)))
+
+        return conditionalsList
+    
+
+    def parse_else_statement_conditional(self):
+        """
+        Parses the condition statement assumes that the user enter syntax is:
+        elif <condition>: <action>
+
+        Returns:
+            condition statement as python code string
+        """
+        return self.get_else_statement_template() + self.generate_new_line()
+
+    def parse_elif_statement_conditional(self, content):
+        """
+        Parses the condition statement assumes that the user enter syntax is:
+        elif <condition>: <action>
+
+        Returns:
+            condition statement as python code string
+        """
+        elif_statement = self.get_elif_statement_template().replace(self._conditionalIndicator, content) + self.generate_new_line()
+        return elif_statement
+    
+    def parse_if_statement_conditional(self, content):
         """
         Parses the condition statement assumes that the user enter syntax is:
         if <condition>: <action>
@@ -168,7 +264,7 @@ class SyntaxParser(object):
         """
         if_statement = self.get_if_statement_template().replace(self._conditionalIndicator, content) + self.generate_new_line()
         return if_statement
-    
+
     def parse_keywords(self, content):
         """
         Replaces key words from the user entered string to python syntax code
@@ -217,6 +313,8 @@ class SyntaxParser(object):
             predicate = content[:toConnective].split()
             action = content[toConnective + 2:content.find('}')].strip()
             actionStatement = self.generate_tab() + action + predicate[0] + "= " + predicate[1]
+        else:
+            actionStatement = self.generate_tab() + content.strip()
 
         return actionStatement
 
@@ -232,6 +330,9 @@ class SyntaxParser(object):
 #
 #
 
+## was working on parse target go and check and see if it works when you get home please. i.e create two entityes and run it and 
+## see if it runs
+
 ### TODO
 # 1.) make parser for point or be able to parse point
 # 2.) make parser for relationships
@@ -243,13 +344,14 @@ class SyntaxParser(object):
 #
 
 
-# a = SyntaxParser()
-# print(a.parse_rule("target goblin{ if goblin.hp then subtract hp by 5}"))
+a = SyntaxParser()
+print(a.parse_rule("target goblin {else if (self.Str + self.Proficiency) + 1d20 > goblin.AC then reduce goblin.HP by 1d8 + self.Str}"))
+print(a.parse_rule("target goblin {if (self.Str + self.Proficiency) + 1d20 > goblin.AC then reduce goblin.HP by 1d8 + self.Str else if (self.Str + self.Proficiency) + 1d20 > goblin.AC then reduce goblin.HP by 1d8 + self.Str else print()}"))
 # print(a.parse_rule("target goblin{ if goblin.hp then subtract hp by 5"))
 # print(a.parse_rule("target goblin{ if goblin.hp then INCREASE hp by 5}"))
-# print(a.parse_rule("target goblin{ if goblin.hp then add 5 to hp}"))
+# print(a.parse_rule("target goblin{ if self.hp then add 5 to hp}"))
 # print(a.parse_rule("target goblin{ if 1 then print(\"testing\")}"))
 # b = a.parse_rule("target goblin{ if 1 then print(\"testing\")}")
 # print(b)
-# exec(b[1])
+# # exec(b[1])
 # print(a.is_target_rule("target goblin{ if goblin hp then act}"))
