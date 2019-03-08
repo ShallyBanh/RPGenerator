@@ -25,7 +25,7 @@ class RuleEnactor:
 		# parse out the target type from the action (Entity or point)
 		lines = written_rule.splitlines()
 		# perform each line
-		for line in lines
+		for line in lines:
 			evaluate_line(line)
 		
 	def evaluate_line(line):
@@ -36,10 +36,11 @@ class RuleEnactor:
 		if re.search(valid_dice_regex, words[0]) and len(words) == 1:
 			return roll_dice(words[0])
 		elif words[0] in keywords:
-			return keywords[words[0]](words)
+			return keywords[words[0]](line)
 		
-	def handle_target(words):
+	def handle_target(line):
 		# handle targeting something
+		words = line.split()
 		# call game engine function to target a point or entity
 		if words[1] == 'point':
 			#target point
@@ -48,12 +49,20 @@ class RuleEnactor:
 		# when this is resolved, set the selected item so it can be referenced later:
 		selected_item = 999 #placeholder
 		
-	def handle_if(words):
+	def handle_if(line):
+		words = line.split()
 		# handle if statement
-		for i in range(0,len(words)):
-			if words[i] == 'then':
-				break
-		# index 1 to i is the conditional
+		#for i in range(0,len(words)):
+		#	if words[i] == 'then':
+		#		break
+		# index 1 to i - 1 is the conditional
+		# index i + 1 to end is the statement to complete 
+		
+		then_idx = line.find('then')
+		if_idx = line.find('if')
+		# if_idx + 2 to then_idx is the conditional statement
+		# then_idx + 4 to end is the statement to execute on true
+		
 		
 	def handle_else(written_rule):
 		# handle else statement?
@@ -75,10 +84,15 @@ class RuleEnactor:
 	
 	def roll_dice(dice_string):
 		roll_data = dice_string.split('d')
-		if roll_data[1] == '1' or roll_data[1] == '0'
+		if roll_data[1] == '1' or roll_data[1] == '0':
 			return int(roll_data[1])
-		else
-			return random.randint(1,int(roll_data[0]))
+		else:
+			if roll_data[0] == '':
+				return random.randint(1,int(roll_data[1]))
+			total = 0
+			for i in range(int(roll_data[0])):
+				total += random.randint(1,int(roll_data[1]))
+			return total
 	
 	def _is_number(s):
 		try: 
