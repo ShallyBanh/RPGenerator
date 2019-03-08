@@ -78,7 +78,7 @@ class RuleEnactor:
 		if roll_data[1] == '1' or roll_data[1] == '0'
 			return int(roll_data[1])
 		else
-			return random.randint(1,int(roll_data[0])
+			return random.randint(1,int(roll_data[0]))
 	
 	def _is_number(s):
 		try: 
