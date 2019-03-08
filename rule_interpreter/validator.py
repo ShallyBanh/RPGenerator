@@ -1,5 +1,3 @@
-from syntax_parser import SyntaxParser
-
 class _Validator(object):
     """
     Singleton Validator Class
@@ -8,7 +6,6 @@ class _Validator(object):
     def __init__(self):
         self._isValid = None
         self._allEntities = []
-        self._syntaxParser = SyntaxParser()
     
     def is_valid_syntax(self, target, content):
         """
@@ -32,7 +29,6 @@ class _Validator(object):
         self._allEntities = entities
     
     def parse_rule(self, content):
-        _syntaxParser.parse_rule(content)
         return
 
 
