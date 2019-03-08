@@ -54,6 +54,12 @@ class Entity:
         self._attributes = attributes
     
     def add_attribute(self, attribute):
+        if attribute.name in self._attributes:
+            print("Error, atrribute name already exists")
+            return
+        if attribute.name == "location":
+            print("error cannot name attribute location")
+            return 
         self._attributes.append(attribute)
 
     def get_size(self):
