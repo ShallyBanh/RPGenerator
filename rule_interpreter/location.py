@@ -18,3 +18,9 @@ class Location:
 
     def set_y_coordinate(self, y):
         self._y = y
+    
+    def is_within_range(self, target, x, y):
+        return (self.get_x_coordinate() + x <= target.get_x_coordinate() and 
+                self.get_x_coordinate() - x >= target.get_x_coordinate() and
+                self.get_y_coordinate() + x <= target.get_y_coordinate() and
+                self.get_y_coordinate() - x >= target.get_y_coordinate())

@@ -16,7 +16,7 @@ class Entity:
         self._name = name
         self._id = None
         self._actions = [] 
-        self._attributes = None 
+        self._attributes = [] 
         self._size = None 
         self._isTemplate = isTemplate
         self._currentStatuses = []
@@ -54,12 +54,17 @@ class Entity:
         self._attributes = attributes
     
     def add_attribute(self, attribute):
-        if attribute.name in self._attributes:
+        if self.get_attributes == []:
+            self._attributes.append(attribute)
+            return 
+
+        if attribute.get_attribute_name() in self.get_attributes():
             print("Error, atrribute name already exists")
             return
-        if attribute.name == "location":
+        if attribute.get_attribute_name() == "location":
             print("error cannot name attribute location")
             return 
+
         self._attributes.append(attribute)
 
     def get_size(self):
