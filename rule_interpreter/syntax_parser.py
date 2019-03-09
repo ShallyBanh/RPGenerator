@@ -9,6 +9,7 @@ class SyntaxParser(object):
     def __init__(self):
         self._validConnectives = ["equal", "greater than", "less than", "greater or equal to", "less than or equal to", 
                                 ">", ">=", "<", "<=", "not equal to", "not equal", "=", "==", "!="]
+        self._cannotFindSubstring = -1
     
     def is_brackets_balanced(self, expression):
         """
@@ -44,10 +45,10 @@ class SyntaxParser(object):
             Tuple - (isTargetRule, content inside the target rule)
         """
         firstCondition = content.find(':')
-        if firstCondition != -1:
+        if firstCondition != self._cannotFindSubstring :
             condition = content[:firstCondition]
             targetIndex = condition.find(targetOrRelationshipName)
-            if targetIndex != -1:
+            if targetIndex != self._cannotFindSubstring :
                 #returning the target name
                 return(True, content[targetIndex + 6: firstCondition].strip())
                 #here we should send it to the game enginer and wait and then pray it comes to the other parse_target function
@@ -57,7 +58,7 @@ class SyntaxParser(object):
     def is_target_or_relationship(self, content):
         endStatement = content.find("\n")
         colon = content.find(":")
-        if endStatement != -1 and colon != -1:
+        if endStatement != self._cannotFindSubstring  and colon != self._cannotFindSubstring :
             if endStatement < colon:
                 return (False, False)
             
@@ -79,20 +80,116 @@ class SyntaxParser(object):
     def validate_action_or_conditional_statement(self, content, targetName):
         endStatement = content.find("\n")
 
-        if endStatement != -1:
+        if endStatement != self._cannotFindSubstring :
             fullStatement = content[:endStatement]
         else:
             fullStatement = content
         
         #we're a action statement
-        # if content[:2] != "if":
-        #     self.validate_if_statement_code_from_rule(fullStatement)
-        # else:
-        # print("content before validate if_starment")
-        # print(content)
-        return self.validate_if_statement_code_from_rule(content, targetName)
+        # print("my if")
+        # print(content[:2])
+        if content[:2] == "if":
+            # print("validate from if")
+            return self.validate_if_statement_from_rule(content, targetName)
+        else:
+            # print("validate from action")
+            return self.validate_action_statement_from_rule(content, targetName)
+        
+    def validate_action_statement_from_rule(self, content, targetName):
+        """
+        validate the action statement assumes that the user enter syntax is:
+        if <condition>: <action>
     
-    def validate_if_statement_code_from_rule(self, content, targetName):
+        Parameters:
+            content: action statement without the then
+            targetName: the name of the target
+
+        Returns:
+            if the action statement is valid
+        """
+        # print("in validate action statement from rule")
+        # print("content is:\n")
+        # print(content)
+        thenIndex = content.find("then")
+
+        # we should not have a then in the action statement
+        if thenIndex != self._cannotFindSubstring:
+            return False
+        
+        return self.is_valid_action(content, targetName)
+    
+    def is_valid_action(self, content, targetName):
+        # we can have multiple actions so we need to split 
+        content = content.strip().strip("\n")
+        
+        #split actions by connector and since there is only and to connect actions
+        actions = content.split("and")
+        print("action statements")
+        print(actions)
+        for actionStatement in actions:
+            # we are adding or removing statuses
+            if actionStatement.find("status") != self._cannotFindSubstring:
+                if self.is_valid_status_action(actionStatement, targetName) == False:
+                    return False
+            
+            elif self.is_valid_condition(actionStatement, targetName) == False:
+                return False
+
+        return True
+    
+    def is_valid_status_action(self, content, targetName):
+        statusIndex = content.find("status")
+        statusActionBeginIndex = content.find('\"')
+
+        if statusActionBeginIndex == self._cannotFindSubstring:
+            return False
+
+        if statusIndex == self._cannotFindSubstring:
+            return False
+        
+        statusActionEndIndex = content.find('\"', statusActionBeginIndex)
+        
+        #check that status is always before the "actual status"
+        if statusActionBeginIndex > statusActionEndIndex or statusActionBeginIndex < statusIndex:
+            return False 
+        
+        #check that the beginning word is add or remove for status
+        print("action for status")
+        print(content[:statusIndex].strip())
+        action = content[:statusIndex].strip()
+        if action != "add" and action != "remove":
+            return False
+
+        #check that we're targeting our correct target to add statuses to 
+        targetIndex = content.find(targetName) 
+        print("action for target")
+        print(content[targetIndex:].strip())
+        if targetIndex == self._cannotFindSubstring:
+            return False
+        
+        #check that target is at the end
+        if content[targetIndex:].strip() != targetName:
+            print("doesn't equal target name")
+            return False
+
+        # if action is add then we should have to as the connector
+        if action == "add":
+            print("in add statement")
+            toIndex = content.find("to")
+            if toIndex > targetIndex or toIndex < statusActionEndIndex:
+                print("to index is wrong")
+                return False
+        
+        # if action is add then we should have to as the connector
+        if action == "remove":
+            fromIndex = content.find("from")
+            if fromIndex > fromIndex or fromIndex < statusActionEndIndex:
+                return False 
+        
+        print("return true fro status")
+        return True
+
+    def validate_if_statement_from_rule(self, content, targetName):
         """
         validate the condition statement assumes that the user enter syntax is:
         if <condition>: <action>
@@ -102,18 +199,22 @@ class SyntaxParser(object):
         """
         thenIndex = content.find("then")
 
-        if thenIndex == -1:
+        if thenIndex == self._cannotFindSubstring:
             return False
         
-        return self.is_validate_condition(content[2:thenIndex], targetName) #and is_validate_action(content[thenIndex:])
+        
+        print(self.is_valid_condition(content[2:thenIndex], targetName))
+        print("cehck is valid condition")
+        return self.is_valid_condition(content[2:thenIndex], targetName) and self.is_valid_action(content[thenIndex + 4:], targetName)
     
-    def is_validate_condition(self, content, target):
+    def is_valid_condition(self, content, target):
         #content: <a > b and c < d>
         # this is where the conditions will be located i,e >, <, => !=
         regularConnectiveIndicies = self.get_regular_connectives(content)
         andOrConnectiveIndicies = self.get_and_or_connectives(content)
         currentConnectiveIndex = 0
-
+        # print("is in valid_condition")
+        # print(content)
         if self.validate_connective_order(andOrConnectiveIndicies, regularConnectiveIndicies) == False:
             return False
         
@@ -139,7 +240,7 @@ class SyntaxParser(object):
             return True
         
         # entity.hp > 4
-        if objectString.find(target) != -1:
+        if objectString.find(target) != self._cannotFindSubstring:
             dotSplitter = objectString.find(".")
             ourObject = objectString[:dotSplitter]
             objectAttribute = objectString[dotSplitter + 1:]
@@ -172,6 +273,9 @@ class SyntaxParser(object):
         return False
 
     def validate_connective_order(self, andOrConnectives, regularConnectives):
+        if len(regularConnectives) == 0:
+            return False
+
         if len(andOrConnectives) >= len(regularConnectives):
             return False
         
@@ -198,7 +302,7 @@ class SyntaxParser(object):
         while findConnectives:
             oldConnectiveIndex = currentConnectiveIndex
             for connective in self._validConnectives:
-                if content.find(connective, currentConnectiveIndex) != -1:
+                if content.find(connective, currentConnectiveIndex) != self._cannotFindSubstring:
                     # print("current")
                     # print(currentConnectiveIndex)
                     # print("connective to find")
@@ -219,12 +323,12 @@ class SyntaxParser(object):
         andOrConnectivesIndicies = []
         currentConnectiveIndex = 0
 
-        while content.find("and", currentConnectiveIndex) != -1:
+        while content.find("and", currentConnectiveIndex) != self._cannotFindSubstring:
             currentConnectiveIndex = content.find("and", currentConnectiveIndex) + 1
             andOrConnectivesIndicies.append(currentConnectiveIndex - 1)
         
         currentConnectiveIndex = 0
-        while content.find("or", currentConnectiveIndex) != -1:
+        while content.find("or", currentConnectiveIndex) != self._cannotFindSubstring:
             currentConnectiveIndex = content.find("or", currentConnectiveIndex) + 1
             andOrConnectivesIndicies.append(currentConnectiveIndex - 1)
 
