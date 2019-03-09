@@ -25,8 +25,8 @@ print("target goblin:\n if goblin.hp > 2 and goblin.hp > 2 then 2")
 print(parser.is_valid_rule("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then 2"""))
 
 print("\n\n\nRule: ")
-print("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then add status \"dodge\" to goblin""")
-print(parser.is_valid_rule("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then add status \"dodge\" to goblin"""))
+print("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then add status \"dodge\" to goblin\n golbin.hp = 1""")
+print(parser.is_valid_rule("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then add status \"dodge\" to goblin\n goblin.hp = 1"""))
 
 
 print("\n\n\nRule: ")
