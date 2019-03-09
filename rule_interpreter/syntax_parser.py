@@ -225,8 +225,16 @@ class SyntaxParser(object):
                 rightHandSide = content[regularConnectiveIndicies[i] + 1: andOrConnectiveIndicies[i]].strip()
             else:
                 rightHandSide = content[regularConnectiveIndicies[i] + 1:].strip()
-
+            
+            print("rhs")
+            print(rightHandSide)
+            print("lhs")
+            print(leftHandSide)
             if self.validate_object(leftHandSide, target) == False or self.validate_object(rightHandSide, target) == False:
+                print("lhs validate")
+                print(self.validate_object(leftHandSide, target))
+                print("rhs validate")
+                print(self.validate_object(rightHandSide, target))
                 return False
             
             if i < len(regularConnectiveIndicies) - 1: 
@@ -354,9 +362,14 @@ class SyntaxParser(object):
             print("no target")
             return False
 
-        if self.validate_action_or_conditional_statement(content[colon + 1:].strip().strip("}"), targetName) == False:
-            print("not valid statement")
-            return False
+        actionOrConditionalList = content[colon + 1:].strip().strip("}").split('\n')
+
+        for statement in actionOrConditionalList:
+            print("statement")
+            print(statement)
+            if self.validate_action_or_conditional_statement(statement.strip(), targetName) == False:
+                print("not valid statement")
+                return False
         
         return True
 
