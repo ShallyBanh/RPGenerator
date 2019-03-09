@@ -1,8 +1,10 @@
-"""
+""" Taken from :
 https://www.reddit.com/r/pygame/comments/5euuqr/text_input_box/
 https://github.com/Nearoo/pygame-text-input
 Copyright 2017, Silas Gyger, silasgyger@gmail.com, All rights reserved.
 Borrowed from https://github.com/Nearoo/pygame-text-input under the MIT license.
+
+Refactored for our purposes.
 """
 
 import os.path
@@ -70,7 +72,7 @@ class TextInput:
 
         self.clock = pygame.time.Clock()
 
-    def update(self, events):
+    def update(self, events, passProtect=False):
         for event in events:
             if event.type == pygame.KEYDOWN:
                 self.cursor_visible = True  # So the user sees where he writes
@@ -139,7 +141,12 @@ class TextInput:
                 pygame.event.post(pygame.event.Event(pl.KEYDOWN, key=event_key, unicode=event_unicode))
 
         # Re-render text surface:
-        self.surface = self.font_object.render(self.input_string, self.antialias, self.text_color)
+        #### REFACTORED ####
+        if not passProtect:
+            self.surface = self.font_object.render(self.input_string, self.antialias, self.text_color)
+        else:
+            self.surface = self.font_object.render(self.pass_protected_string(), self.antialias, self.text_color)
+        #### REFACTORED ####
 
         # Update self.cursor_visible
         self.cursor_ms_counter += self.clock.get_time()
@@ -175,3 +182,9 @@ class TextInput:
     def clear_text(self):
         self.input_string = ""
         self.cursor_position = 0
+
+    def pass_protected_string(self):
+        strcpy = ""
+        for x in self.input_string:
+            strcpy += "*"
+        return strcpy

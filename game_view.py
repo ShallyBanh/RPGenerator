@@ -5,9 +5,6 @@ from random import randrange
 import os
 import pygame_textinput
 
-# Create TextInput-object
-textinput = pygame_textinput.TextInput()
-
 # Import pygameMenu
 import pygameMenu
 from pygameMenu.locals import *
@@ -31,7 +28,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 # Create pygame screen and objects
 surface = pygame.display.set_mode(WINDOW_SIZE)
-pygame.display.set_caption('PygameMenu example 2')
+pygame.display.set_caption('RPGenerator')
 clock = pygame.time.Clock()
 dt = 1 / FPS
 
@@ -55,39 +52,86 @@ def random_color():
     return randrange(0, 255), randrange(0, 255), randrange(0, 255)
 
 
-def play_function(difficulty, font):
-    """
-    Main game function
+# def play_function(difficulty, font):
+#     """
+#     Main game function
     
-    :param difficulty: Difficulty of the game
-    :param font: Pygame font
+#     :param difficulty: Difficulty of the game
+#     :param font: Pygame font
+#     :return: None
+#     """
+#     difficulty = difficulty[0]
+#     assert isinstance(difficulty, str)
+
+#     if difficulty == 'EASY':
+#         f = font.render('Playing as baby', 1, COLOR_WHITE)
+#     elif difficulty == 'MEDIUM':
+#         f = font.render('Playing as normie', 1, COLOR_WHITE)
+#     elif difficulty == 'HARD':
+#         f = font.render('Playing as god', 1, COLOR_WHITE)
+#     else:
+#         raise Exception('Unknown difficulty {0}'.format(difficulty))
+
+#     # Draw random color and text
+#     bg_color = random_color()
+#     f_width = f.get_size()[0]
+
+
+#     # Reset main menu and disable
+#     # You also can set another menu, like a 'pause menu', or just use the same
+#     # main_menu as the menu that will check all your input.
+#     main_menu.disable()
+#     main_menu.reset(1)
+#     surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
+
+#     while True:
+
+#         # Clock tick
+#         clock.tick(60)
+
+#         # Application events
+#         playevents = pygame.event.get()
+#         for e in playevents:
+#             if e.type == QUIT:
+#                 exit()
+#             elif e.type == KEYDOWN:
+#                 if e.key == K_ESCAPE and main_menu.is_disabled():
+#                     main_menu.enable()
+#                     # Pass events to main_menu
+#                     main_menu.mainloop(playevents)
+#                     # Quit this function, then skip to loop of main-menu on line 217
+#                     return
+
+#         # Feed it with events every frame
+#         textinput.update(playevents)        
+
+#         # Continue playing
+#         # bg_color = random_color()
+#         surface.fill(bg_color)
+#         surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
+#         surface.blit(textinput.get_surface(), (10,10))
+
+#         pygame.display.flip()
+
+def login_function():
+    """
+    Login game function
+    
     :return: None
     """
-    difficulty = difficulty[0]
-    assert isinstance(difficulty, str)
-
-    if difficulty == 'EASY':
-        f = font.render('Playing as baby', 1, COLOR_WHITE)
-    elif difficulty == 'MEDIUM':
-        f = font.render('Playing as normie', 1, COLOR_WHITE)
-    elif difficulty == 'HARD':
-        f = font.render('Playing as god', 1, COLOR_WHITE)
-    else:
-        raise Exception('Unknown difficulty {0}'.format(difficulty))
-
-    # Draw random color and text
+    # Draw random color
     bg_color = random_color()
-    f_width = f.get_size()[0]
 
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
     # main_menu as the menu that will check all your input.
     main_menu.disable()
     main_menu.reset(1)
-    surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
+
+    email = pygame_textinput.TextInput()
+    password = pygame_textinput.TextInput()
 
     while True:
-
         # Clock tick
         clock.tick(60)
 
@@ -103,18 +147,21 @@ def play_function(difficulty, font):
                     main_menu.mainloop(playevents)
                     # Quit this function, then skip to loop of main-menu on line 217
                     return
-
-        # Feed it with events every frame
-        textinput.update(playevents)        
-
-        # Continue playing
-        # bg_color = random_color()
-        surface.fill(bg_color)
-        surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
-        surface.blit(textinput.get_surface(), (10,10))
+                elif e.key != K_ESCAPE and main_menu.is_disabled():
+                    # Feed it with events every frame
+                    email.update(playevents)   
+                    password.update(playevents, passProtect=True)   
+                    surface.fill(bg_color)
+                    surface.blit(email.get_surface(), (10,10))  
+                    surface.blit(password.get_surface(), (10,40))  
+                elif e.key == K_RETURN and main_menu.is_disabled():
+                    surface.fill(bg_color)
 
         pygame.display.flip()
 
+def new_account_function():
+
+    return
 
 def main_background():
     """
@@ -127,6 +174,32 @@ def main_background():
 
 # -----------------------------------------------------------------------------
 # PLAY MENU
+# login_menu = pygameMenu.Menu(surface,
+#                             bgfun=main_background,
+#                             color_selected=COLOR_WHITE,
+#                             font=pygameMenu.fonts.FONT_BEBAS,
+#                             font_color=COLOR_BLACK,
+#                             font_size=30,
+#                             menu_alpha=100,
+#                             menu_color=MENU_BACKGROUND_COLOR,
+#                             menu_height=int(WINDOW_SIZE[1] * 0.6),
+#                             menu_width=int(WINDOW_SIZE[0] * 0.6),
+#                             onclose=PYGAME_MENU_DISABLE_CLOSE,
+#                             option_shadow=False,
+#                             title='Login',
+#                             window_height=WINDOW_SIZE[1],
+#                             window_width=WINDOW_SIZE[0]
+#                             )
+# # When pressing return -> play(DIFFICULTY[0], font)
+# login_menu.add_option('Start', play_function, DIFFICULTY,
+#                      pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 50))
+# login_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
+#                                              ('Medium', 'MEDIUM'),
+#                                              ('Hard', 'HARD')],
+#                        onreturn=None,
+#                        onchange=change_difficulty)
+# login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
+
 login_menu = pygameMenu.Menu(surface,
                             bgfun=main_background,
                             color_selected=COLOR_WHITE,
@@ -144,13 +217,8 @@ login_menu = pygameMenu.Menu(surface,
                             window_width=WINDOW_SIZE[0]
                             )
 # When pressing return -> play(DIFFICULTY[0], font)
-login_menu.add_option('Start', play_function, DIFFICULTY,
-                     pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 50))
-login_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
-                                             ('Medium', 'MEDIUM'),
-                                             ('Hard', 'HARD')],
-                       onreturn=None,
-                       onchange=change_difficulty)
+login_menu.add_option('Login', login_function)
+login_menu.add_option('Create New Account', new_account_function)
 login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
 
 # ABOUT MENU
