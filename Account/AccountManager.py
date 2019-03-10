@@ -1,6 +1,7 @@
 """This module contains the User class."""
-
-from Database import database
+import sys
+sys.path.append('../')
+from .Database import Database
 # from User import User
 
 # @TODO how do we want to do interfaces
@@ -13,11 +14,11 @@ class AccountManager:
 
     """
 
-    def __init__(self):
+    def __init__(self, database_file="database.db"):
         """Initialize an AccountManager.
 
         """
-        self.database = Database("database.database")
+        self.database = Database(database_file)
 
     def username_available(self, username):
         """Check if a username is already used by someone or if it is available."""
@@ -54,7 +55,7 @@ class AccountManager:
     def set_credentials(self, username, password, email):
         """Set an account's credentials."""
         # @TODO return values
-        query = "UPDATE users SET password=? email=? WHERE username=?;"
+        query = "UPDATE users SET pwd=? email=? WHERE username=?;"
         data = [password, email, username]
         self.database.query(query, data)
 
@@ -72,10 +73,12 @@ class AccountManager:
         """Validate credentials and provide access to user's resources if valid."""
         # return the user object constructed from database including assets
         # check if credentials match
-        query = "SELECT * FROM users WHERE username=? AND password=?"
+        query = "SELECT * FROM users WHERE username=? AND pwd=?"
         data = [username, password]
         self.database.query(query, data)
         row = self.database.cur.fetchone()
+        if row is not None:
+            return
         # process row
         # get other info
         return row
