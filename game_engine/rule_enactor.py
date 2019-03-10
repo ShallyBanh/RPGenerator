@@ -10,7 +10,8 @@ class RuleEnactor:
 	
 	keywords = {"target":handle_target, "if":handle_if, "else":handle_else, 
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
-				"divide":handle_divide, "set":handle_set}
+				"divide":handle_divide, "set":handle_set, "within":handle_within, 
+				"towards":handle_movetowards, "away":handle_moveaway}
 				
 	variables = {}
 	
@@ -62,25 +63,38 @@ class RuleEnactor:
 		if_idx = line.find('if')
 		# if_idx + 2 to then_idx is the conditional statement
 		# then_idx + 4 to end is the statement to execute on true
-		
-		
-	def handle_else(written_rule):
-		# handle else statement?
 	
 	def handle_increase(written_rule):
 		#handle increasing something
 		
+		
 	def handle_decrease(written_rule):
 		#handle decreasing something
+		
 		
 	def handle_multiply(written_rule):
 		#handle multiplying something
 		
+		
 	def handle_divide(written_rule):
 		#handle dividing something
 		
+		
 	def handle_set(written_rule):
 		#handle setting something
+		
+		
+	def handle_within(written_rule):
+		# handle detecting entities within a given distance of the selection
+		
+		
+	def handle_moveaway(written_rule):
+		# handle moving targets away from a given point or entity
+		
+		
+	def handle_movetowards(written_rule):
+		# handle moving targets towards a given point or entity
+		
 	
 	def roll_dice(dice_string):
 		roll_data = dice_string.split('d')
@@ -89,10 +103,11 @@ class RuleEnactor:
 		else:
 			if roll_data[0] == '':
 				return random.randint(1,int(roll_data[1]))
-			total = 0
-			for i in range(int(roll_data[0])):
-				total += random.randint(1,int(roll_data[1]))
-			return total
+			else:
+				total = 0
+				for i in range(int(roll_data[0])):
+					total += random.randint(1,int(roll_data[1]))
+				return total
 	
 	def _is_number(s):
 		try: 
