@@ -15,6 +15,7 @@ class GameEngine:
         self._entities = []
         self._map = None
         self._rulsetCopy = None
+        self._assets = []
 
     def get_uniqueID(self):
         return self._uniqueID
@@ -57,4 +58,13 @@ class GameEngine:
 
     def set_rulesetCopy(self, rulesetCopy):
         self._rulesetCopy = rulesetCopy
+
+    def get_assets(self):
+        return _assets
+
+    def add_asset(self, asset):
+        self._assets.append(asset)
+
+    def remove_asset(self, asset):
+        self._assets.remove(asset)
 
