@@ -26,7 +26,7 @@ class AccountManager:
         data = [username]
         self.database.query(query, data)
         row = self.database.cur.fetchone()
-        print("the row from query is {0}".format(row))
+        # print("the row from query is {0}".format(row))
         return 0 if row is None else -1
 
     def create_account(self, username, password, email):
@@ -43,7 +43,7 @@ class AccountManager:
         # @TODO insert into database
         retval = -1
         if self.username_available(username) != -1:
-            print("username available")
+            # print("username available")
             query = "INSERT INTO users VALUES (?,?,?);"
             data = [username, password, email]
             self.database.query(query, data)
@@ -55,7 +55,7 @@ class AccountManager:
     def set_credentials(self, username, password, email):
         """Set an account's credentials."""
         # @TODO return values
-        query = "UPDATE users SET pwd=? email=? WHERE username=?;"
+        query = "UPDATE users SET pwd=?, email=? WHERE username=?;"
         data = [password, email, username]
         self.database.query(query, data)
 
@@ -78,10 +78,10 @@ class AccountManager:
         self.database.query(query, data)
         row = self.database.cur.fetchone()
         if row is not None:
-            return
+            return 0
         # process row
         # get other info
-        return row
+        return -1
 
     def recover_user(self, username, code):
         """Recover an account's credentials after getting a recovery code."""
@@ -103,10 +103,11 @@ class AccountManager:
         query = "SELECT * FROM users WHERE email=?"
         data = [email]
         self.database.query(query, data)
-        row = self.database.cur.fetchone()
-        print("the row from query is {0}".format(row))
+        row = self.database.cur.fetchall()
+        # print("recovery search yielded:{0}".format(row))
+        # print("the row from query is {0}".format(row))
         retval = -1
-        if row is not None:
+        if len(row) != 0:
             print("sending recovery email to {}".format(email))
             retval = 0
         else:
