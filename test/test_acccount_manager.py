@@ -11,6 +11,8 @@ class TestAccountManager(unittest.TestCase):
         self.credentials = ("user1", "password1", "email@1")
         self.credentials_same_username = ("user1", "password2", "email@2")
         self.credentials_new = ("user1", "password2", "email@2")
+        self.credentials_real = ("thomas", "password", "thomas.tetz@gmail.com")
+        self.credentials_real2 = ("thomas2", "password", "thomas.tetz@gmail.com")
     
     def tearDown(self):
         if os.path.exists("test.db"):
@@ -41,12 +43,37 @@ class TestAccountManager(unittest.TestCase):
         self.assertEqual(self.account_manager.get_credentials("user1"), self.credentials_new)
     
     def test_send_recovery(self):
-        self.assertEqual(self.account_manager.send_recovery("email@1"), -1)
-        self.account_manager.create_account(*self.credentials)
-        self.assertEqual(self.account_manager.send_recovery("email@1"), 0)
+        self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), -1)
+        self.account_manager.create_account(*self.credentials_real)
+        self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), 0)
+        self.account_manager.create_account(*self.credentials_real2)
+        self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), 0)
     
     def test_recover_user(self):
-        return
+        self.account_manager.create_account(*self.credentials_real)
+        self.assertEqual(self.account_manager.login("thomas", "password"), 0)
+        self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), 0)
+        received_code = input("the received code was: ")
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code, "newpassword", "typopassword"), -1)
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code, "newpassword", "newpassword"), 0)
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code, "code_removed", "code_removed"), 0)
+        self.assertEqual(self.account_manager.login("thomas", "code_removed"), -1)
+        self.assertEqual(self.account_manager.login("thomas", "newpassword"), 0)
+
+
+        self.account_manager.create_account(*self.credentials_real2)
+        self.assertEqual(self.account_manager.login("thomas2", "password"), 0)
+        self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), 0)
+        received_code1 = input("the received code for thomas was: ")
+        received_code2 = input("the received code for thomas2 was: ")
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code2, "newerpassword", "newerpassword"), -1)
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code1, "newerpassword", "newerpassword"), 0)
+        self.assertEqual(self.account_manager.recover_user("thomas2", received_code2, "newerpassword2", "newerpassword2"), 0)
+        self.assertEqual(self.account_manager.login("thomas", "newerpassword"), 0)
+        self.assertEqual(self.account_manager.login("thomas2", "newerpassword2"), 0)
+
+
+        
     
 
 if __name__ == "__main__":
