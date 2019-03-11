@@ -20,12 +20,3 @@ class EmailSender:
             print('error sending mail: '+ str(e))
             return -1
   
-if __name__ == "__main__":
-    emailer = EmailSender()
-    recipient = "thomas.tetz@gmail.com"
-    username = "user1"
-    code = "12345"
-    message = emailer.recovery_body.format(recipient, username, code)
-    emailer.send_email(recipient, message)
-
-   

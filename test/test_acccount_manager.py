@@ -56,7 +56,7 @@ class TestAccountManager(unittest.TestCase):
         received_code = input("the received code was: ")
         self.assertEqual(self.account_manager.recover_user("thomas", received_code, "newpassword", "typopassword"), -1)
         self.assertEqual(self.account_manager.recover_user("thomas", received_code, "newpassword", "newpassword"), 0)
-        self.assertEqual(self.account_manager.recover_user("thomas", received_code, "code_removed", "code_removed"), 0)
+        self.assertEqual(self.account_manager.recover_user("thomas", received_code, "code_removed", "code_removed"), -1)
         self.assertEqual(self.account_manager.login("thomas", "code_removed"), -1)
         self.assertEqual(self.account_manager.login("thomas", "newpassword"), 0)
 
