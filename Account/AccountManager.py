@@ -52,7 +52,7 @@ class AccountManager:
         if self.username_available(username) != -1:
             # print("username available")
             query = "INSERT INTO users VALUES (?,?,?);"
-            data = [username, password, email]
+            data = [username, self.generate_hash(password, username), email]
             self.database.query(query, data)
             retval = 0
         else:
@@ -63,7 +63,7 @@ class AccountManager:
         """Set an account's credentials."""
         # @TODO return values
         query = "UPDATE users SET pwd=?, email=? WHERE username=?;"
-        data = [password, email, username]
+        data = [self.generate_hash(password, username), email, username]
         self.database.query(query, data)
 
     def get_credentials(self, username):
@@ -81,7 +81,7 @@ class AccountManager:
         # return the user object constructed from database including assets
         # check if credentials match
         query = "SELECT * FROM users WHERE username=? AND pwd=?"
-        data = [username, password]
+        data = [username, self.generate_hash(password, username)]
         self.database.query(query, data)
         row = self.database.cur.fetchone()
         if row is not None:
@@ -102,18 +102,18 @@ class AccountManager:
             self.database.query(query, data)
             password, email = self.database.cur.fetchone()
             print("passwd, email in recover_user are: {0}, {1}".format(password, email))
-            if self.generate_recovery_code(password, self.active_recoveries[username])[:8] == code and password1 == password2:
+            if self.generate_hash(password, self.active_recoveries[username])[:8] == code and password1 == password2:
                 print("\n\nrecovery matches\n\n")
                 del self.active_recoveries[username]
                 self.set_credentials(username, password1, email)
                 return 0
             else:
-                print("\n\nrecovery failed: expected {0} == {1}\n\n".format(self.generate_recovery_code(password, self.active_recoveries[username])[:8], code))
+                print("\n\nrecovery failed:\n\texpected {0} == {1}\t({2})\n\t{3} == {4}\t({5})\n\n".format(self.generate_hash(password, self.active_recoveries[username])[:8], code, self.generate_hash(password, self.active_recoveries[username])[:8] == code, password1, password2, password1 == password2))
         else:
             print("username not in active recoveries")
         return -1
 
-    def generate_recovery_code(self, base, salt=time.time()):
+    def generate_hash(self, base, salt=time.time()):
         alg = hashlib.sha256()
         salted = (base + str(salt)).encode('utf-8')
         alg.update(salted)
@@ -122,7 +122,7 @@ class AccountManager:
     def purge_recoveries(self):
         """Purge all recovery codes that are expired."""
         for key in self.active_recoveries.copy().keys():
-            print("{0} ({1}) - {2} ({3}) = {4}".format(self.active_recoveries[key], type(self.active_recoveries[key]), self.recovery_timeout, type(self.recovery_timeout), time.time() - self.active_recoveries[key]))
+            print("{0} ({1}) - {2} ({3}) = {4}".format(time.time(), type(time.time()), self.active_recoveries[key], type(self.active_recoveries[key]), time.time() - self.active_recoveries[key]))
             if time.time() - self.active_recoveries[key] > self.recovery_timeout:
                 print("purging the expired recovery for {0}".format(key))
                 del self.active_recoveries[key]
@@ -141,7 +141,7 @@ class AccountManager:
             print("sending recovery email(s) to {0}".format(rows))
             for recipient in rows:
                 salt = time.time()
-                code = self.generate_recovery_code(recipient[1], salt)[:8]
+                code = self.generate_hash(recipient[1], salt)[:8]
                 self.active_recoveries[recipient[0]] = salt
                 print("added new active recovery, active recoveries is now: {0}".format(self.active_recoveries))
                 self.emailer.send_email(email, self.emailer.recovery_body.format(email, recipient[0], code))
