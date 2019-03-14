@@ -8,60 +8,88 @@ class RuleEnactor:
 	
 	valid_dice_regex = "^[0-9]*d[0-9]+$"
 	
-	keywords = {"target":handle_target, "if":handle_if, "else":handle_else, 
-				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
-				"divide":handle_divide, "set":handle_set,  
-				"towards":handle_movetowards, "away":handle_moveaway}
+	keywords = {}
 				
-	operators = {"within":handle_within, "=": handle_plus, "-":handle_minus, "==":handle_equals, 
-				"equals":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
-				"less":handle_less_than, "greater": handle_greater_than, "*": handle_multiply_operator,
-				"/":handle_divide_operator}
+	operators = {}
 				
 	spaceless_operators = ["+", "-", "/", "*", "=", "==", "<", ">"]
 				
 	variables = {}
 	
-	selected_item = None
+	targeted_point = None
+	
+	targeted_entities = []
+	
+	acting_entity = None
 	
 	def __init__(self):
 		# something
-		selected_item = None
+		self.selected_item = None
+		# self.keywords = {"target":self.handle_target, "if":self.handle_if, 
+				# "increase":self.handle_increase,"decrease":self.handle_decrease, 
+				# "multiply":self.handle_multiply,
+				# "divide":self.handle_divide, "set":self.handle_set,  
+				# "towards":self.handle_movetowards, "away":self.handle_moveaway}		
+		# self.operators = {"within":self.handle_within, "+": self.handle_plus, "-":self.handle_minus, 
+				# "==":self.handle_equals, 
+				# "equals":self.handle_equals, "<":self.handle_less_than, ">":self.handle_greater_than, 
+				# "less":self.handle_less_than, "greater":self.handle_greater_than, 
+				# "*": self.handle_multiply_operator,
+				# "/":self.handle_divide_operator, "=":self.handle_assignment}
 		
-	def perform_action(written_rule):
+				
+	def _is_number(s):
+		try: 
+			float(s)
+		except ValueError:
+			return False
+		return True
+		
+	def perform_action(self, written_rule):
 		# ...
 		# parse out the target type from the action (Entity or point)
+		print("Rule:")
+		print(written_rule)
 		lines = written_rule.splitlines()
+		print("got lines")
+		print(lines)
 		# perform each line
 		for line in lines:
-			evaluate_line(line)
+			print("evaluating line: " + line)
+			print(self.evaluate_line(self, line))
 		
-	def evaluate_line(line):
-		words = line[0].split()
+	def evaluate_line(self, line):
+		words = line.split()
 		#base cases:
 		# just a number
-		if _is_number(words[0]) and len(words) == 1:
+		if self._is_number(words[0]) and len(words) == 1:
+			print("Evaluator: Its a number!")
 			return float(words[0])
 		# a dice roll
-		elif re.search(valid_dice_regex, words[0]) and len(words) == 1:
-			return roll_dice(words[0])
-		# something else (a variable)
-		elif not _is_number(words[0]) and len(words) == 1:
-			return variables[words[0]]
+		elif re.search(self.valid_dice_regex, words[0]) and len(words) == 1:
+			print("Evaluator: Its a dice roll!")
+			return self.roll_dice(words[0])
 		# calling a 'function' with a keyword
-		elif words[0] in keywords:
-			return keywords[words[0]](line)
-		# using an operator 
-		elif words[1] in operators:
-			return operators[words[1]](line)
+		elif words[0] in self.keywords:
+			print("Evaluator: Its a function!")
+			return self.keywords[words[0]](self, line)
+		#using an operator 
+		# elif words[1] in self.operators:
+			# print("Evaluator: Its an operator!")
+			# return self.operators[words[1]](self, line)
 		# we also need to consider the case where operators are used without spaces
-		for operator in spaceless_operators:
+		for operator in self.operators:
 			check = line.split(operator)
 			if len(check) > 1:
-				return operators[operator](line)
+				print("Evaluator: Its an operator!")
+				return self.operators[operator](self, line)
+		# something else (a variable)
+		if not self._is_number(words[0]) and len(words) == 1:
+			print("Evaluator: Its a variable!")
+			return self.variables[words[0]]
+		#TODO: entity attribute case
 		
-		
-	def handle_target(line):
+	def handle_target(self, line):
 		# handle targeting something
 		print("target...")
 		return
@@ -70,12 +98,14 @@ class RuleEnactor:
 		# call game engine function to target a point or entity
 		if words[1] == 'point':
 			#target point
+			print()
 		else:
 			#target entity
+			print()
 		# when this is resolved, set the selected item so it can be referenced later:
 		selected_item = 999 #placeholder
 		
-	def handle_if(line):
+	def handle_if(self, line):
 		print("if...")
 		return
 		words = line.split()
@@ -91,85 +121,107 @@ class RuleEnactor:
 		# if_idx + 2 to then_idx is the conditional statement
 		# then_idx + 4 to end is the statement to execute on true
 	
-	def handle_increase(written_rule):
-		#handle increasing something
-		print("increase...")
-		return
+	def handle_increase(self, written_rule):
+		#handle increasing something. Expecting: increase x by y (by is optional?)
+		if "by" in written_rule:
+			remove_idx = 3
+		else:
+			remove_idx = 2
+		words = written_rule.split()
+		# we are either increasing a variable or an attribute of an entity
+		# variable case:
+		rest_of_sentence = words[remove_idx:]
+		if words[1] in variables:
+			variables[words[1]] += self.evaluate_line(self, " ".join(rest_of_sentence))
+		# must be increasing an entity
+		else
+			#TODO: entity case
 		
-		
-	def handle_decrease(written_rule):
+	def handle_decrease(self, written_rule):
 		#handle decreasing something
-		print("decrease...")
-		return
+		if "by" in written_rule:
+			remove_idx = 3
+		else:
+			remove_idx = 2
+		words = written_rule.split()
+		# we are either increasing a variable or an attribute of an entity
+		# variable case:
+		rest_of_sentence = words[remove_idx:]
+		if words[1] in variables:
+			variables[words[1]] -= self.evaluate_line(self, " ".join(rest_of_sentence))
+		# must be increasing an entity
+		else
+			#TODO: entity case
 		
-	def handle_multiply(written_rule):
+	def handle_multiply(self, written_rule):
 		#handle multiplying something
 		print("multiply...")
 		return
 		
-	def handle_divide(written_rule):
+	def handle_divide(self, written_rule):
 		#handle dividing something
 		print("divide...")
 		return
 		
-	def handle_set(written_rule):
+	def handle_set(self, written_rule):
 		#handle setting something
 		print("set...")
 		return
 		
-	def handle_within(written_rule):
+	def handle_within(self, written_rule):
 		# handle detecting entities within a given distance of the selection
 		print("within...")
 		return
 		
-	def handle_moveaway(written_rule):
+	def handle_moveaway(self, written_rule):
 		# handle moving targets away from a given point or entity
 		print("moveaway...")
 		return
 		
-	def handle_movetowards(written_rule):
+	def handle_movetowards(self, written_rule):
 		# handle moving targets towards a given point or entity
 		print("movetowards...")
 		return
 		
-	def handle_plus(written_rule):
+	def handle_plus(self, written_rule):
 		# lol
 		print("plus (+)...")
 		return
 		
-	def handle_minus(written_rule):
+	def handle_minus(self, written_rule):
 		# lol
 		print("minus (-)...")
 		return
 		
-	def handle_equals(written_rule):
+	def handle_equals(self, written_rule):
 		# lol
 		print("equals...")
 		return
 		
-	def handle_less_than(written_rule):
+	def handle_less_than(self, written_rule):
 		# lol
 		print("less than...")
 		return
 		
-	def handle_greater_than(written_rule):
+	def handle_greater_than(self, written_rule):
 		# lol
 		print("greater than...")
 		return
 		
-	def handle_multiply_operator(written_rule):
+	def handle_multiply_operator(self, written_rule):
 		# lol
 		print("multiply (*)...")
 		return
 		
-	def handle_divide_operator(written_rule):
+	def handle_divide_operator(self, written_rule):
 		# lol
 		print("divide (/)...")
 		return
+		
+	def handle_assignment(self, written_rule):
+		print("Assignment time")
 	
 	def roll_dice(dice_string):
-		print("roll dice...")
-		return
 		roll_data = dice_string.split('d')
 		if roll_data[1] == '1' or roll_data[1] == '0':
 			return int(roll_data[1])
@@ -182,10 +234,15 @@ class RuleEnactor:
 					total += random.randint(1,int(roll_data[1]))
 				return total
 	
-	def _is_number(s):
-		try: 
-			float(s)
-		except ValueError:
-			return False
-		return True
+	
 		
+		
+	keywords = {"target":handle_target, "if":handle_if,
+				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
+				"divide":handle_divide, "set":handle_set,  
+				"towards":handle_movetowards, "away":handle_moveaway}
+				
+	operators = {"within":handle_within, "+": handle_plus, "-":handle_minus, "==":handle_equals, 
+				"equals":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
+				"less":handle_less_than, "greater": handle_greater_than, "*": handle_multiply_operator,
+				"/":handle_divide_operator}
