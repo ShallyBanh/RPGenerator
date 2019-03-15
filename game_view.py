@@ -20,6 +20,7 @@ COLOR_WHITE = (255, 255, 255)
 FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
+MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -72,47 +73,6 @@ def random_color():
 #     else:
 #         raise Exception('Unknown difficulty {0}'.format(difficulty))
 
-#     # Draw random color and text
-#     bg_color = random_color()
-#     f_width = f.get_size()[0]
-
-
-#     # Reset main menu and disable
-#     # You also can set another menu, like a 'pause menu', or just use the same
-#     # main_menu as the menu that will check all your input.
-#     main_menu.disable()
-#     main_menu.reset(1)
-#     surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
-
-#     while True:
-
-#         # Clock tick
-#         clock.tick(60)
-
-#         # Application events
-#         playevents = pygame.event.get()
-#         for e in playevents:
-#             if e.type == QUIT:
-#                 exit()
-#             elif e.type == KEYDOWN:
-#                 if e.key == K_ESCAPE and main_menu.is_disabled():
-#                     main_menu.enable()
-#                     # Pass events to main_menu
-#                     main_menu.mainloop(playevents)
-#                     # Quit this function, then skip to loop of main-menu on line 217
-#                     return
-
-#         # Feed it with events every frame
-#         textinput.update(playevents)        
-
-#         # Continue playing
-#         # bg_color = random_color()
-#         surface.fill(bg_color)
-#         surface.blit(f, ((WINDOW_SIZE[0] - f_width) / 2, WINDOW_SIZE[1] / 2))
-#         surface.blit(textinput.get_surface(), (10,10))
-
-#         pygame.display.flip()
-
 def login_function():
     """
     Login game function
@@ -131,9 +91,9 @@ def login_function():
     login_view = pygame.image.load("images/login-copy.png")
     bg_color = (21,156,207)  
     surface.fill(bg_color)
+    
 
-    email_bool = True
-    password_bool = False
+    selected = "email"
     
     while True:
         # Clock tick
@@ -154,14 +114,21 @@ def login_function():
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
-                # print(mouse_pos)
+                print(mouse_pos)
                 if mouse_pos[0] in range(190,610) and mouse_pos[1] in range(148,210):
-                    email_bool = True
-                    password_bool = False
+                    selected = "email"
                 elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(266,322):
-                    email_bool = False
-                    password_bool = True
-
+                    selected = "password"
+                elif mouse_pos[0] in range(300,530) and mouse_pos[1] in range(517,530):
+                    create_new_account()
+                    return
+                elif mouse_pos[0] in range(335,480) and mouse_pos[1] in range(360,375):
+                    forgot_password()
+                    return
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
+                    login()
+                    return
+                # continue to make the rest of the buttons connect to different places
                 # elif e.key != K_ESCAPE and main_menu.is_disabled():
                 #     # Feed it with events every frame
                       
@@ -169,25 +136,99 @@ def login_function():
                 #     surface.fill(bg_color)
 
         
-        if email_bool:
+        if selected == "email":
             email.update(playevents)   
-        if password_bool:
+        elif selected == "password":
             password.update(playevents, passProtect=True)
             
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
-        surface.blit(email.get_surface(), (250,170))  
-        surface.blit(password.get_surface(), (250,290))
+        if len(email.get_text()) >= 1:
+            surface.blit(email.get_surface(), (250,170))  
+        else:
+            surface.blit(MY_FONT.render('Email', 1, COLOR_BLACK), (250,160))  
+        if len(password.get_text()) >= 1:
+            surface.blit(password.get_surface(), (250,290))
+        else:
+            surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,280))  
+
         pygame.display.flip()
 
     return
 
-def new_account_function():
+def create_new_account():
     """
     Create new account game function
     
     :return: None
     """
 
+    email = pygame_textinput.TextInput()
+    username = pygame_textinput.TextInput()
+    password = pygame_textinput.TextInput()
+    login_view = pygame.image.load("images/create-account.png")
+    bg_color = (21,156,207)  
+    surface.fill(bg_color)
+
+    selected = "email"
+    
+    while True:
+        # Clock tick
+        clock.tick(60)
+
+        # Application events
+        playevents = pygame.event.get()
+
+        for e in playevents:
+            if e.type == QUIT:
+                exit()
+            elif e.type == KEYDOWN:
+                if e.key == K_ESCAPE and main_menu.is_disabled():
+                    main_menu.enable()
+                    # Pass events to main_menu
+                    main_menu.mainloop(playevents)
+                    # Quit this function, then skip to loop of main-menu on line 217
+                    return
+            elif e.type == MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                print(mouse_pos)
+                if mouse_pos[0] in range(190,610) and mouse_pos[1] in range(148,210):
+                    selected = "email"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(235,298):
+                    selected = "username"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(330,392):
+                    selected = "password"
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
+                    login()
+                    return
+        
+        if selected == "email":
+            email.update(playevents)   
+        elif selected == "username":
+            username.update(playevents)   
+        elif selected == "password":
+            password.update(playevents, passProtect=True)
+            
+        surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+        if len(email.get_text()) >= 1:
+            surface.blit(email.get_surface(), (250,170))  
+        else:
+            surface.blit(MY_FONT.render('Email', 1, COLOR_BLACK), (250,160))  
+        if len(username.get_text()) >= 1:
+            surface.blit(username.get_surface(), (250,257))  
+        else:
+            surface.blit(MY_FONT.render('Username', 1, COLOR_BLACK), (250,247))  
+        if len(password.get_text()) >= 1:
+            surface.blit(password.get_surface(), (250,352))
+        else:
+            surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,342))  
+        pygame.display.flip()
+
+    return
+
+def login():
+    return
+
+def forgot_password():
     return
 
 def main_background():
@@ -225,27 +266,6 @@ def main_background():
 #                                              ('Hard', 'HARD')],
 #                        onreturn=None,
 #                        onchange=change_difficulty)
-# login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
-
-# login_menu = pygameMenu.Menu(surface,
-#                             bgfun=main_background,
-#                             color_selected=COLOR_WHITE,
-#                             font=pygameMenu.fonts.FONT_BEBAS,
-#                             font_color=COLOR_BLACK,
-#                             font_size=30,
-#                             menu_alpha=100,
-#                             menu_color=MENU_BACKGROUND_COLOR,
-#                             menu_height=int(WINDOW_SIZE[1] * 0.6),
-#                             menu_width=int(WINDOW_SIZE[0] * 0.6),
-#                             onclose=PYGAME_MENU_DISABLE_CLOSE,
-#                             option_shadow=False,
-#                             title='Login',
-#                             window_height=WINDOW_SIZE[1],
-#                             window_width=WINDOW_SIZE[0]
-#                             )
-# # When pressing return -> play(DIFFICULTY[0], font)
-# login_menu.add_option('Login', login_function)
-# login_menu.add_option('Create New Account', new_account_function)
 # login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
 
 # ABOUT MENU
@@ -307,12 +327,8 @@ if __name__ == "__main__":
             if event.type == QUIT:
                 exit()
 
-        # Feed it with events every frame
-        # textinput.update(events)
         # Main menu
         main_menu.mainloop(events)
-        
-        # surface.blit(textinput.get_surface(), (10,10))
 
         # Flip surface
         pygame.display.flip()
