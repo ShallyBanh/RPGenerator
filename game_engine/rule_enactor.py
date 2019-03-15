@@ -5,6 +5,24 @@ class RuleEnactor:
 	"""
 	Rule Enactor class. Takes rules from rule interpreter and assists game engine/view with implementing them.
 	"""
+	class Attribute:
+		name = ""
+		value = None
+		
+	class Size:
+		width = 1
+		height = 1
+	
+	class Entity:
+		x = 0
+		y = 0
+		name = ""
+		attributes = []
+		size = Size()
+		statuses = []
+		
+	
+	
 	
 	valid_dice_regex = "^[0-9]*d[0-9]+$"
 	
@@ -23,19 +41,7 @@ class RuleEnactor:
 	acting_entity = None
 	
 	def __init__(self):
-		# something
 		self.selected_item = None
-		# self.keywords = {"target":self.handle_target, "if":self.handle_if, 
-				# "increase":self.handle_increase,"decrease":self.handle_decrease, 
-				# "multiply":self.handle_multiply,
-				# "divide":self.handle_divide, "set":self.handle_set,  
-				# "towards":self.handle_movetowards, "away":self.handle_moveaway}		
-		# self.operators = {"within":self.handle_within, "+": self.handle_plus, "-":self.handle_minus, 
-				# "==":self.handle_equals, 
-				# "equals":self.handle_equals, "<":self.handle_less_than, ">":self.handle_greater_than, 
-				# "less":self.handle_less_than, "greater":self.handle_greater_than, 
-				# "*": self.handle_multiply_operator,
-				# "/":self.handle_divide_operator, "=":self.handle_assignment}
 		
 				
 	def _is_number(s):
@@ -90,6 +96,7 @@ class RuleEnactor:
 		#TODO: entity attribute case
 		
 	def handle_target(self, line):
+		#TODO
 		# handle targeting something
 		print("target...")
 		return
@@ -106,6 +113,7 @@ class RuleEnactor:
 		selected_item = 999 #placeholder
 		
 	def handle_if(self, line):
+		#TODO
 		print("if...")
 		return
 		words = line.split()
@@ -122,7 +130,7 @@ class RuleEnactor:
 		# then_idx + 4 to end is the statement to execute on true
 	
 	def handle_increase(self, written_rule):
-		#handle increasing something. Expecting: increase x by y (by is optional?)
+		#handle increasing something. Expecting: increase x by y (by is optional)
 		if "by" in written_rule:
 			remove_idx = 3
 		else:
@@ -138,7 +146,7 @@ class RuleEnactor:
 			#TODO: entity case
 		
 	def handle_decrease(self, written_rule):
-		#handle decreasing something
+		#handle decreasing something. Expecting: decrease x by y (by is optional)
 		if "by" in written_rule:
 			remove_idx = 3
 		else:
@@ -154,72 +162,114 @@ class RuleEnactor:
 			#TODO: entity case
 		
 	def handle_multiply(self, written_rule):
-		#handle multiplying something
-		print("multiply...")
-		return
+		#handle multiplying something. Expecting: multiply x by y (by is optional)
+		if "by" in written_rule:
+			remove_idx = 3
+		else:
+			remove_idx = 2
+		words = written_rule.split()
+		# we are either increasing a variable or an attribute of an entity
+		# variable case:
+		rest_of_sentence = words[remove_idx:]
+		if words[1] in variables:
+			variables[words[1]] *= self.evaluate_line(self, " ".join(rest_of_sentence))
+		# must be increasing an entity
+		else
+			#TODO: entity case
 		
 	def handle_divide(self, written_rule):
-		#handle dividing something
-		print("divide...")
-		return
+		#handle dividing something. Expecting: divide x by y (by is optional)
+		if "by" in written_rule:
+			remove_idx = 3
+		else:
+			remove_idx = 2
+		words = written_rule.split()
+		# we are either increasing a variable or an attribute of an entity
+		# variable case:
+		rest_of_sentence = words[remove_idx:]
+		if words[1] in variables:
+			variables[words[1]] /= self.evaluate_line(self, " ".join(rest_of_sentence))
+		# must be increasing an entity
+		else
+			#TODO: entity case
 		
 	def handle_set(self, written_rule):
-		#handle setting something
-		print("set...")
-		return
+		#handle setting something. Expecting: set x to y (to is optional)
+		if "to" in written_rule:
+			remove_idx = 3
+		else:
+			remove_idx = 2
+		words = written_rule.split()
+		# we are either increasing a variable or an attribute of an entity
+		# variable case:
+		rest_of_sentence = words[remove_idx:]
+		if words[1] in variables:
+			variables[words[1]] -= self.evaluate_line(self, " ".join(rest_of_sentence))
+		# must be increasing an entity
+		else
+			#TODO: entity case
 		
 	def handle_within(self, written_rule):
+		#TODO
 		# handle detecting entities within a given distance of the selection
 		print("within...")
 		return
 		
 	def handle_moveaway(self, written_rule):
+		#TODO
 		# handle moving targets away from a given point or entity
 		print("moveaway...")
 		return
 		
 	def handle_movetowards(self, written_rule):
+		#TODO
 		# handle moving targets towards a given point or entity
 		print("movetowards...")
 		return
 		
 	def handle_plus(self, written_rule):
-		# lol
-		print("plus (+)...")
-		return
+		words = written_rule.split('+')
+		return evaluate_line(words[0].strip()) + evaluate_line(words[2].strip())
 		
 	def handle_minus(self, written_rule):
-		# lol
-		print("minus (-)...")
-		return
+		words = written_rule.split('-')
+		return evaluate_line(words[0].strip()) - evaluate_line(words[2].strip())
 		
 	def handle_equals(self, written_rule):
-		# lol
-		print("equals...")
-		return
+		words = written_rule.split('==')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) == evaluate_line(words[2].strip())
+		words = written_rule.split('equals')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) == evaluate_line(words[2].strip())
 		
 	def handle_less_than(self, written_rule):
-		# lol
-		print("less than...")
-		return
+		words = written_rule.split('<')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) < evaluate_line(words[2].strip())
+		words = written_rule.split('less than')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) < evaluate_line(words[2].strip())
 		
 	def handle_greater_than(self, written_rule):
-		# lol
-		print("greater than...")
-		return
+		words = written_rule.split('>')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) > evaluate_line(words[2].strip())
+		words = written_rule.split('greater than')
+		if len(words) > 1:
+			return evaluate_line(words[0].strip()) > evaluate_line(words[2].strip())
 		
 	def handle_multiply_operator(self, written_rule):
-		# lol
-		print("multiply (*)...")
-		return
+		words = written_rule.split('*')
+		return evaluate_line(words[0].strip()) * evaluate_line(words[2].strip())
 		
 	def handle_divide_operator(self, written_rule):
-		# lol
-		print("divide (/)...")
-		return
+		words = written_rule.split('/')
+		return evaluate_line(words[0].strip()) / evaluate_line(words[2].strip())
 		
 	def handle_assignment(self, written_rule):
-		print("Assignment time")
+		words = written_rule.split('=')
+		variables[words[0].strip()] = evaluate_line(words[2].strip())
 	
 	def roll_dice(dice_string):
 		roll_data = dice_string.split('d')
