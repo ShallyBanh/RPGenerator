@@ -5,7 +5,7 @@ class Attribute:
     """
 
     def __init__(self, attributeName, attributeType, attributeValue):
-        self._attributeName = attributeName
+        self._attributeName = attributeName.lower()
         self._attributeType = attributeType
         self._attributeValue = attributeValue
     
