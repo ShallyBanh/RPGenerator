@@ -19,7 +19,7 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
-WINDOW_SIZE = (640, 480)
+WINDOW_SIZE = (800, 600)
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -119,8 +119,6 @@ def login_function():
     
     :return: None
     """
-    # Draw random color
-    bg_color = random_color()
 
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
@@ -130,13 +128,20 @@ def login_function():
 
     email = pygame_textinput.TextInput()
     password = pygame_textinput.TextInput()
+    login_view = pygame.image.load("images/login-copy.png")
+    bg_color = (21,156,207)  
+    surface.fill(bg_color)
 
+    email_bool = True
+    password_bool = False
+    
     while True:
         # Clock tick
         clock.tick(60)
 
         # Application events
         playevents = pygame.event.get()
+
         for e in playevents:
             if e.type == QUIT:
                 exit()
@@ -147,19 +152,41 @@ def login_function():
                     main_menu.mainloop(playevents)
                     # Quit this function, then skip to loop of main-menu on line 217
                     return
-                elif e.key != K_ESCAPE and main_menu.is_disabled():
-                    # Feed it with events every frame
-                    email.update(playevents)   
-                    password.update(playevents, passProtect=True)   
-                    surface.fill(bg_color)
-                    surface.blit(email.get_surface(), (10,10))  
-                    surface.blit(password.get_surface(), (10,40))  
-                elif e.key == K_RETURN and main_menu.is_disabled():
-                    surface.fill(bg_color)
+            elif e.type == MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                # print(mouse_pos)
+                if mouse_pos[0] in range(190,610) and mouse_pos[1] in range(148,210):
+                    email_bool = True
+                    password_bool = False
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(266,322):
+                    email_bool = False
+                    password_bool = True
 
+                # elif e.key != K_ESCAPE and main_menu.is_disabled():
+                #     # Feed it with events every frame
+                      
+                # elif e.key == K_RETURN and main_menu.is_disabled():
+                #     surface.fill(bg_color)
+
+        
+        if email_bool:
+            email.update(playevents)   
+        if password_bool:
+            password.update(playevents, passProtect=True)
+            
+        surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+        surface.blit(email.get_surface(), (250,170))  
+        surface.blit(password.get_surface(), (250,290))
         pygame.display.flip()
 
+    return
+
 def new_account_function():
+    """
+    Create new account game function
+    
+    :return: None
+    """
 
     return
 
