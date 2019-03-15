@@ -38,6 +38,6 @@ class Ruleset:
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
 
-    def export_ruleset():
+    def export_ruleset(self):
         return
 

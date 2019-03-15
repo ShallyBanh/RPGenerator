@@ -66,6 +66,20 @@ class Entity:
             return 
 
         self._attributes.append(attribute)
+    
+    def add_action(self, action):
+        if self.get_actions() == []:
+            self._actions.append(action)
+            return 
+
+        if action.get_action_name() in self.get_actions():
+            print("Error, action name already exists")
+            return
+        if action.get_action_name() == "location":
+            print("error cannot name action location")
+            return 
+
+        self._actions.append(action)
 
     def get_size(self):
         return self._size

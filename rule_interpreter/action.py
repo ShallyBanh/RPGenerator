@@ -6,7 +6,7 @@ class Action:
     """
 
     def __init__(self, name, content):
-        self._actionName = name
+        self._actionName = name.lower()
         self._ruleContent = content
         self._validator = Validator()
     
