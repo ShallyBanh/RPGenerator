@@ -42,15 +42,19 @@ class RuleEnactor:
 				
 	operators = {}
 				
-	spaceless_operators = ["+", "-", "/", "*", "=", "==", "<", ">"]
+	#spaceless_operators = ["+", "-", "/", "*", "=", "==", "<", ">"]
 				
 	variables = {}
 	
 	targeted_point = None
 	
-	targeted_entities = []
+	#targeted_entities = []
+	
+	targeted_entity = None
 	
 	acting_entity = None
+	
+	#TODO: ADD +=, -=, *=, /=
 	
 	def __init__(self):
 		self.selected_item = None
@@ -74,6 +78,8 @@ class RuleEnactor:
 		print("got lines")
 		print(lines)
 		# perform each line
+		#set self here?
+		#acting_entity = Entity("me", "creature")
 		for line in lines:
 			print("evaluating line: " + line)
 			print(self.evaluate_line(self, line))
@@ -103,28 +109,36 @@ class RuleEnactor:
 			if len(check) > 1:
 				print("Evaluator: Its an operator!")
 				return self.operators[operator](self, line)
+		# might be an attribute of the targeted entity
+		entity_attribute = line.split('.')
+		if len(entity_attribute) > 1:
+			for attr in targeted_entity.attributes:
+				if attr.name == entity_attribute[1]:
+					return attr.value
+		
+		
 		# something else (a variable)
 		if not self._is_number(words[0]) and len(words) == 1:
 			print("Evaluator: Its a variable!")
 			return self.variables[words[0]]
-		#TODO: entity attribute case
+		
 		
 	def handle_target(self, line):
-		#TODO
-		# handle targeting something
-		print("target...")
-		return
-		
 		words = line.split()
-		# call game engine function to target a point or entity
+		target_type = words[1]
+		# they can either be targeting a point or an entity
+		#point case:
+		#TODO: we need to be calling a GUI function to give us a point. For now, this is hard coded in. 
 		if words[1] == 'point':
-			#target point
-			print()
+			targeted_point = (1,1)
+		# entity case:
+		#TODO: in reality we need to be calling a GUI function that gives us the targeted entity...
+		#thus this is a placeholder for now
 		else:
-			#target entity
-			print()
-		# when this is resolved, set the selected item so it can be referenced later:
-		selected_item = 999 #placeholder
+			for entity in all_created_entities:
+				if entity.type == target_name:
+					targeted_entity = entity
+		
 		
 	def handle_if(self, line):
 		#TODO
@@ -155,9 +169,19 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in variables:
 			variables[words[1]] += self.evaluate_line(self, " ".join(rest_of_sentence))
-		# must be increasing an entity
-		else
-			#TODO: entity case
+		# must be increasing entity
+		else:
+			entity_info = words[1].split{'.')
+			if entity_info[0] == 'self:
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
+			#targeting target entity
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
+				
 		
 	def handle_decrease(self, written_rule):
 		#handle decreasing something. Expecting: decrease x by y (by is optional)
@@ -171,9 +195,18 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in variables:
 			variables[words[1]] -= self.evaluate_line(self, " ".join(rest_of_sentence))
-		# must be increasing an entity
-		else
-			#TODO: entity case
+		# must be decreasing entity
+		else:
+			entity_info = words[1].split{'.')
+			if entity_info[0] == 'self:
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
+			#targeting target entity
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_multiply(self, written_rule):
 		#handle multiplying something. Expecting: multiply x by y (by is optional)
@@ -187,9 +220,18 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in variables:
 			variables[words[1]] *= self.evaluate_line(self, " ".join(rest_of_sentence))
-		# must be increasing an entity
-		else
-			#TODO: entity case
+		# must be multiplying entity
+		else:
+			entity_info = words[1].split{'.')
+			if entity_info[0] == 'self:
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
+			#targeting target entity
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_divide(self, written_rule):
 		#handle dividing something. Expecting: divide x by y (by is optional)
@@ -203,9 +245,18 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in variables:
 			variables[words[1]] /= self.evaluate_line(self, " ".join(rest_of_sentence))
-		# must be increasing an entity
-		else
-			#TODO: entity case
+		# must be dividing entity
+		else:
+			entity_info = words[1].split{'.')
+			if entity_info[0] == 'self:
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
+			#targeting target entity
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_set(self, written_rule):
 		#handle setting something. Expecting: set x to y (to is optional)
@@ -219,9 +270,18 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in variables:
 			variables[words[1]] -= self.evaluate_line(self, " ".join(rest_of_sentence))
-		# must be increasing an entity
-		else
-			#TODO: entity case
+		# must be setting entity
+		else:
+			entity_info = words[1].split{'.')
+			if entity_info[0] == 'self:
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
+			#targeting target entity
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_within(self, written_rule):
 		#TODO
@@ -283,7 +343,83 @@ class RuleEnactor:
 		
 	def handle_assignment(self, written_rule):
 		words = written_rule.split('=')
-		variables[words[0].strip()] = evaluate_line(words[2].strip())
+		
+		entity_info = words[0].strip().split('.')
+		if len(entity_info) > 1:
+			if entity_info[0] == 'self':
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = evaluate_line(words[2].strip())
+		else:
+			variables[words[0].strip()] = evaluate_line(words[2].strip())
+		
+	def handle_plus_equals(self, written_rule):
+		words = written_rule.split('+=')
+		
+		entity_info = words[0].strip().split('.')
+		if len(entity_info) > 1:
+			if entity_info[0] == 'self':
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += evaluate_line(words[2].strip())
+		else:
+			variables[words[0].strip()] += evaluate_line(words[2].strip())
+		
+	def handle_minus_equals(self, written_rule):
+		words = written_rule.split('-=')
+		
+		entity_info = words[0].strip().split('.')
+		if len(entity_info) > 1:
+			if entity_info[0] == 'self':
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= evaluate_line(words[2].strip())
+		else:
+			variables[words[0].strip()] -= evaluate_line(words[2].strip())
+	
+	def handle_times_equals(self, written_rule):
+		words = written_rule.split('*=')
+		
+		entity_info = words[0].strip().split('.')
+		if len(entity_info) > 1:
+			if entity_info[0] == 'self':
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= evaluate_line(words[2].strip())
+		else:
+			variables[words[0].strip()] *= evaluate_line(words[2].strip())
+			
+	def handle_divide_equals(self, written_rule):
+		words = written_rule.split('/=')
+		
+		entity_info = words[0].strip().split('.')
+		if len(entity_info) > 1:
+			if entity_info[0] == 'self':
+				for attribute in acting_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
+			else:
+				for attribute in targeted_entity.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= evaluate_line(words[2].strip())
+		else:
+			variables[words[0].strip()] /= evaluate_line(words[2].strip())
 	
 	def roll_dice(dice_string):
 		roll_data = dice_string.split('d')
@@ -309,4 +445,5 @@ class RuleEnactor:
 	operators = {"within":handle_within, "+": handle_plus, "-":handle_minus, "==":handle_equals, 
 				"equals":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
 				"less":handle_less_than, "greater": handle_greater_than, "*": handle_multiply_operator,
-				"/":handle_divide_operator}
+				"/":handle_divide_operator, "+=":handle_plus_equals, "-=":handle_minus_equals, 
+				"*=":handle_times_equals, "/=":handle_divide_equals}
