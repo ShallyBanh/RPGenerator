@@ -52,27 +52,6 @@ def random_color():
     """
     return randrange(0, 255), randrange(0, 255), randrange(0, 255)
 
-
-# def play_function(difficulty, font):
-#     """
-#     Main game function
-    
-#     :param difficulty: Difficulty of the game
-#     :param font: Pygame font
-#     :return: None
-#     """
-#     difficulty = difficulty[0]
-#     assert isinstance(difficulty, str)
-
-#     if difficulty == 'EASY':
-#         f = font.render('Playing as baby', 1, COLOR_WHITE)
-#     elif difficulty == 'MEDIUM':
-#         f = font.render('Playing as normie', 1, COLOR_WHITE)
-#     elif difficulty == 'HARD':
-#         f = font.render('Playing as god', 1, COLOR_WHITE)
-#     else:
-#         raise Exception('Unknown difficulty {0}'.format(difficulty))
-
 def login_function():
     """
     Login game function
@@ -225,10 +204,53 @@ def create_new_account():
 
     return
 
+def forgot_password():
+    email = pygame_textinput.TextInput()
+    login_view = pygame.image.load("images/forgot-password.png")
+    bg_color = (21,156,207)  
+    surface.fill(bg_color)
+    
+    while True:
+        # Clock tick
+        clock.tick(60)
+
+        # Application events
+        playevents = pygame.event.get()
+
+        for e in playevents:
+            if e.type == QUIT:
+                exit()
+            elif e.type == KEYDOWN:
+                if e.key == K_ESCAPE and main_menu.is_disabled():
+                    main_menu.enable()
+                    # Pass events to main_menu
+                    main_menu.mainloop(playevents)
+                    # Quit this function, then skip to loop of main-menu on line 217
+                    return
+            elif e.type == MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                print(mouse_pos)
+                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
+                    send_recovery_email()
+                    return
+        
+        email.update(playevents)   
+            
+        surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+        if len(email.get_text()) >= 1:
+            surface.blit(email.get_surface(), (250,170))  
+        else:
+            surface.blit(MY_FONT.render('Email', 1, COLOR_BLACK), (250,160))  
+
+        pygame.display.flip()
+
+    return
+
+
 def login():
     return
 
-def forgot_password():
+def send_recovery_email():
     return
 
 def main_background():
