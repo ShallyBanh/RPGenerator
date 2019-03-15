@@ -9,22 +9,34 @@ class RuleEnactor:
 		name = ""
 		value = None
 		
+		def __init__(self, name, value):
+			self.name = name
+			self.value = value
+		
 	class Size:
 		width = 1
 		height = 1
 	
 	class Entity:
+	
 		x = 0
 		y = 0
 		name = ""
+		type = ""
 		attributes = []
 		size = Size()
 		statuses = []
 		
-	
-	
-	
+		def __init__(self, name, type):
+			self.name = name
+			self.type = type
+			
+		def add_attribute(self, attribute):
+			self.attributes.append(attribute)
+			
 	valid_dice_regex = "^[0-9]*d[0-9]+$"
+	
+	all_created_entities = []
 	
 	keywords = {}
 				
@@ -43,6 +55,8 @@ class RuleEnactor:
 	def __init__(self):
 		self.selected_item = None
 		
+	def add_new_entity(self, entity):
+		self.all_created_entities.append(entity)
 				
 	def _is_number(s):
 		try: 
