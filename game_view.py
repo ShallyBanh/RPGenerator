@@ -66,7 +66,7 @@ def login_function():
     
     while True:
         # Clock tick
-        clock.tick(60)
+        clock.tick(30)
 
         # Application events
         playevents = pygame.event.get()
