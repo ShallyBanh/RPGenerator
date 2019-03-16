@@ -97,6 +97,10 @@ def login_function():
                 elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
                     login()
                     return
+                elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
+                    main_menu.enable()
+                    main_menu.mainloop(playevents)
+                    return
                 # continue to make the rest of the buttons connect to different places
                 # elif e.key != K_ESCAPE and main_menu.is_disabled():
                 #     # Feed it with events every frame
@@ -151,10 +155,7 @@ def create_new_account():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    main_menu.enable()
-                    # Pass events to main_menu
-                    main_menu.mainloop(playevents)
-                    # Quit this function, then skip to loop of main-menu on line 217
+                    login_function()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -167,6 +168,9 @@ def create_new_account():
                     selected = "password"
                 elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
                     login()
+                    return
+                elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
+                    login_function()
                     return
         
         if selected == "email":
@@ -210,16 +214,16 @@ def forgot_password():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    main_menu.enable()
-                    # Pass events to main_menu
-                    main_menu.mainloop(playevents)
-                    # Quit this function, then skip to loop of main-menu on line 217
+                    login_function()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 print(mouse_pos)
                 if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
                     send_recovery_email()
+                    return
+                elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
+                    login_function()
                     return
         
         email.update(playevents)   
