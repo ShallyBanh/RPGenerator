@@ -350,7 +350,13 @@ class SyntaxParser(object):
             if the condition is valid
         """
         content = content.strip()
-        entity = content[:connectiveIndex - 1].strip()
+        allIndex = 0
+        
+        #all is valid
+        if content[:3] == "all":
+            allIndex = 4
+
+        entity = content[allIndex:connectiveIndex - 1].strip()
         firstWithinBracket = content.find("(")
         endWithinBracket = content.find(")")
         self._entityTarget = entity
