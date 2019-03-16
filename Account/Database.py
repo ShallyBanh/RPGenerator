@@ -48,11 +48,56 @@ class Database:
                 );
             '''
         )
+        self.cur.execute(
+            '''
+                create table if not exists assets(
+                    hashname text,
+                    name text,
+                    username text,
+                    image blob,
+                    primary key (hashname),
+                    foreign key (username) references users(username)
+                );
+            '''
+        )
+        self.cur.execute(
+            '''
+                create table if not exists Ruleset(
+                    id integer,
+                    username text,
+                    rules blob,
+                    primary key (id),
+                    foreign key (username) references users(username)
+                );
+            '''
+        )
+        self.cur.execute(
+            '''
+                create table if not exists GameHistory(
+                    id integer,
+                    role text,
+                    username text,
+                    game_id integer,
+                    primary key (id),
+                    foreign key (username) references users(username),
+                    foreign key (game_id) references Game(id)
+                );
+            '''
+        )
+        self.cur.execute(
+            '''
+                create table if not exists Game(
+                    id integer,
+                    game blob,
+                    primary key (id)
+                );
+            '''
+        )
 
     def query(self, query, data):
         """Query the database with query using arguments in data."""
         # make sure that data is correct format for query
-        print("querying:\n\t{0}\n\t{1}".format(query, data))
+        # print("querying:\n\t{0}\n\t{1}".format(query, data))
         self.cur.execute(query, data)
 
     def close(self):
@@ -60,3 +105,7 @@ class Database:
         # commit and close cursor at end of session
         self.conn.commit()
         self.conn.close()
+
+
+if __name__ == "__main__":
+    database = Database("test.db")
