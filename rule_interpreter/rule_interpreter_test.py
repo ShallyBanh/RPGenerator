@@ -37,6 +37,18 @@ class TestValidator(unittest.TestCase):
     
     def test_target_point_all_keyword(self):
         self.assertTrue(self.parser.is_valid_rule("target point:\n if all entity  within(3,3) of point then goblin.hp = 2"))
+    
+    def test_target_point_false(self):
+        self.assertTrue(self.parser.is_valid_rule("target point:\n If entity within(3) of target then move entity 1 away from target"))
+    
+    def test_pull_action(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n move target 1 towards self"))
+    
+    def test_push_action(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n move target 1 away from self"))
+    
+    def test_explosion_action(self):
+        self.assertTrue(self.parser.is_valid_rule("target point:\n If entity within(3) of point then move entity 1 away from target"))
 
     def test_target_interrupt(self):
         self.assertTrue(self.parser.is_valid_rule("interrupt goblin.Attack if target.hp equals 5:\n target.hp = 3"))
@@ -65,4 +77,4 @@ if __name__ == '__main__':
     # print("adding status for goblin: Dodge..")
     # goblin.add_status("Dodge")
 
-    # print(parser.is_valid_rule("""target point:\n if all entity within(3,3) of point then goblin.hp = 2"""))
+    # print(parser.is_valid_rule("""target point:\n If entity within(3) of point then move entity 1 away from target"""))

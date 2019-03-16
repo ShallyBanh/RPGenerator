@@ -9,8 +9,8 @@ class SyntaxParser(object):
     def __init__(self):
         self._validConnectives = ["equals", "greater than", "less than", "greater or equal to", "less than or equal to", 
                                 ">", ">=", "<", "<=", '+=', "-=" "not equal to", "not equal", "=", "==", "!=", "within", "has", "contains"]
-        self._specialConnectives = ["by", "to"]
-        self._actionCommands = ["decrease", "increase", "reduce", "add"]
+        self._specialConnectives = ["by", "to", "towards", "away", "from"]
+        self._actionCommands = ["move", "decrease", "increase", "reduce", "add"]
         self._cannotFindSubstring = -1
         self._entityTarget = ""
         self._regexForDice = "[0-9]*d[0-9]+"
@@ -157,7 +157,7 @@ class SyntaxParser(object):
         # we should not have a then in the action statement
         if thenIndex != self._cannotFindSubstring:
             return False
-        
+
         return self.is_valid_action(content, targetName)
     
     def is_valid_action(self, content, targetName):
@@ -178,6 +178,7 @@ class SyntaxParser(object):
         #split actions by connector and since there is only and to connect actions
         # actions = re.split(r'(?:and )|[\n]+', content)
         actions = content.split('and')
+
         for actionStatement in actions:
             # we are adding or removing statuses
             actionStatement = actionStatement.strip()
@@ -185,11 +186,12 @@ class SyntaxParser(object):
                 if self.is_valid_status_action(actionStatement, targetName) == False:
                     return False
             
-            elif actionStatement.find("to") == self._cannotFindSubstring and actionStatement.find("by") == self._cannotFindSubstring:
-                if self.is_valid_condition(actionStatement, targetName) == False:
+            elif actionStatement[: actionStatement.find(" ")].strip() in self._actionCommands:
+                if self.is_valid_special_action(actionStatement, targetName) == False:
                     return False
             
-            elif self.is_valid_special_action(actionStatement, targetName) == False:
+            elif actionStatement.find("to") == self._cannotFindSubstring and actionStatement.find("by") == self._cannotFindSubstring:
+                if self.is_valid_condition(actionStatement, targetName) == False:
                     return False
 
         return True
@@ -210,14 +212,26 @@ class SyntaxParser(object):
         """
         actions = actionStatement.split(' ')
         actions = [x for x in actions if x]
+        if len(actions) < 4:
+            return False
         # the form will always be <action command> <targetname> <by or to> <number>
         if actions[0].strip() not in self._actionCommands:
             return False
         
-        if actions[2].strip() not in self._specialConnectives:
-            return False
+        if actions[0].strip() == "move":
+            if actions[2].strip().isdigit() == False:
+                return False
+    
+            if actions[3].strip() not in self._specialConnectives:
+                return False
+            
+            return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[len(actions)-1].strip(), targetName)
         
-        return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[3].strip(), targetName)
+        else:
+            if actions[2].strip() not in self._specialConnectives:
+                return False
+        
+            return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[3].strip(), targetName)
     
     def is_valid_status_action(self, content, targetName):
         """
@@ -339,7 +353,7 @@ class SyntaxParser(object):
             
             if i < len(regularConnectiveIndicies) - 1: 
                 currentConnectiveIndex = andOrConnectiveIndicies[i] + 3
-        
+
         return True
     
     def is_valid_within_statement(self, connectiveIndex, content):
@@ -357,6 +371,7 @@ class SyntaxParser(object):
             allIndex = 4
 
         entity = content[allIndex:connectiveIndex - 1].strip()
+
         firstWithinBracket = content.find("(")
         endWithinBracket = content.find(")")
         self._entityTarget = entity
@@ -373,16 +388,27 @@ class SyntaxParser(object):
             withinValuesList = withinValues.split(",")
             if len(withinValuesList) > 2 or not withinValuesList[0].strip().isdigit() or not withinValuesList[1].strip().isdigit():
                 return False
+
+        ofIndex = content.find("of")
+        if ofIndex == self._cannotFindSubstring:
+            return False 
         
+        if entity == "point":
+            entity = content[ofIndex + 3: ].strip()
+            targetIndex = content.find(entity)
+            self._entityTarget  = entity
+        else:
+            targetIndex = content.find("target")
+
         pointIndex = content.find("point")
-        if pointIndex == self._cannotFindSubstring:
+        if pointIndex == self._cannotFindSubstring and targetIndex == self._cannotFindSubstring:
             return False
-        
-        if content[endWithinBracket + 1: pointIndex].strip() != "of":
-            return False
-        
+
+        if entity == "entity":
+            return True
+
         for ob in Validator().get_entities():
-            if ob.get_type() == entity or ob.get_name() == entity or entity == "entity":
+            if ob.get_type() == entity or ob.get_name() == entity:
                 return True
         
         return False
@@ -414,7 +440,7 @@ class SyntaxParser(object):
             return self.is_valid_status(target, objectString)
 
         # entity.hp > 4
-        if objectString.find(targetObject) != self._cannotFindSubstring or objectString.find(".") != self._cannotFindSubstring:
+        if objectString.find(targetObject) != self._cannotFindSubstring and objectString.find(".") != self._cannotFindSubstring:
             dotSplitter = objectString.find(".")
             ourObject = objectString[:dotSplitter]
             objectAttribute = objectString[dotSplitter + 1:]
@@ -424,6 +450,9 @@ class SyntaxParser(object):
                 return self.validate_object_attribute_or_action(ourObject.strip(), objectAttribute.strip())
         
         if objectString in self._variables_list:
+            return True
+
+        if objectString == "target" or objectString == "self" or objectString == "entity":
             return True
 
         return False
