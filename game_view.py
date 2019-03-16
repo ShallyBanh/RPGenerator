@@ -14,7 +14,8 @@ from pygameMenu.locals import *
 DIFFICULTY = ['EASY']
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
-COLOR_BACKGROUND = (128, 0, 128)
+# COLOR_BACKGROUND = (128, 0, 128)
+COLOR_BACKGROUND = (21,156,207)  
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 FPS = 60.0
@@ -34,16 +35,6 @@ clock = pygame.time.Clock()
 dt = 1 / FPS
 
 # -----------------------------------------------------------------------------
-def change_difficulty(d):
-    """
-    Change difficulty of the game.
-    
-    :return: 
-    """
-    print ('Selected difficulty: {0}'.format(d))
-    DIFFICULTY[0] = d
-
-
 def random_color():
     """
     Return random color.
@@ -67,9 +58,8 @@ def login_function():
 
     email = pygame_textinput.TextInput()
     password = pygame_textinput.TextInput()
-    login_view = pygame.image.load("images/login-copy.png")
-    bg_color = (21,156,207)  
-    surface.fill(bg_color)
+    login_view = pygame.image.load("images/menu/login-copy.png")
+    surface.fill(COLOR_BACKGROUND)
     
 
     selected = "email"
@@ -112,7 +102,7 @@ def login_function():
                 #     # Feed it with events every frame
                       
                 # elif e.key == K_RETURN and main_menu.is_disabled():
-                #     surface.fill(bg_color)
+                #     surface.fill(COLOR_BACKGROUND)
 
         
         if selected == "email":
@@ -144,9 +134,8 @@ def create_new_account():
     email = pygame_textinput.TextInput()
     username = pygame_textinput.TextInput()
     password = pygame_textinput.TextInput()
-    login_view = pygame.image.load("images/create-account.png")
-    bg_color = (21,156,207)  
-    surface.fill(bg_color)
+    login_view = pygame.image.load("images/menu/create-account.png")
+    surface.fill(COLOR_BACKGROUND)
 
     selected = "email"
     
@@ -206,9 +195,8 @@ def create_new_account():
 
 def forgot_password():
     email = pygame_textinput.TextInput()
-    login_view = pygame.image.load("images/forgot-password.png")
-    bg_color = (21,156,207)  
-    surface.fill(bg_color)
+    login_view = pygame.image.load("images/menu/forgot-password.png")
+    surface.fill(COLOR_BACKGROUND)
     
     while True:
         # Clock tick
