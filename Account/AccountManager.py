@@ -67,12 +67,13 @@ class AccountManager:
             print("username unavailable")
         return retval
 
-    def set_credentials(self, username, password, email):
+    def set_credentials(self, username, password):
         """Set an account's credentials."""
         # @TODO return values
-        query = "UPDATE users SET pwd=?, email=? WHERE username=?;"
-        data = [self.generate_hash(password, username), email, username]
+        query = "UPDATE users SET pwd=? WHERE username=?;"
+        data = [self.generate_hash(password, username), username]
         self.database.query(query, data)
+        return 0
 
     def get_credentials(self, username):
         """Get an account's credentials."""
@@ -113,7 +114,7 @@ class AccountManager:
             if self.generate_hash(password, self.active_recoveries[username])[:8] == code and password1 == password2:
                 print("\n\nrecovery matches\n\n")
                 del self.active_recoveries[username]
-                self.set_credentials(username, password1, email)
+                self.set_credentials(username, password1)
                 return 0
             else:
                 print("\n\nrecovery failed:\n\texpected {0} == {1}\t({2})\n\t{3} == {4}\t({5})\n\n".format(self.generate_hash(password, self.active_recoveries[username])[:8], code, self.generate_hash(password, self.active_recoveries[username])[:8] == code, password1, password2, password1 == password2))

@@ -6,7 +6,6 @@ from flask import Flask, render_template, request
 import threading
 import time
 
-
 from Account.AccountManager import AccountManager
 import constants
 import configparser
@@ -104,6 +103,24 @@ def create_account():
     response = server.account_manager.create_account(username, password, email)
     print("[server] [create_account] response from account_manager was {}".format(response))
     return "200" if (response == 0) else "400"
+
+@app.route("/change_credentials", methods=['POST'])
+def change_credentials():
+    username = request.args.get("username")
+    old_password = request.args.get("old_password")
+    new_password = request.args.get("new_password")
+    print("[server] [change_credentials] got username,old_password,new_password= {},{},{}".format(username, old_password, new_password))
+    old_credentials = server.account_manager.get_credentials(username)
+    print("the old credentials are {}".format(old_credentials))
+    if old_credentials != None:
+        print("[server] [change_credentials] comparing hashed passwords\n\t{}\n\t{}".format(old_credentials[1], server.account_manager.generate_hash(old_password, username)))
+    if old_credentials != None and old_credentials[1] == server.account_manager.generate_hash(old_password, username):
+        server.account_manager.set_credentials(username, new_password)
+        print("[server] [change_credentials] given were correct and not None query result")
+        return "200"
+    return "400"
+    # print("[server] [change_credentials] response from account_manager was {}".format(response))
+    # return "200" if (response == 0) else "400"
 
 @app.route("/send_recovery", methods=['POST'])
 def send_recovery():

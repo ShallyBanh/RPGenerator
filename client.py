@@ -32,7 +32,17 @@ class Client():
         if type(response) == requests.models.Response:
             response = str(response.text)
         return 0 if (response == "200") else -1
-        
+    
+    def change_credentials(self, username, old_password, new_password): #,email):
+        print("[client] [change_credentials] attempting to change credentials of with username,old_password,new_password = {},{},{}".format(username,old_password, new_password))        
+        payload = {'username': username, 'old_password': old_password, 'new_password': new_password}
+        response = requests.post("{}/change_credentials".format(self.URL), params = payload)
+        print("[client] [change_credentials] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        if type(response) == requests.models.Response:
+            response = str(response.text)
+        return 0 if (response == "200") else -1
+
     def send_recovery(self, email):
         print("[client] [send_recovery] attempting to send recovery to email = {}".format(email))
         payload = {'email': email}
