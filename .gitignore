@@ -1,0 +1,5 @@
+.DS_Store
+__pycache__
+
+# examples to not commit
+# pygame_basics/
