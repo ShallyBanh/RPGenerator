@@ -1,5 +1,6 @@
 """This module contains the User class."""
 import sys
+import os
 sys.path.append('../')
 from .Database import Database
 import smtplib, ssl
@@ -22,10 +23,17 @@ class AccountManager:
         """Initialize an AccountManager.
 
         """
+        print("[account_managers] database_file = {}".format(database_file))
         self.database = Database(database_file)
         self.active_recoveries = {}
         self.recovery_timeout = 10800 # 3 hours (60s/min * 60min/h * 3h)
         self.emailer = EmailSender()
+    
+    def reset_database(self):
+        if os.path.exists(self.database.database_file):
+            os.remove(self.database.database_file)
+        self.database = Database(self.database.database_file)
+        return 0
 
     def username_available(self, username):
         """Check if a username is already used by someone or if it is available."""
@@ -90,18 +98,18 @@ class AccountManager:
         # get other info
         return -1
 
-    def recover_user(self, username, code, password1, password2):
+    def recover_account(self, username, code, password1, password2):
         """Recover an account's credentials after getting a recovery code."""
         # check if code matches hash of current password
         # if so go to change password
-        print("\n\n\n***** trying to recover user *****")
+        print("\n\n\n***** trying to recover user {}*****".format(username))
         self.purge_recoveries()
         if username in self.active_recoveries:
             query = "SELECT pwd, email FROM users WHERE username=?"
             data = [username]
             self.database.query(query, data)
             password, email = self.database.cur.fetchone()
-            print("passwd, email in recover_user are: {0}, {1}".format(password, email))
+            print("passwd, email in recover_account are: {0}, {1}".format(password, email))
             if self.generate_hash(password, self.active_recoveries[username])[:8] == code and password1 == password2:
                 print("\n\nrecovery matches\n\n")
                 del self.active_recoveries[username]
@@ -136,7 +144,7 @@ class AccountManager:
         rows = self.database.cur.fetchall()
         # print("recovery search yielded:{0}".format(row))
         # print("the row from query is {0}".format(row))
-        retval = -1
+        # retval = -1
         if len(rows) != 0:
             print("sending recovery email(s) to {0}".format(rows))
             for recipient in rows:
@@ -145,8 +153,8 @@ class AccountManager:
                 self.active_recoveries[recipient[0]] = salt
                 print("added new active recovery, active recoveries is now: {0}".format(self.active_recoveries))
                 self.emailer.send_email(email, self.emailer.recovery_body.format(email, recipient[0], code))
-            retval = 0
+            return 0
         else:
             print("email {} not found in database".format(email))
-        return retval
+            return -1
     

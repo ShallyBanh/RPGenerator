@@ -6,21 +6,21 @@ class Database:
     """An interface to an SQLite3 database.
 
     Attributes:
-        db_file (str) -- database file to store tables.
+        database_file (str) -- database file to store tables.
         cur (sqlite3.Cursor) -- cursor for the database.
         conn (sqlite3.Connection) -- connection to the database.
         assets (dict) -- User's name. (default empty dict {})
 
     """
 
-    def __init__(self, db_file):
+    def __init__(self, database_file):
         """Initialize a Database.
 
         Keyword arguments:
-            db_file (str) -- database file to store tables.
+            database_file (str) -- database file to store tables.
         """
-        self.db_file = db_file
-        self.conn = sqlite3.connect(self.db_file, check_same_thread=False)
+        self.database_file = database_file
+        self.conn = sqlite3.connect(self.database_file, check_same_thread=False)
         self.conn.text_factory = str
 
         # @TODO crypto
