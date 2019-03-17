@@ -3,7 +3,7 @@ import rule_enactor
 
 enactor = rule_enactor.RuleEnactor
 
-rule = "target entity\n"
+rule = "target guy\n"
 rule += "x = 0\n"
 rule += "x\n"
 rule += "increase x by 5\n"
@@ -56,7 +56,25 @@ rule += "test3 = 0\n"
 rule += "if test1 equals test2 or test1 equals 1 then test3 = 900\n"
 rule += "test3\n"
 
+rule += "self.HP\n"
+rule += "target.HP\n"
+
+rule += "if all self within(3,3) of entity then reduce entity.HP by 3\n"
+
+rule += "self.HP\n"
+rule += "target.HP\n"
+
+hp_time = rule_enactor.Attribute('HP', 10)
 actor = rule_enactor.Entity("actor", "entity")
+actor.add_attribute(hp_time)
+
+hp_boys = rule_enactor.Attribute('HP', 20)
+within_guy = rule_enactor.Entity("guy", "entity")
+within_guy.add_attribute(hp_boys)
+within_guy.x = 2
+within_guy.y = 2
+
 enactor.add_new_entity(enactor, actor)
+enactor.add_new_entity(enactor, within_guy)
 
 enactor.perform_action(enactor, rule, actor)

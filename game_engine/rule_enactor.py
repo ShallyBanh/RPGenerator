@@ -28,6 +28,14 @@ class Entity:
 			
 	def add_attribute(self, attribute):
 		self.attributes.append(attribute)
+		
+class Point:
+	x = 0
+	y = 0
+	
+	def __init__(self, x, y):
+		self.x = x
+		self.y = y
 
 
 class RuleEnactor:
@@ -48,11 +56,13 @@ class RuleEnactor:
 				
 	variables = {}
 	
-	targeted_point = None
+	#####when a within statement encompasses a group, this will be filled up with a key "entity_type" and a list of all entities that match the condition of within. Every function modifying an entity will check this dict to see if they need to be targeting a group or just a single target. This dict will be emptied at the start of each new line read since a within statement does not persist longer than that.
+	# targeted_entities = {}
+	# dict_key = ''
 	
-	#targeted_entities = []
+	current_entity_in_loop = None
 	
-	targeted_entity = None
+	target_of_action = None
 	
 	acting_entity = None
 	
@@ -130,12 +140,24 @@ class RuleEnactor:
 		if len(first_operator) > 0:
 			#print("Evaluator: Its an operator! (" + first_operator + ")")
 			return self.operators[first_operator](self, line)
-		# might be an attribute of the targeted entity
+		# might be an attribute of an entity
 		entity_attribute = line.split('.')
 		if len(entity_attribute) > 1:
-			for attr in self.targeted_entity.attributes:
-				if attr.name == entity_attribute[1]:
-					return attr.value
+			if entity_attribute[0] == 'self':
+				for attr in self.acting_entity.attributes:
+					if attr.name == entity_attribute[1]:
+						return attr.value
+			elif entity_attribute[0] == 'target':
+				for attr in self.target_of_action.attributes:
+					if attr.name == entity_attribute[1]:
+						return attr.value
+			elif entity_attribute[0] == self.current_entity_in_loop.type:
+				for attr in self.current_entity_in_loop.attributes:
+					if attr.name == entity_attribute[1]:
+						return attr.value
+			# for attr in self.target_of_action.attributes:
+				# if attr.name == entity_attribute[1]:
+					# return attr.value
 		
 		
 		# something else (a variable)
@@ -151,27 +173,42 @@ class RuleEnactor:
 		#point case:
 		#TODO: we need to be calling a GUI function to give us a point. For now, this is hard coded in. 
 		if words[1] == 'point':
-			targeted_point = (1,1)
+			self.target_of_action = Point(1,1)
 		# entity case:
 		#TODO: in reality we need to be calling a GUI function that gives us the targeted entity...
 		#thus this is a placeholder for now
 		else:
 			for entity in self.all_created_entities:
-				if entity.type == target_type:
-					self.targeted_entity = entity
+				if entity.name == target_type:
+					self.target_of_action = entity
 		
 		
 	def handle_if(self, line):
-		#TODO
-		post_if = line.split('if')[1].strip()
-		print(post_if)
-		conditional_and_action = post_if.split('then')
-		print(conditional_and_action)
-		conditional = conditional_and_action[0].strip()
-		action = conditional_and_action[1].strip()
-		
-		if self.evaluate_line(self, conditional):
-			return self.evaluate_line(self, action)
+		# handle all case
+		original_line = line
+		if 'all' in line:
+			line = line.replace('all', '')
+			post_if = line.split('if')[1].strip()
+			print(post_if)
+			conditional_and_action = post_if.split('then')
+			print(conditional_and_action)
+			conditional = conditional_and_action[0].strip()
+			action = conditional_and_action[1].strip()
+			
+			for entity in self.all_created_entities:
+				self.current_entity_in_loop = entity
+				if self.evaluate_line(self, conditional):
+					return self.evaluate_line(self, action)
+		else:
+			post_if = line.split('if')[1].strip()
+			print(post_if)
+			conditional_and_action = post_if.split('then')
+			print(conditional_and_action)
+			conditional = conditional_and_action[0].strip()
+			action = conditional_and_action[1].strip()
+			
+			if self.evaluate_line(self, conditional):
+				return self.evaluate_line(self, action)
 	
 	def handle_increase(self, written_rule):
 		#handle increasing something. Expecting: increase x by y (by is optional)
@@ -193,11 +230,14 @@ class RuleEnactor:
 					if attribute.name == entity_info[1]:
 						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
 			#targeting target entity
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
-				
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_decrease(self, written_rule):
 		#handle decreasing something. Expecting: decrease x by y (by is optional)
@@ -219,8 +259,12 @@ class RuleEnactor:
 					if attribute.name == entity_info[1]:
 						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
 			#targeting target entity
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
@@ -244,8 +288,12 @@ class RuleEnactor:
 					if attribute.name == entity_info[1]:
 						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
 			#targeting target entity
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
@@ -269,8 +317,12 @@ class RuleEnactor:
 					if attribute.name == entity_info[1]:
 						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
 			#targeting target entity
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
 		
@@ -294,16 +346,110 @@ class RuleEnactor:
 					if attribute.name == entity_info[1]:
 						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
 			#targeting target entity
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
+			elif entity_info[0] == self.current_entity_in_loop.value:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
 		
 	def handle_within(self, written_rule):
-		#TODO
+		# expecting: item1 within(3,3) of item2
+		# or:		 item1 within (3, 3) of item2
 		# handle detecting entities within a given distance of the selection
-		print("within...")
-		return
+		# item1/2 may be: a point, a target entity, the acting_entity, or referring to a general type of
+		# entities. We must determine the case.
+		# We know at least one of item1/2 is referring to a specific target (point, entity, or self), and only one could possibly be a general type.
+		#TODO: parse these out
+		# entities_of_type = []
+		item1 = None
+		item2 = None
+		words = written_rule.split()
+		item1_string = words[0]
+		item2_string = words[-1]
+		if item1_string == 'self':
+			item1 = self.acting_entity
+		elif item1_string == 'target':
+			item1 = self.target_of_action
+		elif item1_string == self.current_entity_in_loop.type:
+			item1 = self.current_entity_in_loop
+		#item 2
+		if item2_string == 'self':
+			item2 = self.acting_entity
+		elif item2_string == 'target':
+			item2 = self.target_of_action
+		elif item2_string == self.current_entity_in_loop.type:
+			item2 = self.current_entity_in_loop
+		
+		left_bracket_idx = written_rule.find('(')
+		right_bracket_idx = written_rule.find(')')
+		given_args = written_rule[left_bracket_idx+1:right_bracket_idx]
+		ints = [x.strip() for x in given_args.split(',')]
+		x_dist = int(ints[0])
+		y_dist = int(ints[1])
+		
+		within_x = False
+		within_y = False
+		# if len(entities_of_type) > 0:
+			# item_to_compare = None
+			# if item1 is not None:
+				# item_to_compare = item1
+			# else:
+				# item_to_compare = item2
+			# for entity in entities_of_type:
+				##x cases
+				# if entity == item_to_compare:
+					# continue
+				# if entity.x < item_to_compare.x:
+					# if entity.x + x_dist >= item_to_compare.x:
+						# within_x = True
+				# elif entity.x > item_to_compare.x:
+					# if entity.x - x_dist <= item_to_compare.x:
+						# within_x = True
+				# elif entity.x == item_to_compare.x:
+					# within_x = True
+				##y cases	
+				# if entity.y < item_to_compare.y:
+					# if entity.y + y_dist >= item_to_compare.y:
+						# within_y = True
+				# elif entity.y > item_to_compare.y:
+					# if entity.y - y_dist <= item_to_compare.y:
+						# within_y = True
+				# elif entity.y == item_to_compare.y:
+					# within_y = True
+				##therefore, is within? 
+				# if within_y and within_x:
+					# self.targeted_entities[self.dict_key].append(entity)
+			# if len(self.targeted_entities[self.dict_key]) > 0:
+				# return True
+			# else:
+				# return False
+		if item1 is not None and item2 is not None:
+			# x cases
+			if item1.x < item2.x:
+				if item1.x + x_dist >= item2.x:
+					within_x = True
+			elif item1.x > item2.x:
+				if item1.x - x_dist <= item2.x:
+					within_x = True
+			elif item1.x == item2.x:
+				within_x = True
+			# y cases	
+			if item1.y < item2.y:
+				if item1.y + y_dist >= item2.y:
+					within_y = True
+			elif item1.y > item2.y:
+				if item1.y - y_dist <= item2.y:
+					within_y = True
+			elif item1.y == item2.y:
+				within_y = True
+			# therefore, is within? 
+			if within_y and within_x:
+				return True
+			return False
+				
 		
 	def handle_moveaway(self, written_rule):
 		#TODO
@@ -366,8 +512,12 @@ class RuleEnactor:
 				for attribute in self.acting_entity.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value = self.evaluate_line(self, " ".join(rest_of_sentence))
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value = self.evaluate_line(self, words[1].strip())
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value = self.evaluate_line(self, words[1].strip())
 		else:
@@ -382,8 +532,12 @@ class RuleEnactor:
 				for attribute in self.acting_entity.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value += self.evaluate_line(self, " ".join(rest_of_sentence))
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value += self.evaluate_line(self, words[1].strip())
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.target_of_action.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value += self.evaluate_line(self, words[1].strip())
 		else:
@@ -398,8 +552,12 @@ class RuleEnactor:
 				for attribute in self.acting_entity.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value -= self.evaluate_line(self, " ".join(rest_of_sentence))
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value -= self.evaluate_line(self, words[1].strip())
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value -= self.evaluate_line(self, words[1].strip())
 		else:
@@ -414,8 +572,12 @@ class RuleEnactor:
 				for attribute in self.acting_entity.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value *= self.evaluate_line(self, " ".join(rest_of_sentence))
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value *= self.evaluate_line(self, words[1].strip())
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value *= self.evaluate_line(self, words[1].strip())
 		else:
@@ -430,8 +592,12 @@ class RuleEnactor:
 				for attribute in self.acting_entity.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value /= self.evaluate_line(self, " ".join(rest_of_sentence))
-			else:
-				for attribute in self.targeted_entity.attributes:
+			elif entity_info[0] == 'target':
+				for attribute in self.target_of_action.attributes:
+					if attribute.name == entity_info[1]:
+						attribute.value /= self.evaluate_line(self, words[1].strip())
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				for attribute in self.current_entity_in_loop.attributes:
 					if attribute.name == entity_info[1]:
 						attribute.value /= self.evaluate_line(self, words[1].strip())
 		else:
