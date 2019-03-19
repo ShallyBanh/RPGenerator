@@ -17,12 +17,20 @@ class Entity:
         self._id = None
         self._actions = [] 
         self._attributes = [] 
-        self._size = None 
+        self._size = Size(0,0) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
         self._location = None
+        self._x = 0
+        self._y = 0
         Validator().add_entity(self)
     
+    def get_x(self):
+        return self._x
+    
+    def get_y(self):
+        return self._y
+
     def get_type(self):
         return self._type
 
@@ -110,3 +118,6 @@ class Entity:
     
     def remove_status(self, status):
         self._currentStatuses.remove(status)
+    
+    def __str__(self):
+        return "Entity:\nName: {}\nwidth: {}\nheight: {}\nx: {}\ny: {}\nactions: {}\nattributes: {}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.get_x()), str(self.get_y()), str(self.get_actions()), str(self.get_attributes()))
