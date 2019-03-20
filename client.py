@@ -74,7 +74,8 @@ class Client():
         return 0 if (response.status_code == 200) else -1
         
     def recover_account(self, username, code, password1, password2):
-        print("[client] [recover_account] attempting to recover account with username,code,password,email = {},{},{},{}".format(username,code,password,email))        
+        print("[client] [recover_account] attempting to recover account with username,code,password,email = {}, {}, {}"
+              .format(username, code, password1))        
         payload = {'username': username, 'code': code, 'password1': password1, 'password2': password2}
         response = requests.post("{}/recover_account".format(self.URL), params = payload)
         print("[client] [recover_account] response was {}".format(response.status_code))
