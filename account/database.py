@@ -99,13 +99,10 @@ class Database:
         # make sure that data is correct format for query
         # print("querying:\n\t{0}\n\t{1}".format(query, data))
         self.cur.execute(query, data)
+        self.conn.commit()
 
     def close(self):
         """Close the connection to the database."""
         # commit and close cursor at end of session
         self.conn.commit()
         self.conn.close()
-
-
-if __name__ == "__main__":
-    database = Database("test.db")
