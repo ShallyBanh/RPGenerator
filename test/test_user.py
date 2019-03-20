@@ -2,7 +2,7 @@ import unittest
 import os
 import sys
 sys.path.append('../')
-from Account.User import User
+from account.user import User
 
 class TestUser(unittest.TestCase):
 

@@ -1,7 +1,7 @@
 import requests
 from flask import jsonify
 import json
-from Account.User import User
+from account.user import User
 
 class Client():
 

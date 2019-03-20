@@ -2,7 +2,7 @@ import unittest
 import os
 import sys
 sys.path.append('../')
-from Account.AccountManager import AccountManager
+from account.account_manager import AccountManager
 
 class TestAccountManager(unittest.TestCase):
 

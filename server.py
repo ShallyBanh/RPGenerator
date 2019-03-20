@@ -6,11 +6,9 @@ from flask import Flask, render_template, request
 import threading
 import time
 
-from Account.AccountManager import AccountManager
-import constants
+from account.account_manager import AccountManager
 import configparser
 from configurator import Configurator
-import network.connection_manager
 import network.email_sender
 
 app = Flask(__name__)

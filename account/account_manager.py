@@ -2,7 +2,7 @@
 import sys
 import os
 sys.path.append('../')
-from .Database import Database
+from .database import Database
 import smtplib, ssl
 import time
 import hashlib
