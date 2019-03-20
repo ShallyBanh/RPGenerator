@@ -203,7 +203,7 @@ class RuleEnactor:
 		
 	
 	def handle_on(self, line):
-		
+		# determine the target of the action so that we can properly manipulate it
 	
 	
 	def handle_if(self, line):
