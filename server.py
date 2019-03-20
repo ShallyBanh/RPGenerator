@@ -1,6 +1,6 @@
 """This module contains the Server class."""
 import sys
-from flask import Flask, request
+from flask import Flask, request, jsonify, Response
 import status
 from flask import Flask, render_template, request
 import threading
@@ -43,41 +43,6 @@ class Server:
         self.clients = []
         self.running = False
 
-    def process_command(self, request):
-        print("\n\n--- Server processing a command --- \n\n")
-        if request[0] == constants.RQST_HANDSHAKE:
-            print("handshake")
-        elif request[0] == constants.RQST_LOGIN:
-            print("login with credentials {0}, {1}".format(request[1], request[2]))
-            return server.account_manager.login(request[1], request[2])
-
-        elif request[0] == constants.RQST_ADD_USER:
-            print("add user")
-        elif request[0] == constants.RQST_UPDATE_USER:
-            print("update user")
-        elif request[0] == constants.RQST_SEND_RECOVERY:
-            print("send recovery")
-        elif request[0] == constants.RQST_RECOVER:
-            print("recover user")
-        elif request[0] == constants.RQST_LOGIN:
-            print("new game")
-        elif request[0] == constants.RQST_LOGIN:
-            print("resume game")
-        elif request[0] == constants.RQST_LOGIN:
-            print("")
-        else:
-            print("request other")
-    def dummy_func(self):
-        print("\n\n can you call these \n\n")
-
-    def process_connections(self):
-        return
-    
-    # @app.route("/something", methods=['GET'])
-    # def internal_flask_method():
-    #     print("called inside class")
-    #     return "did something", 201
-
 if len(sys.argv) > 1:
     print("creating server with config file {}".format(sys.argv[1]))
     server = Server(sys.argv[1])
@@ -92,7 +57,12 @@ def login():
     response = server.account_manager.login(username, password)
     print("[server] [login] response from account_manager was {}".format(response))
     # @TODO assets if success?
-    return "200" if (response == 0) else "400"
+    if response is not None:
+        print("attempting to jsonify the response \n{}".format(response))
+        return jsonify(username=response[0], email=response[2], assets={})
+    else:
+        return Response(status=400)
+    # return "200" if (response == 0) else "400"
 
 @app.route("/create_account", methods=['POST'])
 def create_account():
@@ -102,7 +72,8 @@ def create_account():
     print("[server] [create_account] got username,password,email = {},{},{}".format(username, password, email))
     response = server.account_manager.create_account(username, password, email)
     print("[server] [create_account] response from account_manager was {}".format(response))
-    return "200" if (response == 0) else "400"
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
 
 @app.route("/change_credentials", methods=['POST'])
 def change_credentials():
@@ -117,8 +88,10 @@ def change_credentials():
     if old_credentials != None and old_credentials[1] == server.account_manager.generate_hash(old_password, username):
         server.account_manager.set_credentials(username, new_password)
         print("[server] [change_credentials] given were correct and not None query result")
-        return "200"
-    return "400"
+        response_status =  200
+    else:
+        response_status = 400
+    return Response(status=response_status)
     # print("[server] [change_credentials] response from account_manager was {}".format(response))
     # return "200" if (response == 0) else "400"
 
@@ -129,7 +102,8 @@ def send_recovery():
     response = server.account_manager.send_recovery(email)
     print("\n[server] [send_recovery] response from account_manager was {}\n".format(response))
     # @TODO maybe no response of success/fail?
-    return "200" if (response == 0) else "400"
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
 
 @app.route("/recover_account", methods=['POST'])
 def recover_account():
@@ -141,12 +115,14 @@ def recover_account():
     response = server.account_manager.recover_account(username, code, password1, password2)
     print("[server] [recover_account] response from account_manager was {}".format(response))
     # @TODO maybe no response of success/fail?
-    return "200" if (response == 0) else "400"
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
 
 @app.route("/reset_database", methods=['POST'])
 def reset_database():
     """ WARNING: for test purposes only, @TODO remove """
     response = server.account_manager.reset_database()
-    return "200" if (response == 0) else "400"
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
 
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)

@@ -18,29 +18,29 @@ class TestAccountManager(unittest.TestCase):
         if os.path.exists("test.db"):
             os.remove("test.db")
 
-    def test_username_available(self):
+    def test_01_username_available(self):
         self.assertEqual(self.account_manager.username_available("user1"), 0)
         self.account_manager.create_account(*self.credentials)
         self.assertEqual(self.account_manager.username_available("user1"), -1)
 
-    def test_create_account(self):
+    def test_02_create_account(self):
         self.assertEqual(self.account_manager.create_account(*self.credentials), 0)
         self.account_manager.create_account(*self.credentials)
         self.assertEqual(self.account_manager.username_available("user1"), -1)
 
-    def test_login(self):
-        self.assertEqual(self.account_manager.login("user1", "password1"), -1)
+    def test_03_login(self):
+        self.assertEqual(self.account_manager.login("user1", "password1"), None)
         self.account_manager.create_account(*self.credentials)
-        self.assertEqual(self.account_manager.login("user1", "password1"), 0)
+        self.assertNotEqual(self.account_manager.login("user1", "password1"), None)
 
-    def test_get_credentials(self):
+    def test_04_get_credentials(self):
         self.account_manager.create_account(*self.credentials)
         self.assertEqual(self.account_manager.get_credentials("user1"), ("user1", self.account_manager.generate_hash("password1", "user1"), "email@1"))
 
-    def test_set_credentials(self):
+    def test_05_set_credentials(self):
         self.account_manager.create_account(*self.credentials)
-        self.account_manager.set_credentials(*self.credentials_new)
-        self.assertEqual(self.account_manager.get_credentials("user1"), ("user1", self.account_manager.generate_hash("password2", "user1"), "email@2"))
+        self.account_manager.set_credentials(self.credentials_new[0], self.credentials_new[1])
+        self.assertEqual(self.account_manager.get_credentials("user1"), ("user1", self.account_manager.generate_hash("password2", "user1"), "email@1"))
     
     # def test_send_recovery(self):
     #     self.assertEqual(self.account_manager.send_recovery("thomas.tetz@gmail.com"), -1)
@@ -78,7 +78,7 @@ class TestAccountManager(unittest.TestCase):
     #     self.assertEqual(self.account_manager.login("thomas", "newerpassword"), 0)
     #     self.assertEqual(self.account_manager.login("thomas2", "newerpassword2"), 0)
 
-    def test_add_asset(self):
+    # def test_add_asset(self):
         
 
 

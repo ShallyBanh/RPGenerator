@@ -6,7 +6,6 @@ from Account.AccountManager import AccountManager
 # from server import Server
 from client import Client
 
-
 class TestClient(unittest.TestCase):
 
     def setUp(self):
@@ -15,6 +14,8 @@ class TestClient(unittest.TestCase):
         
         self.credentials = ("user1", "password1", "email@1")
         self.credentials_same_username = ("user1", "password2", "email@2")
+        self.credentials_change_wrong = ("user1", "password_wrong", "password2")
+        self.credentials_change = ("user1", "password1", "password2")
         self.credentials_new = ("user1", "password2", "email@2")
         self.credentials_real = ("thomas", "password", "thomas.tetz@gmail.com")
         self.credentials_real2 = ("thomas2", "password", "thomas.tetz@gmail.com")
@@ -24,23 +25,28 @@ class TestClient(unittest.TestCase):
     #     self.client.reset_database()
     #     print("\n\n")
 
-    def test_create_account(self):
-        print("======================================================================\ntest_create_account (__main__.TestClient)\n----------------------------------------------------------------------")
+    def test_01_create_account(self):
+        print("======================================================================\ntest_01_create_account (__main__.TestClient)\n----------------------------------------------------------------------")
         self.assertEqual(self.client.create_account(*self.credentials), 0)
 
-    def test_login(self):
-        print("======================================================================\ntest_login (__main__.TestClient)\n----------------------------------------------------------------------")        
+    def test_02_login(self):
+        print("======================================================================\ntest_02_login (__main__.TestClient)\n----------------------------------------------------------------------")        
         # self.assertEqual(self.client.login("user1", "password1"), -1)
         # self.client.create_account(*self.credentials)
         self.assertEqual(self.client.login("user1", "password1"), 0)
+
+    def test_03_change_credentials(self):
+        print("======================================================================\ntest_03_change_credentials (__main__.TestClient)\n----------------------------------------------------------------------")
+        self.assertEqual(self.client.change_credentials(*self.credentials_change_wrong), -1)
+        self.assertEqual(self.client.login(*self.credentials_change_wrong[:2]), -1)
+        self.assertEqual(self.client.change_credentials(*self.credentials_change), 0)
+        self.assertEqual(self.client.login(self.credentials_change[0], self.credentials_change[2]), 0)
     
-    def test_send_recovery(self):
-        print("======================================================================\ntest_send_recovery (__main__.TestClient)\n----------------------------------------------------------------------")
+    def test_04_send_recovery(self):
+        print("======================================================================\ntest_04_send_recovery (__main__.TestClient)\n----------------------------------------------------------------------")
         self.assertEqual(self.client.send_recovery("thomas.tetz@gmail.com"), -1)
         self.client.create_account(*self.credentials_real)
         self.assertEqual(self.client.send_recovery("thomas.tetz@gmail.com"), 0)
-        # self.client.create_account(*self.credentials_real2)
-        # self.assertEqual(self.client.send_recovery("thomas.tetz@gmail.com"), 0)
     
     # def test_recover_account(self):
     #     self.client.create_account(*self.credentials_real)

@@ -13,7 +13,7 @@ class User:
 
     # @TODO database stuff
 
-    def __init__(self, name, password, email):
+    def __init__(self, username, email, assets={}, password=None):
         """Initialize a User.
 
         Keyword arguments:
@@ -21,18 +21,25 @@ class User:
             password (str) -- User's password
             email (str) -- User's email
         """
-        self._name = name
+        self._username = username
         self._password = password
         self._email = email
-        self._assets = {}
+        self._assets = assets
 
-    def set_name(self, name):
+    def __str__(self):
+        string = "User:"
+        string += "\n\tusername: {}".format(self.get_username())
+        string += "\n\temail: {}".format(self.get_email())
+        string += "\n\tassets: {}".format(self.get_assets())
+        return string
+
+    def set_username(self, username):
         """Set the User's name."""
-        self._name = name
+        self._name = username
 
-    def get_name(self):
+    def get_username(self):
         """Get the User's name."""
-        return self._name
+        return self._username
 
     def set_password(self, password):
         """Set the User's password."""
@@ -58,16 +65,16 @@ class User:
 
     def update_asset(self, asset):
         """Update one of the User's assets."""
-        self._assets[asset.get_name] = asset
+        self._assets[asset.get_username] = asset
 
     def delete_asset(self, asset):
         """Delete one of the User's assets."""
         # @TODO delete from database
-        self._assets.pop(asset.get_name, None)
+        self._assets.pop(asset.get_username, None)
 
     def get_asset(self, asset):
         """Return the specified asset of the User."""
-        return self._assets[asset.get_name]
+        return self._assets[asset.get_username]
 
     def set_assets(self, asset_dict):
         """Set the User's dict of assets to the given dict."""

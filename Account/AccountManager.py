@@ -93,11 +93,12 @@ class AccountManager:
         data = [username, self.generate_hash(password, username)]
         self.database.query(query, data)
         row = self.database.cur.fetchone()
-        if row is not None:
-            return 0
-        # process row
-        # get other info
-        return -1
+        return row
+        # if row is not None:
+        #     return row
+        # # process row
+        # # get other info
+        # return -1
 
     def recover_account(self, username, code, password1, password2):
         """Recover an account's credentials after getting a recovery code."""
