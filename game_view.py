@@ -4,6 +4,7 @@ from pygame.locals import *
 from random import randrange
 import os
 import pygame_textinput
+from client import Client
 
 # Import pygameMenu
 import pygameMenu
@@ -26,6 +27,7 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
+client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 
 # Create pygame screen and objects
@@ -35,14 +37,7 @@ clock = pygame.time.Clock()
 dt = 1 / FPS
 
 # -----------------------------------------------------------------------------
-def random_color():
-    """
-    Return random color.
-    
-    :return: Color tuple
-    """
-    return randrange(0, 255), randrange(0, 255), randrange(0, 255)
-
+# VIEW FUNCTIONS
 def login_function():
     """
     Login game function
@@ -147,7 +142,9 @@ def create_new_account():
 
     email = pygame_textinput.TextInput()
     username = pygame_textinput.TextInput()
-    password = pygame_textinput.TextInput()
+    password1 = pygame_textinput.TextInput()
+    password2 = pygame_textinput.TextInput()
+
     login_view = pygame.image.load("images/menu/create-account.png")
     surface.fill(COLOR_BACKGROUND)
 
@@ -174,14 +171,18 @@ def create_new_account():
                     selected = "email"
                 elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(235,298):
                     selected = "username"
-                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(330,392):
-                    selected = "password"
-                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(320,385):
+                    selected = "password1"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(403,470):
+                    selected = "password2"
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(483,535):
                     # account creation
-                    if len(email.get_text()) < 1 or len(username.get_text()) < 1 or len(password.get_text()) < 1:
+                    if len(email.get_text()) < 1 or len(username.get_text()) < 1 or len(password1.get_text()) < 1 or len(password2.get_text()) < 1:
                         break
-                    login(username = username.get_text(), email = email.get_text(), password = password.get_text())
-                    return
+                    if password1.get_text() == password2.get_text():
+                        print("GOING TO LOG IN NOW")
+                        login(username = username.get_text(), email = email.get_text(), password = password1.get_text())
+                        return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
                     login_function()
@@ -191,8 +192,10 @@ def create_new_account():
             email.update(playevents)   
         elif selected == "username":
             username.update(playevents)   
-        elif selected == "password":
-            password.update(playevents, passProtect=True)
+        elif selected == "password1":
+            password1.update(playevents, passProtect=True)
+        elif selected == "password2":
+            password2.update(playevents, passProtect=True)
             
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(email.get_text()) >= 1:
@@ -203,10 +206,14 @@ def create_new_account():
             surface.blit(username.get_surface(), (250,257))  
         else:
             surface.blit(MY_FONT.render('Username', 1, COLOR_BLACK), (250,247))  
-        if len(password.get_text()) >= 1:
-            surface.blit(password.get_surface(), (250,352))
+        if len(password1.get_text()) >= 1:
+            surface.blit(password1.get_surface(), (250,352))
         else:
             surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,342))  
+        if len(password2.get_text()) >= 1:
+            surface.blit(password2.get_surface(), (250,432))
+        else:
+            surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,422))  
         pygame.display.flip()
 
     return
@@ -239,6 +246,9 @@ def forgot_password():
                         break
                     send_recovery_email(email = email.get_text())
                     return
+                elif mouse_pos[0] in range(277,510) and mouse_pos[1] in range(496,513):
+                    recover_account()
+                    return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
                     login_function()
@@ -258,18 +268,18 @@ def forgot_password():
 
 def update_account():
     """
-    Create new account game function
+    Update account game function
     
     :return: None
     """
 
-    email = pygame_textinput.TextInput()
     username = pygame_textinput.TextInput()
+    oldPassword = pygame_textinput.TextInput()
     password = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/update-account.png")
     surface.fill(COLOR_BACKGROUND)
 
-    selected = "email"
+    selected = "username"
     
     while True:
         # Clock tick
@@ -289,38 +299,38 @@ def update_account():
                 mouse_pos = pygame.mouse.get_pos()
                 print(mouse_pos)
                 if mouse_pos[0] in range(190,610) and mouse_pos[1] in range(148,210):
-                    selected = "email"
-                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(235,298):
                     selected = "username"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(235,298):
+                    selected = "oldPassword"
                 elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(330,392):
                     selected = "password"
                 elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(430,477):
                     # update account
-                    if len(email.get_text()) < 1 or len(username.get_text()) < 1 or len(password.get_text()) < 1:
+                    if len(oldPassword.get_text()) < 1 or len(username.get_text()) < 1 or len(password.get_text()) < 1:
                         break
-                    update_account_information(username = username.get_text(), email = email.get_text(), password = password.get_text())
+                    update_account_information(username = username.get_text(), oldPassword = oldPassword.get_text(), password = password.get_text())
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
                     login_function()
                     return
         
-        if selected == "email":
-            email.update(playevents)   
-        elif selected == "username":
+        if selected == "username":
             username.update(playevents)   
+        elif selected == "oldPassword":
+            oldPassword.update(playevents, passProtect=True)   
         elif selected == "password":
             password.update(playevents, passProtect=True)
             
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
-        if len(email.get_text()) >= 1:
-            surface.blit(email.get_surface(), (250,170))  
-        else:
-            surface.blit(MY_FONT.render('Email', 1, COLOR_BLACK), (250,160))  
         if len(username.get_text()) >= 1:
-            surface.blit(username.get_surface(), (250,257))  
+            surface.blit(username.get_surface(), (250,170))  
         else:
-            surface.blit(MY_FONT.render('Username', 1, COLOR_BLACK), (250,247))  
+            surface.blit(MY_FONT.render('Username', 1, COLOR_BLACK), (250,160))  
+        if len(oldPassword.get_text()) >= 1:
+            surface.blit(oldPassword.get_surface(), (250,257))  
+        else:
+            surface.blit(MY_FONT.render('Old Password', 1, COLOR_BLACK), (250,247))  
         if len(password.get_text()) >= 1:
             surface.blit(password.get_surface(), (250,352))
         else:
@@ -329,22 +339,124 @@ def update_account():
 
     return
 
+def recover_account():
+    """
+    Recover account
 
-def login(username, password, email=None):
-    print("username", username)
-    print("email", email)
-    print("password", password)
+    :return: None
+    """
+
+    username = pygame_textinput.TextInput()
+    code = pygame_textinput.TextInput()
+    password1 = pygame_textinput.TextInput()
+    password2 = pygame_textinput.TextInput()
+    login_view = pygame.image.load("images/menu/recover-account.png")
+    surface.fill(COLOR_BACKGROUND)
+
+    selected = "username"
+    
+    while True:
+        # Clock tick
+        clock.tick(60)
+
+        # Application events
+        playevents = pygame.event.get()
+
+        for e in playevents:
+            if e.type == QUIT:
+                exit()
+            elif e.type == KEYDOWN:
+                if e.key == K_ESCAPE and main_menu.is_disabled():
+                    login_function()
+                    return
+            elif e.type == MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                print(mouse_pos)
+                if mouse_pos[0] in range(190,610) and mouse_pos[1] in range(148,210):
+                    selected = "username"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(235,298):
+                    selected = "code"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(320,385):
+                    selected = "password1"
+                elif mouse_pos[0] in range(190,610) and mouse_pos[1] in range(403,470):
+                    selected = "password2"
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(483,535):
+                    # update account
+                    if len(code.get_text()) < 1 or len(username.get_text()) < 1 or len(password1.get_text()) < 1 or len(password2.get_text()) < 1:
+                        break
+                    if password1.get_text() == password2.get_text():
+                        recover_account_credentials(username = username.get_text(), code = code.get_text(), password = password1.get_text())
+                    return
+                elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
+                    # go back
+                    login_function()
+                    return
+        
+        if selected == "username":
+            username.update(playevents)   
+        elif selected == "code":
+            code.update(playevents)   
+        elif selected == "password1":
+            password1.update(playevents, passProtect=True)
+        elif selected == "password2":
+            password2.update(playevents, passProtect=True)
+            
+        surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+        if len(username.get_text()) >= 1:
+            surface.blit(username.get_surface(), (250,170))  
+        else:
+            surface.blit(MY_FONT.render('Username', 1, COLOR_BLACK), (250,160))  
+        if len(code.get_text()) >= 1:
+            surface.blit(code.get_surface(), (250,257))  
+        else:
+            surface.blit(MY_FONT.render('Code', 1, COLOR_BLACK), (250,247))  
+        if len(password1.get_text()) >= 1:
+            surface.blit(password1.get_surface(), (250,352))
+        else:
+            surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,342))  
+        if len(password2.get_text()) >= 1:
+            surface.blit(password2.get_surface(), (250,432))
+        else:
+            surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,422))  
+        pygame.display.flip()
+
     return
 
-def update_account_information(username, password, email):
-    print("username", username)
-    print("email", email)
-    print("password", password)
+# -----------------------------------------------------------------------------
+# CALLING EXTERNAL FUNCTIONS 
+def login(username, password, email=None):
+    if email is None:
+        print("logging in")
+        client.login(username, password)
+    else:
+        print("creating account")
+        client.create_account(username, password, email)
+    return
+
+def update_account_information(username, oldPassword, password):
+    print("updating account info")
+    client.change_credentials(username, oldPassword, password)
     return
 
 def send_recovery_email(email):
-    print("email", email)
+    print("send recovery email")
+    client.send_recovery(email)
     return
+
+def recover_account_credentials(username, code, password):
+    print("recover account credentials")
+    client.recover_account(username, code, password, password)
+    return
+
+
+# -----------------------------------------------------------------------------
+def random_color():
+    """
+    Return random color.
+    
+    :return: Color tuple
+    """
+    return randrange(0, 255), randrange(0, 255), randrange(0, 255)
 
 def main_background():
     """
