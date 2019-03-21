@@ -229,6 +229,55 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.perform_action(self.rule, self.actor)
 		self.assertEqual(self.enactor.variables["xless"], 1)
 		self.assertEqual(self.enactor.variables["yless"], 1)
+		
+	def test_less_than(self):
+		self.rule += "x = 10\n"
+		self.rule += "y = 19\n"
+		self.rule += "if x > y then xless = 1\n"
+		self.rule += "if y > 999 then yless = 1\n"
+		self.rule += "if y > x then xless = 0\n"
+		self.rule += "if y > 1 then yless = 0\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["xless"], 0)
+		self.assertEqual(self.enactor.variables["yless"], 0)
+		
+	def test_multiply_operator(self):
+		pass #TODO
+	
+	def test_divide_operator(self):
+		pass #TODO
+		
+	def test_assignment(self):
+		pass #TODO
+		
+	def test_plus_equals(self):
+		pass #TODO
+	
+	def test_minus_equals(self):
+		pass #TODO
+		
+	def test_times_equals(self):
+		pass #TODO
+		
+	def test_divide_equals(self):
+		pass #TODO
+		
+	def test_and(self):
+		pass #TODO
+		
+	def test_or(self):
+		pass #TODO
+		
+	def test_roll_dict(self):
+		pass #TODO
+		
+	def test_attack_action(self):
+		pass #TODO
+		
+	def test_fireball_action(self):
+		pass #TODO
+		
+	#ETC ETC
 
 
 if __name__=="__main__":
