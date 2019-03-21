@@ -734,7 +734,7 @@ class RuleEnactor:
 	
 		
 		
-	keywords = {"target":handle_target, "if":handle_if,
+	keywords = {"target":handle_target, "if":handle_if, 
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
 				"move":handle_move}
