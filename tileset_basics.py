@@ -138,6 +138,7 @@ if __name__ == "__main__":
             elif event.type == MOUSEBUTTONDOWN:
                 mousepos = pygame.mouse.get_pos()
                 mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                print(mousepos)
                 if my_entity is not None:
                     remove_previous_popup()
                     if mousepos[0] in range(location[0],location[0]+size[0]) and mousepos[1] in range(location[1],location[1]+size[1]):
