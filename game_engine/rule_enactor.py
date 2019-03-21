@@ -83,6 +83,11 @@ class RuleEnactor:
 	
 	def __init__(self):
 		self.selected_item = None
+		self.all_created_entities = []
+		self.relationships = {}
+		self.current_entity_in_loop = None
+		self.target_of_action = None
+		self.acting_entity = None
 		
 	def add_new_entity(self, entity):
 		self.all_created_entities.append(entity)
@@ -243,6 +248,7 @@ class RuleEnactor:
 				#print(tf)
 				if tf:
 					self.evaluate_line(action)
+				self.current_entity_in_loop = None
 		else:
 			post_if = line.split('if')[1].strip()
 			#print(post_if)
@@ -251,7 +257,7 @@ class RuleEnactor:
 			conditional = conditional_and_action[0].strip()
 			action = conditional_and_action[1].strip()
 			
-			if self.evaluate_line( conditional):
+			if self.evaluate_line(conditional):
 				return self.evaluate_line(action)
 	
 	def handle_increase(self, written_rule):
@@ -463,32 +469,32 @@ class RuleEnactor:
 		
 	def handle_move(self, written_rule):
 		if "towards" in written_rule:
-			handle_movetowards(written_rule)
+			self.handle_movetowards(written_rule)
 		elif "away" in written_rule:
-			handle_moveaway(written_rule)
+			self.handle_moveaway(written_rule)
 		
 	def handle_moveaway(self, written_rule):
 		#TODO
 		# handle moving targets away from a given point or entity
-		words = split()
+		words = written_rule.split()
 		entity_to_move = None
 		item_to_move_from = None
 		entity_to_move_string = words[1]
 		item_to_move_string = words[-1]
 		distance_to_move = int(words[2])
 		if entity_to_move_string == 'self':
-			entity_to_move = acting_entity
+			entity_to_move = self.acting_entity
 		elif entity_to_move_string == 'target':
-			entity_to_move = target_of_action
+			entity_to_move = self.target_of_action
 		elif entity_to_move_string == current_entity_in_loop.type:
-			entity_to_move = current_entity_in_loop
+			entity_to_move = self.current_entity_in_loop
 		
 		if item_to_move_string == 'self':
-			item_to_move_from = acting_entity
+			item_to_move_from = self.acting_entity
 		elif item_to_move_string == 'target':
-			item_to_move_from = target_of_action
-		elif item_to_move_string == current_entity_in_loop.type:
-			item_to_move_from = current_entity_in_loop
+			item_to_move_from = self.target_of_action
+		elif item_to_move_string == self.current_entity_in_loop.type:
+			item_to_move_from = self.current_entity_in_loop
 			
 		if entity_to_move == item_to_move_from:
 			return
@@ -499,6 +505,7 @@ class RuleEnactor:
 		if abs(x_dist) >= abs(y_dist):
 			if x_dist < 0:
 				#entity to move is to the left, so move more left
+				
 				entity_to_move.x -= distance_to_move
 			else:
 				# otherwise go right
@@ -514,25 +521,25 @@ class RuleEnactor:
 	def handle_movetowards(self, written_rule):
 		#TODO
 		# handle moving targets away from a given point or entity
-		words = split()
+		words = written_rule.split()
 		entity_to_move = None
 		item_to_move_from = None
 		entity_to_move_string = words[1]
 		item_to_move_string = words[-1]
 		distance_to_move = int(words[2])
 		if entity_to_move_string == 'self':
-			entity_to_move = acting_entity
+			entity_to_move = self.acting_entity
 		elif entity_to_move_string == 'target':
-			entity_to_move = target_of_action
+			entity_to_move = self.target_of_action
 		elif entity_to_move_string == current_entity_in_loop.type:
-			entity_to_move = current_entity_in_loop
+			entity_to_move = self.current_entity_in_loop
 		
 		if item_to_move_string == 'self':
-			item_to_move_from = acting_entity
+			item_to_move_from = self.acting_entity
 		elif item_to_move_string == 'target':
-			item_to_move_from = target_of_action
-		elif item_to_move_string == current_entity_in_loop.type:
-			item_to_move_from = current_entity_in_loop
+			item_to_move_from = self.target_of_action
+		elif item_to_move_string == self.current_entity_in_loop.type:
+			item_to_move_from = self.current_entity_in_loop
 			
 		if entity_to_move == item_to_move_from:
 			return
@@ -578,9 +585,13 @@ class RuleEnactor:
 	def handle_less_than(self, written_rule):
 		words = written_rule.split('<')
 		if len(words) > 1:
+			print("is " + str(self.evaluate_line(words[0].strip())) + " less than " + str(self.evaluate_line(words[1].strip())))
+			print(self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip()))
 			return self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip())
 		words = written_rule.split('less than')
 		if len(words) > 1:
+			print("is " + str(self.evaluate_line(words[0].strip())) + " less than " + str(self.evaluate_line(words[1].strip())))
+			print(self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip()))
 			return self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip())
 		
 	def handle_greater_than(self, written_rule):
@@ -723,7 +734,7 @@ class RuleEnactor:
 	
 		
 		
-	keywords = {"target":handle_target, "if":handle_if,
+	keywords = {"target ":handle_target, "if":handle_if,
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
 				"move":handle_move}
@@ -731,7 +742,7 @@ class RuleEnactor:
 	combined_operators = {"+=":handle_plus_equals, "-=":handle_minus_equals, 
 				"*=":handle_times_equals, "/=":handle_divide_equals, "==":handle_equals,}
 				
-	operators = {"within":handle_within, "+": handle_plus, "-":handle_minus,  
-				"equals":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
-				"less":handle_less_than, "greater": handle_greater_than, "*": handle_multiply_operator,
-				"/":handle_divide_operator, "=":handle_assignment, "and":handle_and, "or":handle_or}
+	operators = {" within(":handle_within, "+": handle_plus, "-":handle_minus,  
+				" equals ":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
+				" less ":handle_less_than, " greater ": handle_greater_than, "*": handle_multiply_operator,
+				"/":handle_divide_operator, "=":handle_assignment, " and ":handle_and, " or ":handle_or}
