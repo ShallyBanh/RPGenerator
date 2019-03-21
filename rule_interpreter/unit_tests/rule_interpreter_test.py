@@ -1,4 +1,7 @@
 import unittest
+import os
+import sys
+sys.path.append('../')
 from validator import Validator
 from entity import Entity
 from action import Action
