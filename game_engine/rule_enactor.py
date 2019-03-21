@@ -585,13 +585,9 @@ class RuleEnactor:
 	def handle_less_than(self, written_rule):
 		words = written_rule.split('<')
 		if len(words) > 1:
-			print("is " + str(self.evaluate_line(words[0].strip())) + " less than " + str(self.evaluate_line(words[1].strip())))
-			print(self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip()))
 			return self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip())
 		words = written_rule.split('less than')
 		if len(words) > 1:
-			print("is " + str(self.evaluate_line(words[0].strip())) + " less than " + str(self.evaluate_line(words[1].strip())))
-			print(self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip()))
 			return self.evaluate_line(words[0].strip()) < self.evaluate_line(words[1].strip())
 		
 	def handle_greater_than(self, written_rule):

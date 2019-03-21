@@ -242,25 +242,73 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.variables["yless"], 0)
 		
 	def test_multiply_operator(self):
-		pass #TODO
+		self.rule += "x = 5 * 5\n"
+		self.rule += "y = x * 0.2\n"
+		self.rule += "z = y * -1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 25)
+		self.assertEqual(self.enactor.variables["y"], 5)
+		self.assertEqual(self.enactor.variables["z"], -5)
 	
 	def test_divide_operator(self):
-		pass #TODO
+		self.rule += "x = 5 / 5\n"
+		self.rule += "y = x / 0.2\n"
+		self.rule += "z = y / -1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 1)
+		self.assertEqual(self.enactor.variables["y"], 5)
+		self.assertEqual(self.enactor.variables["z"], -5)
 		
 	def test_assignment(self):
-		pass #TODO
+		self.rule += "x = 5\n"
+		self.rule += "target.HP = 5\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 5)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 5)
 		
 	def test_plus_equals(self):
-		pass #TODO
+		self.rule += "x = 0\n"
+		self.rule += "x += 10\n"
+		self.rule += "y = 0\n"
+		self.rule += "y += x + 1\n"
+		self.rule += "target.HP += 1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 10)
+		self.assertEqual(self.enactor.variables["y"], 11)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 21)
 	
 	def test_minus_equals(self):
-		pass #TODO
+		self.rule += "x = 0\n"
+		self.rule += "x -= 10\n"
+		self.rule += "y = 0\n"
+		self.rule += "y -= x + 1\n"
+		self.rule += "target.HP -= 1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], -10)
+		self.assertEqual(self.enactor.variables["y"], 9)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 19)
 		
 	def test_times_equals(self):
-		pass #TODO
+		self.rule += "x = 1\n"
+		self.rule += "x *= 10\n"
+		self.rule += "y = 1\n"
+		self.rule += "y *= x * 2\n"
+		self.rule += "target.HP *= 0.1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 10)
+		self.assertEqual(self.enactor.variables["y"], 20)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 2)
 		
 	def test_divide_equals(self):
-		pass #TODO
+		self.rule += "x = 10\n"
+		self.rule += "x /= 2\n"
+		self.rule += "y = 900\n"
+		self.rule += "y /= x\n"
+		self.rule += "target.HP /= 2\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["x"], 5)
+		self.assertEqual(self.enactor.variables["y"], 180)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 10)
 		
 	def test_and(self):
 		pass #TODO
@@ -268,7 +316,7 @@ class TestRuleInterpreter(unittest.TestCase):
 	def test_or(self):
 		pass #TODO
 		
-	def test_roll_dict(self):
+	def test_roll_dice(self):
 		pass #TODO
 		
 	def test_attack_action(self):
@@ -277,7 +325,7 @@ class TestRuleInterpreter(unittest.TestCase):
 	def test_fireball_action(self):
 		pass #TODO
 		
-	#ETC ETC
+	#ETC ETC (test complex and concrete examples of actions)
 
 
 if __name__=="__main__":
