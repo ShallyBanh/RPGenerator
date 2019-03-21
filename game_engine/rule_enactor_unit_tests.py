@@ -311,7 +311,13 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 10)
 		
 	def test_and(self):
-		pass #TODO
+		self.rule += "x = 10\n"
+		self.rule += "y = 5\n"
+		self.rule += "if x equals 10 and x < 100 then yeet = 1\n"
+		self.rule += "if x equals 10 and x > 100 then yeet = 0\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["yeet"], 1)
+		
 		
 	def test_or(self):
 		pass #TODO
