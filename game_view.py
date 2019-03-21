@@ -19,6 +19,7 @@ ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
 COLOR_BACKGROUND = (21,156,207)  
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
+COLOR_RED = (255, 0, 0)
 FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
@@ -38,7 +39,7 @@ dt = 1 / FPS
 
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
-def login_function():
+def account_login_view():
     """
     Login game function
     
@@ -85,15 +86,15 @@ def login_function():
                     selected = "password"
                 elif mouse_pos[0] in range(300,530) and mouse_pos[1] in range(517,530):
                     # create an account screen
-                    create_new_account()
+                    create_new_account_view()
                     return
                 elif mouse_pos[0] in range(335,480) and mouse_pos[1] in range(360,375):
                     # forget your password screen
-                    forgot_password()
+                    forgot_password_view()
                     return
                 elif mouse_pos[0] in range(320,482) and mouse_pos[1] in range(477,490):
                     # change your account info screen
-                    update_account()
+                    update_account_view()
                     return
                 elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,450):
                     # login
@@ -119,6 +120,7 @@ def login_function():
         elif selected == "password":
             password.update(playevents, passProtect=True)
             
+        # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(username.get_text()) >= 1:
             surface.blit(username.get_surface(), (250,170))  
@@ -133,7 +135,7 @@ def login_function():
 
     return
 
-def create_new_account():
+def create_new_account_view():
     """
     Create new account game function
     
@@ -149,6 +151,9 @@ def create_new_account():
     surface.fill(COLOR_BACKGROUND)
 
     selected = "email"
+    displayNotMatching = False
+    errorTime = 0
+    surfaceCopy = None
     
     while True:
         # Clock tick
@@ -162,7 +167,7 @@ def create_new_account():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    login_function()
+                    account_login_view()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -180,12 +185,15 @@ def create_new_account():
                     if len(email.get_text()) < 1 or len(username.get_text()) < 1 or len(password1.get_text()) < 1 or len(password2.get_text()) < 1:
                         break
                     if password1.get_text() == password2.get_text():
-                        print("GOING TO LOG IN NOW")
                         login(username = username.get_text(), email = email.get_text(), password = password1.get_text())
                         return
+                    else:
+                        displayNotMatching = True
+                        errorTime = clock.get_time()
+                        surfaceCopy = surface.copy()
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
-                    login_function()
+                    account_login_view()
                     return
         
         if selected == "email":
@@ -197,6 +205,7 @@ def create_new_account():
         elif selected == "password2":
             password2.update(playevents, passProtect=True)
             
+        # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(email.get_text()) >= 1:
             surface.blit(email.get_surface(), (250,170))  
@@ -214,11 +223,14 @@ def create_new_account():
             surface.blit(password2.get_surface(), (250,432))
         else:
             surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,422))  
+
+        displayNotMatching = display_error_message(displayNotMatching, errorTime, surfaceCopy, 'Passwords do not match')
+                
         pygame.display.flip()
 
     return
 
-def forgot_password():
+def forgot_password_view():
     email = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/forgot-password.png")
     surface.fill(COLOR_BACKGROUND)
@@ -235,7 +247,7 @@ def forgot_password():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    login_function()
+                    account_login_view()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -247,15 +259,16 @@ def forgot_password():
                     send_recovery_email(email = email.get_text())
                     return
                 elif mouse_pos[0] in range(277,510) and mouse_pos[1] in range(496,513):
-                    recover_account()
+                    recover_account_view()
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
-                    login_function()
+                    account_login_view()
                     return
         
         email.update(playevents)   
             
+        # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(email.get_text()) >= 1:
             surface.blit(email.get_surface(), (250,170))  
@@ -266,7 +279,7 @@ def forgot_password():
 
     return
 
-def update_account():
+def update_account_view():
     """
     Update account game function
     
@@ -293,7 +306,7 @@ def update_account():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    login_function()
+                    account_login_view()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -308,11 +321,11 @@ def update_account():
                     # update account
                     if len(oldPassword.get_text()) < 1 or len(username.get_text()) < 1 or len(password.get_text()) < 1:
                         break
-                    update_account_information(username = username.get_text(), oldPassword = oldPassword.get_text(), password = password.get_text())
+                    update_account(username = username.get_text(), oldPassword = oldPassword.get_text(), password = password.get_text())
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
-                    login_function()
+                    account_login_view()
                     return
         
         if selected == "username":
@@ -322,6 +335,7 @@ def update_account():
         elif selected == "password":
             password.update(playevents, passProtect=True)
             
+        # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(username.get_text()) >= 1:
             surface.blit(username.get_surface(), (250,170))  
@@ -339,7 +353,7 @@ def update_account():
 
     return
 
-def recover_account():
+def recover_account_view():
     """
     Recover account
 
@@ -350,11 +364,15 @@ def recover_account():
     code = pygame_textinput.TextInput()
     password1 = pygame_textinput.TextInput()
     password2 = pygame_textinput.TextInput()
+
     login_view = pygame.image.load("images/menu/recover-account.png")
     surface.fill(COLOR_BACKGROUND)
 
     selected = "username"
-    
+    displayNotMatching = False
+    errorTime = 0
+    surfaceCopy = None
+
     while True:
         # Clock tick
         clock.tick(60)
@@ -367,7 +385,7 @@ def recover_account():
                 exit()
             elif e.type == KEYDOWN:
                 if e.key == K_ESCAPE and main_menu.is_disabled():
-                    login_function()
+                    account_login_view()
                     return
             elif e.type == MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
@@ -386,10 +404,14 @@ def recover_account():
                         break
                     if password1.get_text() == password2.get_text():
                         recover_account_credentials(username = username.get_text(), code = code.get_text(), password = password1.get_text())
-                    return
+                        return
+                    else:
+                        displayNotMatching = True
+                        errorTime = clock.get_time()
+                        surfaceCopy = surface.copy()
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     # go back
-                    login_function()
+                    account_login_view()
                     return
         
         if selected == "username":
@@ -401,6 +423,7 @@ def recover_account():
         elif selected == "password2":
             password2.update(playevents, passProtect=True)
             
+        # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if len(username.get_text()) >= 1:
             surface.blit(username.get_surface(), (250,170))  
@@ -418,9 +441,26 @@ def recover_account():
             surface.blit(password2.get_surface(), (250,432))
         else:
             surface.blit(MY_FONT.render('Password', 1, COLOR_BLACK), (250,422))  
+
+        displayNotMatching = display_error_message(displayNotMatching, errorTime, surfaceCopy, 'Passwords do not match')
+
         pygame.display.flip()
 
     return
+
+def display_error_message(displayNotMatching, errorTime, surfaceCopy, message):
+    # If the text should be displayed.
+    if displayNotMatching and surfaceCopy is not None:
+        # quick show passwords are wrong
+        passworderror = MY_FONT.render(message, 1, COLOR_RED)
+        pygame.draw.rect(surface, COLOR_WHITE, [190,320,610-190,385-320])
+        surface.blit(passworderror, (250,342))  
+        # Check if three seconds have passed. This assumes that "get_current_time()" operates on seconds.
+        if clock.get_time() - errorTime > 3:
+            surface.blit(surfaceCopy, (0,0))
+            return False
+        return True
+    return False
 
 # -----------------------------------------------------------------------------
 # CALLING EXTERNAL FUNCTIONS 
@@ -433,7 +473,7 @@ def login(username, password, email=None):
         client.create_account(username, password, email)
     return
 
-def update_account_information(username, oldPassword, password):
+def update_account(username, oldPassword, password):
     print("updating account info")
     client.change_credentials(username, oldPassword, password)
     return
@@ -537,7 +577,7 @@ main_menu = pygameMenu.Menu(surface,
                             window_height=WINDOW_SIZE[1],
                             window_width=WINDOW_SIZE[0]
                             )
-main_menu.add_option('Login', login_function)
+main_menu.add_option('Login', account_login_view)
 main_menu.add_option('About', about_menu)
 main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 
