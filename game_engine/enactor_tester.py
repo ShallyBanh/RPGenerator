@@ -1,7 +1,7 @@
 import rule_enactor
 
 
-enactor = rule_enactor.RuleEnactor
+enactor = rule_enactor.RuleEnactor()
 
 rule = "target guy\n"
 rule += "x = 0\n"
@@ -74,7 +74,7 @@ within_guy.add_attribute(hp_boys)
 within_guy.x = 2
 within_guy.y = 2
 
-enactor.add_new_entity(enactor, actor)
-enactor.add_new_entity(enactor, within_guy)
+enactor.add_new_entity(actor)
+enactor.add_new_entity(within_guy)
 
-enactor.perform_action(enactor, rule, actor)
+enactor.perform_action(rule, actor)
