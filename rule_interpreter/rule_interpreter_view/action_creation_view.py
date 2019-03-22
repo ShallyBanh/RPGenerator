@@ -21,6 +21,7 @@ def main():
     ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
     actionNameInput = pygame_textinput.TextInput()
     img = pygame.image.load('img/submit.png')
+    arrowImg = pygame.image.load('img/arrow.png')
 
     pygame.init()
 
@@ -44,6 +45,7 @@ def main():
         screen.fill((0, 50, 50))
         screen.blit(img,(600, 450))
         screen.blit(plusImage,(510, 290))
+        screen.blit(arrowImg,(10, 10))
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -65,8 +67,14 @@ def main():
                     playing = False
                     return actionNameInput.get_text(), rule
                 
+                if x in range(10,40) and y in range(10,40):
+                    playing = False
+                    return None, None
+                
                 if x in range (510, 540) and y in range (290, 320):
-                    rule = ruleInputView.main()
+                    rule_input = ruleInputView.main()
+                    if rule_input is not None:
+                        rule = rule_input
 
         for rect, name, size in zip(buttonrects, buttonnames, textSizes):
             screen.fill(pygame.Color("#553300"), rect)

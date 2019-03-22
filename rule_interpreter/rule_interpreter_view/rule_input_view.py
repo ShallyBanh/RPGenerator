@@ -27,22 +27,32 @@ print("adding status for goblin: Dodge..")
 goblin.add_status("Dodge")
 
 def main(): 
+    ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
     img = pygame.image.load('img/submit.png')
     checkmark = pygame.image.load('img/checkmark.png')
     errormark = pygame.image.load('img/errormark.png')
     pygame.transform.scale(img, (10, 10))
     pygame.transform.scale(checkmark, (100, 100))
     pygame.transform.scale(errormark, (100, 100))
+    arrowImg = pygame.image.load('img/arrow.png')
 
     screen = pygame.display.set_mode((800, 600))
-    screen.fill((255, 255, 255))
+    screen.fill((0, 50, 50))
     screen.blit(img,(600, 450))
 
+    buttonrects = [pygame.Rect((50, 150, 650, 350))]
+    textSizes = [(50, 100)]
+    buttonnames = ["Rule"]
+
     user_input = "" 
+    unvalid = False
+    valid = False
 
     pygame.display.flip()
+    playing = True
+    while playing:
+        screen.blit(arrowImg,(10, 10))
 
-    while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 exit()
@@ -52,31 +62,49 @@ def main():
                     print(mouse_pos)
                     if mouse_pos[0] in range(600,800) and mouse_pos[1] in range(450,600):
                         if parser.is_valid_rule(user_input) == True:
-                            screen.blit(checkmark,(250,150))
+                            valid = True
                             return user_input
                         else:
-                            screen.blit(errormark,(150,100))
+                            unvalid = True
+                    
+                    if mouse_pos[0] in range(10,40) and mouse_pos[1] in range(10,40):
+                        playing = False
+                        return None
 
             if event.type == pygame.KEYDOWN:
-                screen.fill((255, 255, 255))
+                unvalid = False
+                screen.fill((0, 50, 50))
                 screen.blit(img,(600, 450))
                 if event.key == pl.K_RETURN:
                     user_input += "\n"
                 
                 elif event.key == pl.K_DELETE:
-                    screen.fill((255, 255, 255))
+                    screen.fill((0, 50, 50))
                     screen.blit(img,(600, 450))
                     user_input = user_input[:len(user_input)-1]
                 
                 elif event.key == pl.K_BACKSPACE:
-                    screen.fill((255, 255, 255))
+                    screen.fill((0, 50, 50))
                     screen.blit(img,(600, 450))
                     user_input = user_input[:len(user_input)-1]
 
                 else:
                     # If no special key is pressed, add unicode of key to input_string
                     user_input += event.unicode
+
+        for rect, name, size in zip(buttonrects, buttonnames, textSizes):
+            screen.fill(pygame.Color("#553300"), rect)
+            screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
+            box = rect.inflate(-16, 16)
+            ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+            ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
-            ptext.draw(user_input, (0, 0), fontname="Boogaloo", color=(0,0,0), fontsize=30)
+        ptext.draw(user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=30)
+
+        if unvalid == True:
+            screen.blit(errormark,(150,100))
+        
+        if valid == True:
+            screen.blit(checkmark,(250,150))
 
         pygame.display.flip()

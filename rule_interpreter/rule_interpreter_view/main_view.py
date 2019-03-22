@@ -2,7 +2,7 @@ import pygame
 import ptext
 import pygame_textinput
 import entity_creation_view as eview
-import action_input_view as actionView
+import action_creation_view as actionView
 import attribute_creation_view as attributeView
 
 
@@ -49,18 +49,21 @@ while playing:
     if entity_view == True:
         print("calling entity creation main")
         name, etype, size = eview.main()
-        entities.append(name)
+        if name is not None:
+            entities.append(name)
         entity_view = False
     
     if action_view == True:
         print("calling action creation main")
         actionName, rule = actionView.main()
-        actionNames.append(actionName)
+        if actionName is not None:
+            actionNames.append(actionName)
         action_view = False
     
     if attribute_view == True:
         attrName, attrType, attrValue = attributeView.main()
-        attributes.append(attrName)
+        if attrName is not None:
+            attributes.append(attrName)
         attribute_view = False
 
     for event in events:

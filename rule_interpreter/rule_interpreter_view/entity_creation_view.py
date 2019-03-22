@@ -10,6 +10,7 @@ def main():
     entityTypeInput = pygame_textinput.TextInput()
     sizeInput = pygame_textinput.TextInput()
     img = pygame.image.load('img/submit.png')
+    arrowImg = pygame.image.load('img/arrow.png')
 
     pygame.init()
 
@@ -34,6 +35,7 @@ def main():
 
         screen.fill((0, 50, 50))
         screen.blit(img,(600, 450))
+        screen.blit(arrowImg,(10, 10))
 
         for event in events:
             if event.type == pygame.QUIT:
@@ -60,6 +62,9 @@ def main():
                             didSelectEntityTypeInputBox = False
                             didSelectEntitySizeInputBox = True
 
+                if x in range(10,40) and y in range(10,40):
+                    playing = False
+                    return None, None, None
                 if x in range(600,800) and y in range(450,600):
                     print(entityNameInput.get_text())
                     print(entityTypeInput.get_text())
@@ -88,9 +93,3 @@ def main():
         
         screen.blit(*titleargs)
         pygame.display.flip()
-    
-    print("out of while loop")
-
-
-
-
