@@ -11,75 +11,77 @@ sys.path.append('/rule_interpreter_view')
 import pygame
 import ptext
 import pygame.locals as pl
-
-img = pygame.image.load('img/submit.png')
-checkmark = pygame.image.load('img/checkmark.png')
-errormark = pygame.image.load('img/errormark.png')
-pygame.transform.scale(img, (10, 10))
-pygame.transform.scale(checkmark, (100, 100))
-pygame.transform.scale(errormark, (100, 100))
-
-screen = pygame.display.set_mode((1200, 700))
-screen.fill((255, 255, 255))
-screen.blit(img,(1000, 550))
-
-user_input = "" 
-
-pygame.display.flip()
+import pygame_textinput
+import rule_input_view as ruleInputView
 
 
-while True:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            exit()
+def main():
+    rule = ""
+    plusImage = pygame.image.load('img/plussign.png')
+    ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
+    actionNameInput = pygame_textinput.TextInput()
+    img = pygame.image.load('img/submit.png')
 
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                print(mouse_pos)
-                if mouse_pos[0] in range(1000,1200) and mouse_pos[1] in range(550,700):
-                    parser = SyntaxParser()
+    pygame.init()
 
-                    print("Shally's dank test suite for the parser:\n")
-                    print("adding entity goblin..")
-                    goblin = Entity("goblin", "steve", 1)
-                    print("adding atrributes for goblin: hp..")
-                    testAttribute = Attribute("hp", 1, 1)
-                    goblin.add_attribute(testAttribute)
-                    print("adding actions for goblin: Attack..")
-                    testAction = Action("Attack", 1)
-                    goblin.add_action(testAction)
-                    print("adding status for goblin: Dodge..")
-                    goblin.add_status("Dodge")
-                    print(parser.is_valid_rule("\"{}\"".format(user_input)))
-                    if parser.is_valid_rule(user_input) == True:
-                        screen.blit(checkmark,(450,150))
-                        print("valid")
-                    else:
-                        screen.blit(errormark,(350,100))
+    sx, sy = 800, 600
+    screen = pygame.display.set_mode((sx, sy))
+    pygame.display.set_caption("Action Creation")
 
-                    print(user_input)
+    buttonrects = [pygame.Rect((50, 150, 500, 70)), pygame.Rect((50, 325, 500, 170))]
+    textSizes = [(50, 100 + 170 * j) for j in range(2)]
+    buttonnames = ["Action Name", "Rule"]
+    size = ""
 
-        if event.type == pygame.KEYDOWN:
+    titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+    didSelectActionNameInputBox= False 
+    playing = True
 
-            if event.key == pl.K_RETURN:
-                user_input += "\n"
-            
-            elif event.key == pl.K_DELETE:
-                screen.fill((255, 255, 255))
-                print(user_input)
-                screen.blit(img,(1000, 550))
-                user_input = user_input[:len(user_input)-1]
-            
-            elif event.key == pl.K_BACKSPACE:
-                screen.fill((255, 255, 255))
-                print(user_input)
-                screen.blit(img,(1000, 550))
-                user_input = user_input[:len(user_input)-1]
+    while playing:
+        clickpos = None
+        events = pygame.event.get()
 
-            else:
-                # If no special key is pressed, add unicode of key to input_string
-                user_input += event.unicode
+        screen.fill((0, 50, 50))
+        screen.blit(img,(600, 450))
+        screen.blit(plusImage,(510, 290))
+
+        for event in events:
+            if event.type == pygame.QUIT:
+                playing = False
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                playing = False
+                return
+            elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                clickpos = event.pos
+                x, y = clickpos
+                didSelectActionNameInputBox = False
+                for j in range(len(buttonrects)):
+                    rect = buttonrects[j]
+                    if rect.collidepoint(x,y):
+                        if j == 0:
+                            didSelectActionNameInputBox = True
+
+                if x in range(600,800) and y in range(450,600):
+                    playing = False
+                    return actionNameInput.get_text(), rule
+                
+                if x in range (510, 540) and y in range (290, 320):
+                    rule = ruleInputView.main()
+
+        for rect, name, size in zip(buttonrects, buttonnames, textSizes):
+            screen.fill(pygame.Color("#553300"), rect)
+            screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
+            box = rect.inflate(-16, 16)
+            ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+            ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
+
+        if didSelectActionNameInputBox == True:
+            actionNameInput.update(events)
+
+        screen.blit(actionNameInput.get_surface(), (60, 165 + 185 * 0))
+        ptext.draw(rule, (60, 345), fontname="Boogaloo", color=(0,0,0), fontsize=20)
         
-        ptext.draw(user_input, (0, 0), fontname="fonts/Boogaloo.ttf", color=(0,0,0), fontsize=30)
-
-    pygame.display.update()
+        screen.blit(*titleargs)
+        pygame.display.flip()
+    
+    print("out of while loop")
