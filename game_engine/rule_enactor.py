@@ -26,6 +26,7 @@ class Entity:
 		self.name = name
 		self.type = type
 		self.attributes = []
+		self.statuses = []
 			
 	def add_attribute(self, attribute):
 		#print(self.name)
@@ -38,10 +39,10 @@ class Entity:
 				return a
 				
 	def add_status(self, statusString):
-		statuses.append(statusString)
+		self.statuses.append(statusString)
 		
 	def remove_status(self, statusString):
-		statuses.remove(statusString)
+		self.statuses.remove(statusString)
 		
 	def __str__(self):
 		attrs = ""
@@ -219,6 +220,7 @@ class RuleEnactor:
 		
 		
 	def handle_target(self, line):
+		line = line.strip(':')
 		words = line.split()
 		target_type = words[1]
 		# they can either be targeting a point or an entity
@@ -235,10 +237,15 @@ class RuleEnactor:
 					self.target_of_action = entity
 					#print("New Target :")
 					#print(self.target_of_action)
+		#TODO: We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
 		
 	
-	def handle_interrupt(self, line):
-		return None
+	def handle_interrupt(self, interrupt_line, action_line):
+		interrupt_line = interrupt_line.strip(':')
+		action_line = action_line.strip(':')
+		words = line.split()
+		entity_action = words[1].split('.')
+		
 		#print("TODO")
 		# determine the target of the action so that we can properly manipulate it
 	
@@ -741,17 +748,17 @@ class RuleEnactor:
 			
 	def handle_remove_status(self, written_rule):
 		words = written_rule.split()
-		status_to_add = words[2].strip('"')
+		status_to_remove = words[2].strip('"')
 		affected_entity_string = words[-1]
 		if affected_entity_string == 'self':
-			self.acting_entity.remove_status(status_to_add)
+			self.acting_entity.remove_status(status_to_remove)
 		elif affected_entity_string == 'target':
-			self.target_of_action.remove_status(status_to_add)
+			self.target_of_action.remove_status(status_to_remove)
 		elif affected_entity_string == self.current_entity_in_loop.type:
-			self.current_entity_in_loop.remove_status(status_to_add)
+			self.current_entity_in_loop.remove_status(status_to_remove)
 		
-	def handle_has_status(self):
-		words = written_rule.split("has")
+	def handle_has_status(self, written_rule):
+		words = written_rule.split('has')
 		status_to_check = words[1].strip().strip('"')
 		entity_info = words[0].strip().split('.')
 		if entity_info[1] == 'statuses':
@@ -781,7 +788,7 @@ class RuleEnactor:
 	keywords = {"target":handle_target, "if":handle_if, "interrupt":handle_interrupt,
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
-				"move":handle_move, "add":handle_add_status}
+				"move":handle_move, "add":handle_add_status, "remove":handle_remove_status}
 				
 	combined_operators = {"+=":handle_plus_equals, "-=":handle_minus_equals, 
 				"*=":handle_times_equals, "/=":handle_divide_equals, "==":handle_equals,}
@@ -789,6 +796,6 @@ class RuleEnactor:
 	operators = {" within(":handle_within, "+": handle_plus, "-":handle_minus,  
 				" equals ":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
 				" less ":handle_less_than, " greater ": handle_greater_than, "*": handle_multiply_operator,
-				"/":handle_divide_operator, "=":handle_assignment}
+				"/":handle_divide_operator, "=":handle_assignment, " has ":handle_has_status}
 				
 	boolean_operators = {" and ":handle_and, " or ":handle_or}

@@ -340,12 +340,25 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(5 <= self.enactor.variables["z"] and self.enactor.variables["z"] <= 30)
 		
 	def test_add_status(self):
-		pass #TODO
-		
-	def test_has_status(self):
-		pass #TODO
-		
+		self.rule += "add status \"Dodge\" to self\n"
+		self.rule += "add status Poisoned to self\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertTrue("Dodge" in self.enactor.acting_entity.statuses)
+		self.assertTrue("Poisoned" in self.enactor.acting_entity.statuses)
 	
+	def test_remove_status(self):
+		self.rule += "add status \"Dodge\" to self\n"
+		self.rule += "add status Poisoned to self\n"
+		self.rule += "remove status Dodge from self\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertTrue("Dodge" not in self.enactor.acting_entity.statuses)
+		self.assertTrue("Poisoned" in self.enactor.acting_entity.statuses)
+	
+	def test_has_status(self):
+		self.rule += "add status Poisoned to self\n"
+		self.rule += "if self.statuses has Poisoned then yeet = 1\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["yeet"],1)
 		
 	def test_attack_action(self):
 		pass #TODO
