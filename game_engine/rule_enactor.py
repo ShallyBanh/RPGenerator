@@ -36,6 +36,12 @@ class Entity:
 		for a in self.attributes:
 			if a.name == attributeName:
 				return a
+				
+	def add_status(self, statusString):
+		statuses.append(statusString)
+		
+	def remove_status(self, statusString):
+		statuses.remove(statusString)
 		
 	def __str__(self):
 		attrs = ""
@@ -231,7 +237,7 @@ class RuleEnactor:
 					#print(self.target_of_action)
 		
 	
-	def handle_on(self, line):
+	def handle_interrupt(self, line):
 		return None
 		#print("TODO")
 		# determine the target of the action so that we can properly manipulate it
@@ -484,7 +490,6 @@ class RuleEnactor:
 			self.handle_moveaway(written_rule)
 		
 	def handle_moveaway(self, written_rule):
-		#TODO
 		# handle moving targets away from a given point or entity
 		words = written_rule.split()
 		entity_to_move = None
@@ -529,7 +534,6 @@ class RuleEnactor:
 				entity_to_move.y += distance_to_move
 		
 	def handle_movetowards(self, written_rule):
-		#TODO
 		# handle moving targets away from a given point or entity
 		words = written_rule.split()
 		entity_to_move = None
@@ -724,11 +728,39 @@ class RuleEnactor:
 		words = written_rule.split('or')
 		return self.evaluate_line(words[0].strip()) or self.evaluate_line(words[1].strip())
 		
-	def handle_add_status(self):
-		return None
+	def handle_add_status(self, written_rule):
+		words = written_rule.split()
+		status_to_add = words[2].strip('"')
+		affected_entity_string = words[-1]
+		if affected_entity_string == 'self':
+			self.acting_entity.add_status(status_to_add)
+		elif affected_entity_string == 'target':
+			self.target_of_action.add_status(status_to_add)
+		elif affected_entity_string == self.current_entity_in_loop.type:
+			self.current_entity_in_loop.add_status(status_to_add)
+			
+	def handle_remove_status(self, written_rule):
+		words = written_rule.split()
+		status_to_add = words[2].strip('"')
+		affected_entity_string = words[-1]
+		if affected_entity_string == 'self':
+			self.acting_entity.remove_status(status_to_add)
+		elif affected_entity_string == 'target':
+			self.target_of_action.remove_status(status_to_add)
+		elif affected_entity_string == self.current_entity_in_loop.type:
+			self.current_entity_in_loop.remove_status(status_to_add)
 		
 	def handle_has_status(self):
-		return None
+		words = written_rule.split("has")
+		status_to_check = words[1].strip().strip('"')
+		entity_info = words[0].strip().split('.')
+		if entity_info[1] == 'statuses':
+			if entity_info[0] == 'self':
+				return status_to_check in self.acting_entity.statuses
+			elif entity_info[0] == 'target':
+				return status_to_check in self.target_of_action.statuses
+			elif entity_info[0] == self.current_entity_in_loop.type:
+				return status_to_check in self.current_entity_in_loop.statuses
 	
 	def roll_dice(self, dice_string):
 		roll_data = dice_string.split('d')
@@ -746,10 +778,10 @@ class RuleEnactor:
 	
 		
 		
-	keywords = {"target":handle_target, "if":handle_if, 
+	keywords = {"target":handle_target, "if":handle_if, "interrupt":handle_interrupt,
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
-				"move":handle_move}
+				"move":handle_move, "add":handle_add_status}
 				
 	combined_operators = {"+=":handle_plus_equals, "-=":handle_minus_equals, 
 				"*=":handle_times_equals, "/=":handle_divide_equals, "==":handle_equals,}

@@ -339,6 +339,14 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(1 <= self.enactor.variables["y"] and self.enactor.variables["y"] <= 20)
 		self.assertTrue(5 <= self.enactor.variables["z"] and self.enactor.variables["z"] <= 30)
 		
+	def test_add_status(self):
+		pass #TODO
+		
+	def test_has_status(self):
+		pass #TODO
+		
+	
+		
 	def test_attack_action(self):
 		pass #TODO
 		
