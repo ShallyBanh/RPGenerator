@@ -17,8 +17,8 @@ def main():
     screen = pygame.display.set_mode((sx, sy))
     pygame.display.set_caption("Attribute Creation")
 
-    buttonrects = [pygame.Rect((50, 150 + 175 * j, 500, 70)) for j in range(3)]
-    textSizes = [(50, 100 + 170 * j) for j in range(3)]
+    buttonrects = [pygame.Rect((50, 150 + 160 * j, 500, 70)) for j in range(3)]
+    textSizes = [(50, 100 + 155 * j) for j in range(3)]
     buttonnames = ["Attribute Name", "Attribute Type", "Attribute Value"]
 
     titleargs = ptext.draw("Attribute Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
@@ -26,6 +26,7 @@ def main():
     didSelectAttrTypeInputBox = False 
     didSelectAttrValueInputBox = False
     playing = True
+    invalidSubmission = False
 
     while playing:
         clickpos = None
@@ -41,6 +42,7 @@ def main():
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 playing = False
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                invalidSubmission = False
                 clickpos = event.pos
                 x, y = clickpos
                 for j in range(len(buttonrects)):
@@ -64,8 +66,11 @@ def main():
                     return None, None, None
 
                 if x in range(600,800) and y in range(450,600):
-                    playing = False
-                    return attributeNameInput.get_text(), attributeTypeInput.get_text(), attributeValueInput.get_text()
+                    if attributeNameInput.get_text() == "" or attributeTypeInput.get_text() == "" or attributeValueInput.get_text() == "":
+                        invalidSubmission = True
+                    else:
+                        playing = False
+                        return attributeNameInput.get_text(), attributeTypeInput.get_text(), attributeValueInput.get_text()
 
         for rect, name, size in zip(buttonrects, buttonnames, textSizes):
             screen.fill(pygame.Color("#553300"), rect)
@@ -81,9 +86,12 @@ def main():
         elif didSelectAttrValueInputBox == True:
             attributeValueInput.update(events)
 
+        if invalidSubmission == True:
+            ptext.draw("All fields must be complete in order to submit", (60, 555), fontname="Boogaloo", color="red", fontsize=30)
+
         screen.blit(attributeNameInput.get_surface(), (60, 165 + 185 * 0))
-        screen.blit(attributeTypeInput.get_surface(), (60, 160 + 185 * 1)) 
-        screen.blit(attributeValueInput.get_surface(), (60, 150 + 185 * 2))
+        screen.blit(attributeTypeInput.get_surface(), (60, 150 + 185 * 1)) 
+        screen.blit(attributeValueInput.get_surface(), (60, 130 + 185 * 2))
 
         
         screen.blit(*titleargs)

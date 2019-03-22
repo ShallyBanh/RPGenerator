@@ -18,8 +18,8 @@ def main():
     screen = pygame.display.set_mode((sx, sy))
     pygame.display.set_caption("Entity Creation")
 
-    buttonrects = [pygame.Rect((50, 150 + 175 * j, 500, 70)) for j in range(3)]
-    textSizes = [(50, 100 + 170 * j) for j in range(3)]
+    buttonrects = [pygame.Rect((50, 150 + 160 * j, 500, 70)) for j in range(3)]
+    textSizes = [(50, 100 + 155 * j) for j in range(3)]
     buttonnames = ["Entity Name", "Entity Type", "Size"]
     size = ""
 
@@ -28,6 +28,7 @@ def main():
     didSelectEntityTypeInputBox = False 
     didSelectEntitySizeInputBox = False
     playing = True
+    invalidSubmission = False
 
     while playing:
         clickpos = None
@@ -44,6 +45,7 @@ def main():
                 playing = False
                 return
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                invalidSubmission = False
                 clickpos = event.pos
                 x, y = clickpos
                 for j in range(len(buttonrects)):
@@ -66,11 +68,11 @@ def main():
                     playing = False
                     return None, None, None
                 if x in range(600,800) and y in range(450,600):
-                    print(entityNameInput.get_text())
-                    print(entityTypeInput.get_text())
-                    print(sizeInput.get_text())
-                    playing = False
-                    return entityNameInput.get_text(), entityTypeInput.get_text(), sizeInput.get_text()
+                    if entityNameInput.get_text() == "" or entityTypeInput.get_text() == "" or sizeInput.get_text() == "":
+                        invalidSubmission = True
+                    else:
+                        playing = False
+                        return entityNameInput.get_text(), entityTypeInput.get_text(), sizeInput.get_text()
 
         for rect, name, size in zip(buttonrects, buttonnames, textSizes):
             screen.fill(pygame.Color("#553300"), rect)
@@ -85,10 +87,13 @@ def main():
             entityTypeInput.update(events)
         elif didSelectEntitySizeInputBox == True:
             sizeInput.update(events)
+        
+        if invalidSubmission == True:
+            ptext.draw("All fields must be complete in order to submit", (60, 555), fontname="Boogaloo", color="red", fontsize=30)
 
         screen.blit(entityNameInput.get_surface(), (60, 165 + 185 * 0))
-        screen.blit(entityTypeInput.get_surface(), (60, 160 + 185 * 1)) 
-        screen.blit(sizeInput.get_surface(), (60, 150 + 185 * 2))
+        screen.blit(entityTypeInput.get_surface(), (60, 150 + 185 * 1)) 
+        screen.blit(sizeInput.get_surface(), (60, 130 + 185 * 2))
 
         
         screen.blit(*titleargs)

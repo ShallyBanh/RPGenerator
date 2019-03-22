@@ -17,6 +17,7 @@ import rule_input_view as ruleInputView
 
 def main():
     rule = ""
+    invalidSubmission = False
     plusImage = pygame.image.load('img/plussign.png')
     ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
     actionNameInput = pygame_textinput.TextInput()
@@ -54,6 +55,7 @@ def main():
                 playing = False
                 return
             elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                invalidSubmission = False
                 clickpos = event.pos
                 x, y = clickpos
                 didSelectActionNameInputBox = False
@@ -64,8 +66,11 @@ def main():
                             didSelectActionNameInputBox = True
 
                 if x in range(600,800) and y in range(450,600):
-                    playing = False
-                    return actionNameInput.get_text(), rule
+                    if actionNameInput.get_text() == "" or rule == "":
+                        invalidSubmission = True
+                    else:
+                        playing = False
+                        return actionNameInput.get_text(), rule
                 
                 if x in range(10,40) and y in range(10,40):
                     playing = False
@@ -85,11 +90,13 @@ def main():
 
         if didSelectActionNameInputBox == True:
             actionNameInput.update(events)
+        
+        if invalidSubmission == True:
+            ptext.draw("Both fields must be complete in order to submit", (60, 550), fontname="Boogaloo", color="red", fontsize=30)
 
         screen.blit(actionNameInput.get_surface(), (60, 165 + 185 * 0))
         ptext.draw(rule, (60, 345), fontname="Boogaloo", color=(0,0,0), fontsize=20)
         
         screen.blit(*titleargs)
         pygame.display.flip()
-    
-    print("out of while loop")
+
