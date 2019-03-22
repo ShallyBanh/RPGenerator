@@ -4,6 +4,8 @@ from game_engine.map import Map
 import os
 import math
 import re
+import ptext
+
 
 
 # sources for examples:
@@ -86,14 +88,86 @@ def load_pictures():
 
     return images
 
+class InputBox:
+    # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
+
+    def __init__(self, x, y, w, h, screen, text=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.height = h
+        self.color = COLOR_INACTIVE
+        self.text = text
+        self.txt_surface = FONTTYPE.render(text, True, self.color)
+        self.active = False
+        self.screen = screen
+
+    def handle_event(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == KEYDOWN:
+            if self.active:
+                if event.key == K_RETURN:
+                    print(self.text)
+                    self.text = ""
+                    # make a copy of rect that removes border of block
+                    remove_block = self.rect.copy()
+                    remove_block.h += 5
+                    pygame.draw.rect(self.screen, COLOR_BLACK, remove_block, 0)
+                    self.rect.h = self.height
+                elif event.key == K_BACKSPACE:
+                    self.text = self.text[:-1]
+                else:
+                    self.text += event.unicode
+
+                width = math.ceil(self.txt_surface.get_width()/self.rect.w)
+                if  width > 1 and (self.text.count("\n")+1)< width and self.text != "":
+                    self.text += "\n"     
+                # Re-render the text -- CURRENTLY NOT USED, AS PTEXT IS USED INSTEAD
+                self.txt_surface = FONTTYPE.render(self.text, True, self.color)
+
+    def update(self):
+        # Resize the box if the text is too long.
+        # width = max(200, self.txt_surface.get_width()+10)
+
+        if "\n" in self.text:
+            # self.rect.h = self.txt_surface.get_height()*(self.text.count('\n')+2)
+            self.rect.h = 25*(self.text.count('\n')+2)
+
+    def draw(self):
+        # Blit the text.
+        # screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
+        ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), fontname="Boogaloo.ttf", color=COLOR_WHITE, fontsize=25)
+        # Blit the rect.
+        pygame.draw.rect(self.screen, self.color, self.rect, 2)
+
+    def wipe(self):
+        # Blit the rect.
+        pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
+        pygame.draw.rect(self.screen, self.color, self.rect, 2)
+
 # GLOBAL VAR
 myMap = Map(tilesize = 50, height = 10, width = 18)
 MAPOFFSET = (200,0)
 OLDSURF = None
 
 pygame.init()
-FONTTYPE = pygame.font.SysFont('arial', 25)
+# FONTTYPE = pygame.font.SysFont('arial', 25)
+FONTTYPE = pygame.font.Font(None, 32)
+
 DISPLAYSURF = pygame.display.set_mode((1300,750))
+COLOR_INACTIVE = pygame.Color('lightskyblue3')
+COLOR_ACTIVE = pygame.Color('dodgerblue2')
+COLOR_BLACK = (0, 0, 0)
+COLOR_WHITE = (255, 255, 255)
+COLOR_RED = (255, 0, 0)
+
+
 
 if __name__ == "__main__":
 
@@ -129,6 +203,7 @@ if __name__ == "__main__":
         DISPLAYSURF.blit(entity_image, offset_blit(entity.y*myMap.tilesize, entity.x*myMap.tilesize))
 
     my_entity = None
+    input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
 
     while True:    
         for event in pygame.event.get():
@@ -156,5 +231,9 @@ if __name__ == "__main__":
                     if my_entity is not None:
                         loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
                         size, location = make_popup(loc_x, loc_y, my_entity)
+            input_box.handle_event(event)
 
+        input_box.wipe()
+        input_box.update()
+        input_box.draw()
         pygame.display.flip()
