@@ -100,7 +100,7 @@ class InputBox:
         self.active = False
         self.screen = screen
 
-    def handle_event(self, event):
+    def handle_event(self, event, transcript):
         if event.type == MOUSEBUTTONDOWN:
             # If the user clicked on the input_box rect.
             if self.rect.collidepoint(event.pos):
@@ -114,6 +114,9 @@ class InputBox:
             if self.active:
                 if event.key == K_RETURN:
                     print(self.text)
+                    # append to the transcript view
+                    transcript += "\n" + str(self.text)
+                    print(transcript)
                     self.text = ""
                     # make a copy of rect that removes border of block
                     remove_block = self.rect.copy()
@@ -125,24 +128,29 @@ class InputBox:
                 else:
                     self.text += event.unicode
 
-                width = math.ceil(self.txt_surface.get_width()/self.rect.w)
-                if  width > 1 and (self.text.count("\n")+1)< width and self.text != "":
-                    self.text += "\n"     
+                # width = math.ceil(self.txt_surface.get_width()/self.rect.w)
+                # if  width > 1 and (self.text.count("\n")+1)< width and self.text != "":
+                #     self.text += "\n"     
                 # Re-render the text -- CURRENTLY NOT USED, AS PTEXT IS USED INSTEAD
                 self.txt_surface = FONTTYPE.render(self.text, True, self.color)
+
+        return transcript
 
     def update(self):
         # Resize the box if the text is too long.
         # width = max(200, self.txt_surface.get_width()+10)
 
-        if "\n" in self.text:
-            # self.rect.h = self.txt_surface.get_height()*(self.text.count('\n')+2)
-            self.rect.h = 25*(self.text.count('\n')+2)
+        # if "\n" in self.text:
+        #     # self.rect.h = self.txt_surface.get_height()*(self.text.count('\n')+2)
+        #     self.rect.h = 20*(self.text.count('\n')+2)
+        width = math.ceil(self.txt_surface.get_width()/self.rect.w)
+        if  width > 1 and self.text != "":
+            self.rect.h = 20*(width+1)
 
     def draw(self):
         # Blit the text.
         # screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), fontname="Boogaloo.ttf", color=COLOR_WHITE, fontsize=25)
+        ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
         # Blit the rect.
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
 
@@ -150,6 +158,33 @@ class InputBox:
         # Blit the rect.
         pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
+
+class Transcript:
+    def __init__(self, x, y, w, h, screen, transcript=''):
+        self.rect = pygame.Rect(x, y, w, h)
+        self.transcript = transcript
+        self.screen = screen
+        self.color = COLOR_RED
+
+    def update(self, transcript):
+        if self.transcript != transcript:
+            self.transcript = transcript
+
+    def draw(self):
+        # Blit the text.
+        ptext.draw(self.transcript, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        # Blit the rect.
+        pygame.draw.rect(self.screen, self.color, self.rect, 2)
+
+    def wipe(self):
+        # Blit the rect.
+        pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
+
+    def scroll_up(self):
+        print("scrolling up")
+
+    def scroll_down(self):
+        print("scrolling down")
 
 # GLOBAL VAR
 myMap = Map(tilesize = 50, height = 10, width = 18)
@@ -204,6 +239,8 @@ if __name__ == "__main__":
 
     my_entity = None
     input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
+    history = Transcript(MAPOFFSET[0]+myMap.width*myMap.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
+    # transcript = ""
 
     while True:    
         for event in pygame.event.get():
@@ -231,9 +268,15 @@ if __name__ == "__main__":
                     if my_entity is not None:
                         loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
                         size, location = make_popup(loc_x, loc_y, my_entity)
-            input_box.handle_event(event)
+            # input box handling + transcript update
+            transcript = input_box.handle_event(event, history.transcript)
+            history.update(transcript)
+            # transcript = input_box.handle_event(event, transcript)
+
 
         input_box.wipe()
+        history.wipe()
         input_box.update()
         input_box.draw()
+        history.draw()
         pygame.display.flip()
