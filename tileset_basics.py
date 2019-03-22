@@ -102,10 +102,8 @@ class InputBox:
         if event.type == KEYDOWN:
             if self.active:
                 if event.key == K_RETURN:
-                    print(self.text)
                     # append to the transcript view
-                    transcript += "\n" + str(self.text)
-                    print(transcript)
+                    transcript += str(self.text) + "\n"
                     self.text = ""
                     self.remove_old_block()
                 elif event.key == K_BACKSPACE:
@@ -139,16 +137,42 @@ class Transcript:
     def __init__(self, x, y, w, h, screen, transcript=''):
         self.rect = pygame.Rect(x, y, w, h)
         self.transcript = transcript
+        self.transcript_in_view = transcript
         self.screen = screen
-        self.color = COLOR_RED
+        self.color = COLOR_INACTIVE
+        self.txt_surface = None
+        self.active = False
+
+    def handle_event(self, event):
+        if event.type == MOUSEBUTTONDOWN:
+            # If the user clicked on the input_box rect.
+            if self.rect.collidepoint(event.pos):
+                # Toggle the active variable.
+                self.active = not self.active
+            else:
+                self.active = False
+            # Change the current color of the input box.
+            self.color = COLOR_ACTIVE if self.active else COLOR_INACTIVE
+        if event.type == KEYDOWN:
+            if self.active:
+                if event.key == K_DOWN:
+                    self.scroll_up()
+                elif event.key == K_UP:
+                    self.scroll_down()
 
     def update(self, transcript):
         if self.transcript != transcript:
             self.transcript = transcript
+            splitup = transcript.split("\n")
+            self.transcript_in_view += splitup[len(splitup)-2] + "\n"
+            tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+            while (tmp_surface.get_height() > (self.rect.h-5)):
+                self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
+                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
     def draw(self):
         # Blit the text.
-        ptext.draw(self.transcript, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
         # Blit the rect.
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
 
@@ -157,10 +181,16 @@ class Transcript:
         pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
 
     def scroll_up(self):
-        print("scrolling up")
+        print("up")
+        # tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        # self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
+        # self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
     def scroll_down(self):
-        print("scrolling down")
+        print("down")
+        # tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        # self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
+        # self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
 # GLOBAL VAR
 myMap = Map(tilesize = 50, height = 10, width = 18)
@@ -245,12 +275,12 @@ if __name__ == "__main__":
                         size, location = make_popup(loc_x, loc_y, my_entity)
             # input box handling + transcript update
             transcript = input_box.handle_event(event, history.transcript)
+            history.handle_event(event)
             history.update(transcript)
             # transcript = input_box.handle_event(event, transcript)
 
         input_box.wipe()
         history.wipe()
-        # input_box.update()
         input_box.draw()
         history.draw()
 
