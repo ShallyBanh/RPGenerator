@@ -36,11 +36,11 @@ def main():
     pygame.transform.scale(errormark, (100, 100))
     arrowImg = pygame.image.load('img/arrow.png')
 
-    screen = pygame.display.set_mode((800, 600))
+    screen = pygame.display.set_mode((1300, 750))
     screen.fill((0, 50, 50))
-    screen.blit(img,(600, 450))
+    screen.blit(img,(1100, 600))
 
-    buttonrects = [pygame.Rect((50, 150, 650, 350))]
+    buttonrects = [pygame.Rect((50, 150, 1000, 550))]
     textSizes = [(50, 100)]
     buttonnames = ["Rule"]
 
@@ -60,7 +60,7 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                     mouse_pos = pygame.mouse.get_pos()
                     print(mouse_pos)
-                    if mouse_pos[0] in range(600,800) and mouse_pos[1] in range(450,600):
+                    if mouse_pos[0] in range(1100,1300) and mouse_pos[1] in range(600,750):
                         if parser.is_valid_rule(user_input) == True:
                             valid = True
                             return user_input
@@ -74,18 +74,18 @@ def main():
             if event.type == pygame.KEYDOWN:
                 unvalid = False
                 screen.fill((0, 50, 50))
-                screen.blit(img,(600, 450))
+                screen.blit(img,(1100, 600))
                 if event.key == pl.K_RETURN:
                     user_input += "\n"
                 
                 elif event.key == pl.K_DELETE:
                     screen.fill((0, 50, 50))
-                    screen.blit(img,(600, 450))
+                    screen.blit(img,(1100, 600))
                     user_input = user_input[:len(user_input)-1]
                 
                 elif event.key == pl.K_BACKSPACE:
                     screen.fill((0, 50, 50))
-                    screen.blit(img,(600, 450))
+                    screen.blit(img,(1100, 600))
                     user_input = user_input[:len(user_input)-1]
 
                 else:
@@ -102,9 +102,9 @@ def main():
         ptext.draw(user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=30)
 
         if unvalid == True:
-            screen.blit(errormark,(150,100))
+            screen.blit(errormark,(350,100))
         
         if valid == True:
-            screen.blit(checkmark,(250,150))
+            screen.blit(checkmark,(450,150))
 
         pygame.display.flip()

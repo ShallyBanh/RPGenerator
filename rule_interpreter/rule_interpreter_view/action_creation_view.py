@@ -26,11 +26,11 @@ def main():
 
     pygame.init()
 
-    sx, sy = 800, 600
+    sx, sy = 1300, 750
     screen = pygame.display.set_mode((sx, sy))
     pygame.display.set_caption("Action Creation")
 
-    buttonrects = [pygame.Rect((50, 150, 500, 70)), pygame.Rect((50, 325, 500, 170))]
+    buttonrects = [pygame.Rect((50, 150, 1000, 70)), pygame.Rect((50, 325, 1000, 350))]
     textSizes = [(50, 100 + 170 * j) for j in range(2)]
     buttonnames = ["Action Name", "Rule"]
     size = ""
@@ -44,8 +44,8 @@ def main():
         events = pygame.event.get()
 
         screen.fill((0, 50, 50))
-        screen.blit(img,(600, 450))
-        screen.blit(plusImage,(510, 290))
+        screen.blit(img,(1100, 600))
+        screen.blit(plusImage,(1010, 290))
         screen.blit(arrowImg,(10, 10))
 
         for event in events:
@@ -59,13 +59,14 @@ def main():
                 clickpos = event.pos
                 x, y = clickpos
                 didSelectActionNameInputBox = False
+                print((x, y))
                 for j in range(len(buttonrects)):
                     rect = buttonrects[j]
                     if rect.collidepoint(x,y):
                         if j == 0:
                             didSelectActionNameInputBox = True
 
-                if x in range(600,800) and y in range(450,600):
+                if x in range(1100,1300) and y in range(600, 750):
                     if actionNameInput.get_text() == "" or rule == "":
                         invalidSubmission = True
                     else:
@@ -76,7 +77,7 @@ def main():
                     playing = False
                     return None, None
                 
-                if x in range (510, 540) and y in range (290, 320):
+                if x in range (1010, 1050) and y in range (290, 320):
                     rule_input = ruleInputView.main()
                     if rule_input is not None:
                         rule = rule_input
@@ -92,11 +93,10 @@ def main():
             actionNameInput.update(events)
         
         if invalidSubmission == True:
-            ptext.draw("Both fields must be complete in order to submit", (60, 550), fontname="Boogaloo", color="red", fontsize=30)
+            ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=30)
 
         screen.blit(actionNameInput.get_surface(), (60, 165 + 185 * 0))
         ptext.draw(rule, (60, 345), fontname="Boogaloo", color=(0,0,0), fontsize=20)
         
         screen.blit(*titleargs)
         pygame.display.flip()
-

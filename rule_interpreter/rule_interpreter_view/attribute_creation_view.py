@@ -13,11 +13,11 @@ def main():
 
     pygame.init()
 
-    sx, sy = 800, 600
+    sx, sy = 1300, 750
     screen = pygame.display.set_mode((sx, sy))
     pygame.display.set_caption("Attribute Creation")
 
-    buttonrects = [pygame.Rect((50, 150 + 160 * j, 500, 70)) for j in range(3)]
+    buttonrects = [pygame.Rect((50, 150 + 160 * j, 1100, 70)) for j in range(3)]
     textSizes = [(50, 100 + 155 * j) for j in range(3)]
     buttonnames = ["Attribute Name", "Attribute Type", "Attribute Value"]
 
@@ -33,7 +33,7 @@ def main():
         events = pygame.event.get()
 
         screen.fill((0, 50, 50))
-        screen.blit(img,(600, 450))
+        screen.blit(img,(1100, 600))
         screen.blit(arrowImg,(10, 10))
 
         for event in events:
@@ -65,7 +65,7 @@ def main():
                     playing = False
                     return None, None, None
 
-                if x in range(600,800) and y in range(450,600):
+                if x in range(1100,1300) and y in range(600,750):
                     if attributeNameInput.get_text() == "" or attributeTypeInput.get_text() == "" or attributeValueInput.get_text() == "":
                         invalidSubmission = True
                     else:
@@ -96,7 +96,5 @@ def main():
         
         screen.blit(*titleargs)
         pygame.display.flip()
-
-
 
 

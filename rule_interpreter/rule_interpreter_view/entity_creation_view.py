@@ -8,25 +8,31 @@ def main():
     ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
     entityNameInput = pygame_textinput.TextInput()
     entityTypeInput = pygame_textinput.TextInput()
-    sizeInput = pygame_textinput.TextInput()
+    widthInput = pygame_textinput.TextInput()
+    heightInput = pygame_textinput.TextInput()
+    isTemplateInput = pygame_textinput.TextInput()
+    inheritanceInput = pygame_textinput.TextInput()
     img = pygame.image.load('img/submit.png')
     arrowImg = pygame.image.load('img/arrow.png')
 
     pygame.init()
 
-    sx, sy = 800, 600
+    sx, sy = 1300, 750
     screen = pygame.display.set_mode((sx, sy))
     pygame.display.set_caption("Entity Creation")
 
-    buttonrects = [pygame.Rect((50, 150 + 160 * j, 500, 70)) for j in range(3)]
-    textSizes = [(50, 100 + 155 * j) for j in range(3)]
-    buttonnames = ["Entity Name", "Entity Type", "Size"]
+    buttonrects = [pygame.Rect((50, 150, 500, 70)), pygame.Rect((50, 150 + 160 * 1, 500, 70)), pygame.Rect((50, 150 + 160 * 2, 500, 70)), pygame.Rect((50, 150 + 160 * 3, 500, 70)), pygame.Rect((600, 150, 500, 70)), pygame.Rect((600, 150 + 160 * 1, 500, 70))]
+    textSizes = [(50, 100), (50, 100 + 155 * 1), (50, 100 + 155 * 2), (50, 100 + 155 * 3), (600, 100), (600, 100 + 155 * 1)]
+    buttonnames = ["Entity Name", "Entity Type", "Width", "Height", "Is Template?", "Is Inherited From?"]
     size = ""
 
     titleargs = ptext.draw("Entity Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
     didSelectEntityNameInputBox= False 
     didSelectEntityTypeInputBox = False 
-    didSelectEntitySizeInputBox = False
+    didSelectEntityWidthInputBox = False
+    didSelectEntityHeightInputBox= False 
+    didSelectEntityIsTemplateInputBox = False 
+    didSelectEntityInheritanceInputBox = False
     playing = True
     invalidSubmission = False
 
@@ -35,7 +41,7 @@ def main():
         events = pygame.event.get()
 
         screen.fill((0, 50, 50))
-        screen.blit(img,(600, 450))
+        screen.blit(img,(1100, 600))
         screen.blit(arrowImg,(10, 10))
 
         for event in events:
@@ -54,25 +60,56 @@ def main():
                         if j == 0:
                             didSelectEntityNameInputBox = True
                             didSelectEntityTypeInputBox = False
-                            didSelectEntitySizeInputBox = False
+                            didSelectEntityWidthInputBox = False
+                            didSelectEntityHeightInputBox= False 
+                            didSelectEntityIsTemplateInputBox = False 
+                            didSelectEntityInheritanceInputBox = False
                         elif j == 1:
                             didSelectEntityNameInputBox = False
                             didSelectEntityTypeInputBox = True
-                            didSelectEntitySizeInputBox = False
+                            didSelectEntityWidthInputBox = False
+                            didSelectEntityHeightInputBox= False 
+                            didSelectEntityIsTemplateInputBox = False 
+                            didSelectEntityInheritanceInputBox = False
                         elif j == 2:
                             didSelectEntityNameInputBox = False
                             didSelectEntityTypeInputBox = False
-                            didSelectEntitySizeInputBox = True
+                            didSelectEntityWidthInputBox = True
+                            didSelectEntityHeightInputBox= False 
+                            didSelectEntityIsTemplateInputBox = False 
+                            didSelectEntityInheritanceInputBox = False
+                        if j == 3:
+                            didSelectEntityNameInputBox = False
+                            didSelectEntityTypeInputBox = False
+                            didSelectEntityWidthInputBox = False
+                            didSelectEntityHeightInputBox= True 
+                            didSelectEntityIsTemplateInputBox = False 
+                            didSelectEntityInheritanceInputBox = False
+                        elif j == 4:
+                            didSelectEntityNameInputBox = False
+                            didSelectEntityTypeInputBox = False
+                            didSelectEntityWidthInputBox = False
+                            didSelectEntityHeightInputBox= False 
+                            didSelectEntityIsTemplateInputBox = True 
+                            didSelectEntityInheritanceInputBox = False
+                        elif j == 5:
+                            didSelectEntityNameInputBox = False
+                            didSelectEntityTypeInputBox = False
+                            didSelectEntityWidthInputBox = False
+                            didSelectEntityHeightInputBox= False 
+                            didSelectEntityIsTemplateInputBox = False 
+                            didSelectEntityInheritanceInputBox = True
+                        
 
                 if x in range(10,40) and y in range(10,40):
                     playing = False
                     return None, None, None
-                if x in range(600,800) and y in range(450,600):
-                    if entityNameInput.get_text() == "" or entityTypeInput.get_text() == "" or sizeInput.get_text() == "":
+                if x in range(1100,1300) and y in range(600,750):
+                    if entityNameInput.get_text() == "" or entityTypeInput.get_text() == "" or widthInput.get_text() == "" or heightInput.get_text() == "" or isTemplateInput.get_text() == "":
                         invalidSubmission = True
                     else:
                         playing = False
-                        return entityNameInput.get_text(), entityTypeInput.get_text(), sizeInput.get_text()
+                        return entityNameInput.get_text(), entityTypeInput.get_text(), widthInput.get_text(), heightInput.get_text(), isTemplateInput.get_text(), inheritanceInput.get_text()
 
         for rect, name, size in zip(buttonrects, buttonnames, textSizes):
             screen.fill(pygame.Color("#553300"), rect)
@@ -85,16 +122,24 @@ def main():
             entityNameInput.update(events)
         elif didSelectEntityTypeInputBox == True:
             entityTypeInput.update(events)
-        elif didSelectEntitySizeInputBox == True:
-            sizeInput.update(events)
+        elif didSelectEntityWidthInputBox == True:
+            widthInput.update(events)
+        elif didSelectEntityHeightInputBox == True:
+            heightInput.update(events)
+        elif didSelectEntityIsTemplateInputBox == True:
+            isTemplateInput.update(events)
+        elif didSelectEntityInheritanceInputBox == True:
+            inheritanceInput.update(events)
         
         if invalidSubmission == True:
-            ptext.draw("All fields must be complete in order to submit", (60, 555), fontname="Boogaloo", color="red", fontsize=30)
+            ptext.draw("All fields must be complete in order to submit", (615, 500), fontname="Boogaloo", color="red", fontsize=30)
 
         screen.blit(entityNameInput.get_surface(), (60, 165 + 185 * 0))
         screen.blit(entityTypeInput.get_surface(), (60, 150 + 185 * 1)) 
-        screen.blit(sizeInput.get_surface(), (60, 130 + 185 * 2))
+        screen.blit(widthInput.get_surface(), (60, 130 + 185 * 2))
+        screen.blit(heightInput.get_surface(), (60, 110 + 185 * 3))
+        screen.blit(isTemplateInput.get_surface(), (610, 165 + 185 * 0))
+        screen.blit(inheritanceInput.get_surface(), ((610, 150 + 185 * 1)))
 
-        
         screen.blit(*titleargs)
         pygame.display.flip()
