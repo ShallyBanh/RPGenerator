@@ -147,9 +147,19 @@ class RuleEnactor:
 			##print("Evaluator: Its a function!")
 			return self.keywords[words[0]](self, line)
 		#using an operator 
-		# elif words[1] in self.operators:
-			# #print("Evaluator: Its an operator!")
-			# return self.operators[words[1]](self, line)
+		#serach for boolean operators first (and/or)
+		lowest_idx = 999
+		first_operator = ''
+		for operator in self.boolean_operators:
+			check = line.split(operator)
+			# do this since we want to solve things left to right
+			if len(check) > 1:
+				if (lowest_idx > len(check[0])):
+					lowest_idx = len(check[0])
+					first_operator = operator
+		if len(first_operator) > 0:
+			##print("Evaluator: Its an operator! (" + first_operator + ")")
+			return self.boolean_operators[first_operator](self, line)
 		#search for combined operators first, since they mess with parsing for just standard operators
 		lowest_idx = 999
 		first_operator = ''
@@ -713,8 +723,14 @@ class RuleEnactor:
 	def handle_or(self, written_rule):
 		words = written_rule.split('or')
 		return self.evaluate_line(words[0].strip()) or self.evaluate_line(words[1].strip())
+		
+	def handle_add_status(self):
+		return None
+		
+	def handle_has_status(self):
+		return None
 	
-	def roll_dice(dice_string):
+	def roll_dice(self, dice_string):
 		roll_data = dice_string.split('d')
 		if roll_data[1] == '1' or roll_data[1] == '0':
 			return int(roll_data[1])
@@ -741,4 +757,6 @@ class RuleEnactor:
 	operators = {" within(":handle_within, "+": handle_plus, "-":handle_minus,  
 				" equals ":handle_equals, "<":handle_less_than, ">":handle_greater_than, 
 				" less ":handle_less_than, " greater ": handle_greater_than, "*": handle_multiply_operator,
-				"/":handle_divide_operator, "=":handle_assignment, " and ":handle_and, " or ":handle_or}
+				"/":handle_divide_operator, "=":handle_assignment}
+				
+	boolean_operators = {" and ":handle_and, " or ":handle_or}

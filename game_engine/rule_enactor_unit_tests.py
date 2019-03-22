@@ -236,7 +236,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.rule += "if x > y then xless = 1\n"
 		self.rule += "if y > 999 then yless = 1\n"
 		self.rule += "if y > x then xless = 0\n"
-		self.rule += "if y > 1 then yless = 0\n"
+		self.rule += "if y > 1 + 1 then yless = 0\n"
 		self.enactor.perform_action(self.rule, self.actor)
 		self.assertEqual(self.enactor.variables["xless"], 0)
 		self.assertEqual(self.enactor.variables["yless"], 0)
@@ -312,7 +312,6 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 	def test_and(self):
 		self.rule += "x = 10\n"
-		self.rule += "y = 5\n"
 		self.rule += "if x equals 10 and x < 100 then yeet = 1\n"
 		self.rule += "if x equals 10 and x > 100 then yeet = 0\n"
 		self.enactor.perform_action(self.rule, self.actor)
@@ -320,10 +319,25 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 		
 	def test_or(self):
-		pass #TODO
+		self.rule += "x = 10\n"
+		self.rule += "y = 5\n"
+		self.rule += "if x equals 10 or x < 100 then yeet = 1\n"
+		self.rule += "if y equals 5 or x > 100 then yeet2 = 1\n"
+		self.rule += "if y less than 5 or x < 100 then yeet3 = 1\n"
+		self.rule += "if y equals 999 or x equals 100 then yeet3 = 0\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertEqual(self.enactor.variables["yeet"], 1)
+		self.assertEqual(self.enactor.variables["yeet2"], 1)
+		self.assertEqual(self.enactor.variables["yeet3"], 1)
 		
 	def test_roll_dice(self):
-		pass #TODO
+		self.rule += "x = d20\n"
+		self.rule += "y = 1d20\n"
+		self.rule += "z = 5d6\n"
+		self.enactor.perform_action(self.rule, self.actor)
+		self.assertTrue(1 <= self.enactor.variables["x"] and self.enactor.variables["x"] <= 20)
+		self.assertTrue(1 <= self.enactor.variables["y"] and self.enactor.variables["y"] <= 20)
+		self.assertTrue(5 <= self.enactor.variables["z"] and self.enactor.variables["z"] <= 30)
 		
 	def test_attack_action(self):
 		pass #TODO
