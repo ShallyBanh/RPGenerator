@@ -6,8 +6,6 @@ import math
 import re
 import ptext
 
-
-
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
 # http://usingpython.com/list-comprehension/
@@ -36,15 +34,6 @@ def which_tile(mousepos):
 def tile_location(size):
     return size[1]*myMap.tilesize, size[0]*myMap.tilesize
 
-def multi_line_blit(text):
-    label = []
-    text = re.split(',|\[|\]|\n',text)
-    for i in range(len(text)): 
-        label.append(FONTTYPE.render(text[i], True, (255,255,255)))
-    for line in range(len(label)):
-        DISPLAYSURF.blit(label[line],(0,(line*label[line].get_height())))
-    return
-
 def make_popup(x, y, entity):
     global OLDSURF
 
@@ -71,7 +60,7 @@ def make_popup(x, y, entity):
     pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.width*myMap.tilesize, top), (left+entity.width*myMap.tilesize, top+entity.height*myMap.tilesize), (left, top+entity.height*myMap.tilesize)], 3)
 
     # entity information
-    multi_line_blit(str(entity))
+    ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
 
     return (popupSurf.get_width(), popupSurf.get_height()), (x,y)
 
@@ -92,11 +81,11 @@ class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
 
     def __init__(self, x, y, w, h, screen, text=''):
-        self.rect = pygame.Rect(x, y, w, h)
-        self.height = h
         self.color = COLOR_INACTIVE
         self.text = text
-        self.txt_surface = FONTTYPE.render(text, True, self.color)
+        self.txt_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = w)
+        self.height = self.txt_surface.get_height() + 5
+        self.rect = pygame.Rect(x, y, w, self.height)
         self.active = False
         self.screen = screen
 
@@ -118,44 +107,31 @@ class InputBox:
                     transcript += "\n" + str(self.text)
                     print(transcript)
                     self.text = ""
-                    # make a copy of rect that removes border of block
-                    remove_block = self.rect.copy()
-                    remove_block.h += 5
-                    pygame.draw.rect(self.screen, COLOR_BLACK, remove_block, 0)
-                    self.rect.h = self.height
+                    self.remove_old_block()
                 elif event.key == K_BACKSPACE:
                     self.text = self.text[:-1]
+                    tmp_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+                    if tmp_surface.get_height() < (self.rect.h-5):
+                        self.remove_old_block()
                 else:
                     self.text += event.unicode
 
-                # width = math.ceil(self.txt_surface.get_width()/self.rect.w)
-                # if  width > 1 and (self.text.count("\n")+1)< width and self.text != "":
-                #     self.text += "\n"     
-                # Re-render the text -- CURRENTLY NOT USED, AS PTEXT IS USED INSTEAD
-                self.txt_surface = FONTTYPE.render(self.text, True, self.color)
-
         return transcript
 
-    def update(self):
-        # Resize the box if the text is too long.
-        # width = max(200, self.txt_surface.get_width()+10)
-
-        # if "\n" in self.text:
-        #     # self.rect.h = self.txt_surface.get_height()*(self.text.count('\n')+2)
-        #     self.rect.h = 20*(self.text.count('\n')+2)
-        width = math.ceil(self.txt_surface.get_width()/self.rect.w)
-        if  width > 1 and self.text != "":
-            self.rect.h = 20*(width+1)
+    def remove_old_block(self):
+        self.rect.h += 5
+        pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
+        self.rect.h = self.height
 
     def draw(self):
         # Blit the text.
-        # screen.blit(self.txt_surface, (self.rect.x+5, self.rect.y+5))
-        ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        self.txt_surface, tpos = ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        self.rect.h = self.txt_surface.get_height() + 5
         # Blit the rect.
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
 
     def wipe(self):
-        # Blit the rect.
+        # Blit the rect box.
         pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
 
@@ -201,7 +177,6 @@ COLOR_ACTIVE = pygame.Color('dodgerblue2')
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
-
 
 
 if __name__ == "__main__":
@@ -273,10 +248,10 @@ if __name__ == "__main__":
             history.update(transcript)
             # transcript = input_box.handle_event(event, transcript)
 
-
         input_box.wipe()
         history.wipe()
-        input_box.update()
+        # input_box.update()
         input_box.draw()
         history.draw()
+
         pygame.display.flip()
