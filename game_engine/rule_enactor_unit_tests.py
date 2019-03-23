@@ -420,7 +420,7 @@ class TestRuleInterpreter(unittest.TestCase):
 	def test_attack_action(self):
 		self.rule += "roll = d20\n"
 		self.rule += "if roll > target.AC then reduce target.HP by 1d8\n"
-		action = rule_enactor.Action(action_name, self.rule)
+		action = rule_enactor.Action(self.action_name, self.rule)
 		self.enactor.perform_action(action, self.actor)
 		if self.enactor.variables["roll"] > 15:
 			self.assertTrue(self.enactor.target_of_action.get_attribute("HP").value < 20 and self.enactor.target_of_action.get_attribute("HP").value > 11)
