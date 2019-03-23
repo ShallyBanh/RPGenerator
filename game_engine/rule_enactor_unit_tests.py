@@ -18,6 +18,12 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.target.add_attribute(self.hp_boys)
 		self.target.x = 2
 		self.target.y = 2
+		
+		self.ac_time = rule_enactor.Attribute("AC", 15)	
+		self.actor.add_attribute(self.ac_time)
+	
+		self.ac_boys = rule_enactor.Attribute("AC", 15)
+		self.target.add_attribute(self.ac_boys)
 	
 		self.enactor.add_new_entity(self.actor)
 		self.enactor.add_new_entity(self.target)
@@ -412,10 +418,23 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 30)
 		
 	def test_attack_action(self):
-		pass #TODO
+		self.rule += "roll = d20\n"
+		self.rule += "if roll > target.AC then reduce target.HP by 1d8\n"
+		action = rule_enactor.Action(action_name, self.rule)
+		self.enactor.perform_action(action, self.actor)
+		if self.enactor.variables["roll"] > 15:
+			self.assertTrue(self.enactor.target_of_action.get_attribute("HP").value < 20 and self.enactor.target_of_action.get_attribute("HP").value > 11)
+		else:
+			self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 20)
+		
 		
 	def test_fireball_action(self):
-		pass #TODO
+		rule = "target point:\n"
+		rule += "if all entity within(3, 3) of target and d20 > self.AC then reduce entity.HP by 6d6\n"
+		action = rule_enactor.Action(self.action_name, rule)
+		self.enactor.perform_action(action, self.actor)
+		self.assertTrue(self.target.get_attribute("HP").value <= 20 and self.target.get_attribute("HP").value >= -16)
+		self.assertTrue(self.enactor.acting_entity.get_attribute("HP").value <= 10 and self.enactor.acting_entity.get_attribute("HP").value >= -26)
 		
 	#ETC ETC (test complex and concrete examples of actions)
 
