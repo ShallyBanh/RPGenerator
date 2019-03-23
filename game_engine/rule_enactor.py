@@ -710,6 +710,8 @@ class RuleEnactor:
 		else:
 			if roll_data[0] == '':
 				return random.randint(1,int(roll_data[1]))
+			elif roll_data[0] == '0':
+				return 0
 			else:
 				total = 0
 				for i in range(int(roll_data[0])):
