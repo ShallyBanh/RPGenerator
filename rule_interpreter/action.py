@@ -21,9 +21,3 @@ class Action:
 
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
-
-    def perform_action(self):
-        exec(self._ruleContent)
-    
-    def __do_perform_action(self):
-        return
