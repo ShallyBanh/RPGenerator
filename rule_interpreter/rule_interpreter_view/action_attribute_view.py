@@ -14,7 +14,7 @@ from action_creation_view import ActionCreationView
 from attribute_creation_view import AttributeCreationView
 
 class AttributeActionCreationView:
-    def __init__(self):
+    def __init__(self, currentEntityName):
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
@@ -22,9 +22,17 @@ class AttributeActionCreationView:
         self._invalidSubmission = False
         self._action_view = False
         self._attribute_view = False
+        self._currentEntityName = currentEntityName
 
+    def get_entity_info(self):
+        entityIdx = Validator().get_entity_idx(self._currentEntityName)
+        if entityIdx != -1:
+            return Validator().get_entities()[entityIdx]
+        return -1
+        
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
+        entity = self.get_entity_info()
 
         pygame.init()
 
@@ -36,7 +44,6 @@ class AttributeActionCreationView:
         buttonnames = ["Entity Info", "Attributes", "Actions"]
         actionNames = []
         attributes = []
-        entites_str = ""
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -50,12 +57,18 @@ class AttributeActionCreationView:
                 actionName, rule = ActionCreationView().main()
                 if actionName is not None:
                     actionNames.append(actionName)
+                    entityIdx = Validator().get_entity_idx(self._currentEntityName)
+                    if entityIdx != -1:
+                        Validator().set_attribute(entityIdx, attrName, attrType, attrValue)
                 self._action_view = False
             
             if self._attribute_view == True:
                 attrName, attrType, attrValue = AttributeCreationView().main()
                 if attrName is not None:
                     attributes.append(attrName)
+                    entityIdx = Validator().get_entity_idx(self._currentEntityName)
+                    if entityIdx != -1:
+                        Validator().set_attribute(entityIdx, attrName, attrType, attrValue)
                 self._attribute_view = False
 
             for event in events:
@@ -90,6 +103,9 @@ class AttributeActionCreationView:
             for attr in attributes:
                 attributeStr += attr + "\n"
             ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=30)
+
+            if entity != -1:
+                ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=30)
 
             pygame.display.flip()
 
