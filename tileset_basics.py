@@ -103,9 +103,10 @@ class InputBox:
             if self.active:
                 if event.key == K_RETURN:
                     # append to the transcript view
-                    transcript += str(self.text) + "\n"
-                    self.text = ""
-                    self.remove_old_block()
+                    if len(self.text) > 0:
+                        transcript += str(self.text) + "\n"
+                        self.text = ""
+                        self.remove_old_block()
                 elif event.key == K_BACKSPACE:
                     self.text = self.text[:-1]
                     tmp_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
@@ -156,20 +157,16 @@ class Transcript:
         if event.type == KEYDOWN:
             if self.active:
                 if event.key == K_DOWN:
-                    self.scroll_up()
-                elif event.key == K_UP:
                     self.scroll_down()
+                elif event.key == K_UP:
+                    self.scroll_up()
 
     def update(self, transcript):
         if self.transcript != transcript:
             self.transcript = transcript
-            splitup = transcript.split("\n")
-            self.transcript_in_view += splitup[len(splitup)-2] + "\n"
-            tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
-            while (tmp_surface.get_height() > (self.rect.h-5)):
-                self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
-                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
-
+            self.next_line()
+            self.adjust_transcript_view()
+            
     def draw(self):
         # Blit the text.
         self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
@@ -181,16 +178,52 @@ class Transcript:
         pygame.draw.rect(self.screen, COLOR_BLACK, self.rect, 0)
 
     def scroll_up(self):
-        print("up")
-        # tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
-        # self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
-        # self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        if len(self.transcript_in_view) < len(self.transcript):
+            try:
+                # add to top of string last part of whole transcript before it
+                beforehand = self.transcript.split(self.transcript_in_view,1)[0]
+                first_line = beforehand.split("\n")[-2]
+                self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
+                # pop off the bottom of transcript in view
+                lines = self.transcript_in_view.split("\n")
+                copyof = lines[0:len(lines)-2]
+                self.transcript_in_view = "\n".join(copyof) + "\n"
+                # display this
+                self.adjust_transcript_view()
+            except Exception as e:
+                # print(e)
+                if e != "list index out of range":
+                    print(e)
 
     def scroll_down(self):
-        print("down")
-        # tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
-        # self.transcript_in_view = self.transcript_in_view.split("\n",1)[1]
-        # self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        if len(self.transcript_in_view) < len(self.transcript):
+            # add the next line in the transcript
+            afterwards = self.transcript.split(self.transcript_in_view,1)[-1]
+            if len(afterwards) >= 1:
+                first_line = afterwards.split("\n")[0]
+                self.transcript_in_view = self.transcript_in_view + first_line + "\n"
+                # pop off the top
+                self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
+                # display this 
+                self.adjust_transcript_view()
+
+    def next_line(self):
+        self.transcript_in_view += transcript.split("\n")[-2] + "\n"
+
+    def adjust_transcript_view(self):
+        tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        if len(self.transcript_in_view) < len(self.transcript):
+        # if not down:
+            while (tmp_surface.get_height() < self.rect.h):
+                # add to top of string last part of whole transcript before it
+                beforehand = self.transcript.split(self.transcript_in_view,1)[0]
+                first_line = beforehand.split("\n")[-2]
+                self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
+                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        while (tmp_surface.get_height() > self.rect.h):
+            self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
+            tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+
 
 # GLOBAL VAR
 myMap = Map(tilesize = 50, height = 10, width = 18)
