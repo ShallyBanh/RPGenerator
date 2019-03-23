@@ -12,7 +12,8 @@ from point import Point
 class TestRuleInterpreter(unittest.TestCase):
 	def setUp(self):
 		self.action_name = "Action"
-		self.enactor = rule_enactor.RuleEnactor()
+		debug_mode = True
+		self.enactor = rule_enactor.RuleEnactor(debug_mode)
 
 		self.rule = "target guy\n"
 		self.isTemplate = False

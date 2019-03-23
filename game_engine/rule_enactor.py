@@ -17,7 +17,7 @@ class RuleEnactor:
 			
 	valid_dice_regex = "^[0-9]*d[0-9]+$"
 	
-	def __init__(self):
+	def __init__(self, debug_mode = False):
 		self.selected_item = None
 		self.all_created_entities = []
 		
@@ -29,7 +29,7 @@ class RuleEnactor:
 		self.acting_entity = None
 		self.current_action = None
 		self.interrupting_relationship = None
-		
+		self._debug_mode = debug_mode
 		
 	def add_new_entity(self, entity):
 		self.all_created_entities.append(entity)
@@ -166,19 +166,30 @@ class RuleEnactor:
 		target_type = words[1]
 		# they can either be targeting a point or an entity
 		#point case:
-		#TODO: we need to be calling a GUI function to give us a point. For now, this is hard coded in. 
-		if words[1] == 'point':
-			self.target_of_action = Point(1,1)
-		# entity case:
-		#TODO: in reality we need to be calling a GUI function that gives us the targeted entity...
-		#thus this is a placeholder for now
+		
+		if self._debug_mode:
+			# point case
+			if words[1] == 'point':
+				self.target_of_action = Point(1,1)
+			# entity case:
+			else:
+				for entity in self.all_created_entities:
+					if entity.get_name() == target_type:
+						self.target_of_action = entity
 		else:
-			for entity in self.all_created_entities:
-				if entity.get_name() == target_type:
-					self.target_of_action = entity
-					#print("New Target :")
-					#print(self.target_of_action)
-		#TODO: We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
+			#TODO: we need to be calling a GUI function to give us a point. 
+			# point case
+			if words[1] == 'point':
+				raise Exception("SELECT POINT WITH GUI UNIMPLEMENTED")
+			# entity case:
+			#TODO: in reality we need to be calling a GUI function that gives us the targeted entity.
+			else:
+				for entity in self.all_created_entities:
+					if entity.get_name() == target_type:
+						raise Exception("SELECT ENTITY WITH GUI UNIMPLEMENTED")
+			
+			
+		#We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
 		for r in self.relationships:
 			if self.check_for_interrupt(r) == 'INTERRUPT':
 				return 'INTERRUPT'
