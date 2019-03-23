@@ -25,3 +25,6 @@ class Map:
             self.x = x
             self.y = y
             self.name = name
+
+        def __str__(self):
+            return  "Texture:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\n"

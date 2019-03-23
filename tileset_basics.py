@@ -29,7 +29,21 @@ def offset_blit(x,y):
     return (x+MAPOFFSET[0],y+MAPOFFSET[1])
 
 def which_tile(mousepos):
-    return math.ceil(mousepos[1]/myMap.tilesize)-1, math.ceil(mousepos[0]/myMap.tilesize)-1
+    x = math.ceil(mousepos[1]/myMap.tilesize)-1
+    y = math.ceil(mousepos[0]/myMap.tilesize)-1
+    if y in range(0,myMap.width) and x in range(0,myMap.height):
+        return x,y
+    return -1,-1
+
+def check_entity_fit(width, height, x, y, entity):
+    if (y + width) > myMap.width or (x + height) > myMap.height:
+        return False
+    for i in range(0,width):
+        for j in range(0,height):
+            en = which_entity(x+j, y+i)
+            if en is not None and en != entity:
+                return False
+    return True
 
 def tile_location(size):
     return size[1]*myMap.tilesize, size[0]*myMap.tilesize
@@ -38,7 +52,8 @@ def make_popup(x, y, entity):
     global OLDSURF
 
     # draw drop down
-    options = entity.actions
+    options = ["Move"] # mandatory option to have
+    options += entity.actions
     textSurf = []
     width = 0
     height = 0
@@ -76,6 +91,12 @@ def load_pictures():
         images[p] = pygame.image.load("images/textures/"+p)
 
     return images
+
+def which_entity(x, y):
+    for e in ENTITIES:
+        if x in range(e.x,e.x+e.width) and y in range(e.y,e.y+e.height):
+            return e
+    return None
 
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
@@ -240,15 +261,15 @@ COLOR_ACTIVE = pygame.Color('dodgerblue2')
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
-
+ENTITIES = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 
 if __name__ == "__main__":
 
     images = load_pictures()
 
     # create the map and add add textures to it
-    myMap.textures = [Map.Texture(3,3,1,1,"coal.png"),Map.Texture(3,4,1,1,"coal.png")]
-    ENTITIES = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
+    myMap.textures = [Map.Texture(3,3,1,1,"grass.png"),Map.Texture(3,4,1,1,"grass.png")]
+    
     #example fog
     myMap.fogOfWar[8][15] = False
     myMap.fogOfWar[8][16] = False
@@ -279,6 +300,7 @@ if __name__ == "__main__":
     input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
     history = Transcript(MAPOFFSET[0]+myMap.width*myMap.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
     # transcript = ""
+    action_requested = ""
 
     while True:    
         for event in pygame.event.get():
@@ -289,20 +311,49 @@ if __name__ == "__main__":
                 mousepos = pygame.mouse.get_pos()
                 mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                 print(mousepos)
-                if my_entity is not None:
+                if my_entity is not None and action_requested is not "Move":
                     remove_previous_popup()
                     if mousepos[0] in range(location[0],location[0]+size[0]) and mousepos[1] in range(location[1],location[1]+size[1]):
-                        rowsize = size[1]/len(my_entity.actions)
+                        rowsize = size[1]/(len(my_entity.actions)+1)
                         option_selected = math.floor((mousepos[1]-location[1])/rowsize)
-                        action_requested = my_entity.actions[option_selected]
+                        if option_selected == 0:
+                            action_requested = "Move"
+                        else:
+                            action_requested = my_entity.actions[option_selected-1]
+                            my_entity = None
                         print(action_requested)
+                    else:
+                        my_entity = None
+                elif my_entity is not None and action_requested is "Move":
+                    # grab new location
+                    x, y = which_tile(mousepos)
+                    # if it is a valid locatin and there are no other entities there
+                    if x != -1 and y != -1 and check_entity_fit(my_entity.width, my_entity.height, x, y, my_entity):
+                        # remove old image                       
+                        for i in range(0,my_entity.width):
+                            for j in range(0,my_entity.height):
+                                DISPLAYSURF.blit(greyImage, offset_blit((my_entity.y+i)*myMap.tilesize, (my_entity.x+j)*myMap.tilesize))
+                                for texture in myMap.textures:
+                                    # print(texture)
+                                    # print("x: " + str(my_entity.x))
+                                    # print("y: " + str(my_entity.y))
+                                    # print("i: " + str(i))
+                                    # print("j: " + str(j))
+                                    if texture.x == (my_entity.x+j) and texture.y == (my_entity.y+i):
+                                        texture_image = pygame.transform.scale(images[texture.name], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
+                                        DISPLAYSURF.blit(texture_image, offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
+                                        
+                        # blit entity to it
+                        my_entity.x = x
+                        my_entity.y = y
+                        my_entity_image = pygame.transform.scale(images[my_entity.name], (my_entity.width*myMap.tilesize,my_entity.height*myMap.tilesize))
+                        DISPLAYSURF.blit(my_entity_image, offset_blit(my_entity.y*myMap.tilesize, my_entity.x*myMap.tilesize))
+                    # wipe signals
+                    action_requested = ""
                     my_entity = None
                 else:
                     x, y = which_tile(mousepos)
-                    for e in ENTITIES:
-                        if x in range(e.x,e.x+e.width) and y in range(e.y,e.y+e.height):
-                            my_entity = e
-                            break
+                    my_entity = which_entity(x, y)
                     if my_entity is not None:
                         loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
                         size, location = make_popup(loc_x, loc_y, my_entity)
@@ -312,6 +363,7 @@ if __name__ == "__main__":
             history.update(transcript)
             # transcript = input_box.handle_event(event, transcript)
 
+        # chat commands
         input_box.wipe()
         history.wipe()
         input_box.draw()
