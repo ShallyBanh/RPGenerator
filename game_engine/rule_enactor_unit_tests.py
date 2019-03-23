@@ -284,9 +284,15 @@ class TestRuleInterpreter(unittest.TestCase):
 	def test_assignment(self):
 		self.rule += "x = 5\n"
 		self.rule += "target.HP = 5\n"
+		self.rule += "str = \"Literal\"\n"
+		self.rule += "bool1 = True\n"
+		self.rule += "bool2 = False\n"
 		action = rule_enactor.Action(self.action_name, self.rule)
 		self.enactor.perform_action(action, self.actor)
 		self.assertEqual(self.enactor.variables["x"], 5)
+		self.assertEqual(self.enactor.variables["str"], "Literal")
+		self.assertEqual(self.enactor.variables["bool1"], True)
+		self.assertEqual(self.enactor.variables["bool2"], False)
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").value, 5)
 		
 	def test_plus_equals(self):

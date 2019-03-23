@@ -187,6 +187,14 @@ class RuleEnactor:
 		if self._is_number(words[0]) and len(words) == 1:
 			##print("Evaluator: Its a number!")
 			return float(words[0])
+		# a string literal
+		if words[0][0] == "\"" and words[0][-1] == "\"":
+			return words[0].strip("\"")
+		# a boolean literal
+		if words[0] == "True":
+			return True
+		if words[0] == "False":
+			return False
 		# a dice roll
 		elif re.search(self.valid_dice_regex, words[0]) and len(words) == 1:
 			##print("Evaluator: Its a dice roll!")
