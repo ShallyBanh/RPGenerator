@@ -1,15 +1,20 @@
+import os
+import sys
+sys.path.append('../')
+from validator import Validator
+from entity import Entity
+from action import Action
+from attribute import Attribute
+from syntax_parser import SyntaxParser
+sys.path.append('/rule_interpreter_view')
 import pygame
 import ptext
 import pygame_textinput
-import entity_creation_view as eview
-import action_attribute_view as aview
+from entity_creation_view import EntityCreationView
+from action_attribute_view import AttributeActionCreationView
 
 
 ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
-textinput1 = pygame_textinput.TextInput()
-textinput2 = pygame_textinput.TextInput()
-textinput3 = pygame_textinput.TextInput()
-img = pygame.image.load('img/submit.png')
 plusImage = pygame.image.load('img/plussign.png')
 moreButtonList = []
 
@@ -45,15 +50,13 @@ while playing:
     events = pygame.event.get()
 
     if entity_view == True:
-        print("calling entity creation main")
-        name = eview.main()
-        if name is not None:
+        name = EntityCreationView().main()
+        if name[0] is not None:
             entities.append(name[0])
         entity_view = False
     
     if attribute_action_view == True:
-        print("calling action creation main")
-        aview.main()
+        AttributeActionCreationView().main()
         attribute_action_view = False
 
     for event in events:
@@ -66,16 +69,6 @@ while playing:
             x, y = clickpos
             if x in range(1110, 1140) and y in range(110, 140):
                 entity_view = True
-            if x in range(610, 640) and y in range(365, 395):
-                action_view = True
-            if x in range(670, 700) and y in range(115, 145):
-                attribute_view = True
-            if x in range(600,800) and y in range(450,600):
-                print(textinput1.get_text())
-                print(textinput2.get_text())
-                print(textinput3.get_text())
-                entity_view = True
-            
             for moreIdx in range(len(moreButtonList)):
                 print(moreButtonList)
                 x1 = int(moreButtonList[moreIdx][0])
@@ -97,16 +90,6 @@ while playing:
         screen.blit(moreImage,(1050, 210 + entityIdx * 30 + entityIdx*0.05*100))
         moreButtonList.append((1050, 210 + entityIdx * 30 + entityIdx*0.05*100))
     ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
-
-    action_str = ""
-    for action in actionNames:
-        action_str += action + "\n"
-    ptext.draw(action_str, (70, 420), fontname="Boogaloo", color=(0,0,0), fontsize=30)
-
-    attributeStr = ""
-    for attr in attributes:
-        attributeStr += attr + "\n"
-    ptext.draw(attributeStr, (420, 200), fontname="Boogaloo", color=(0,0,0), fontsize=30)
 
     screen.blit(*titleargs)
     pygame.display.flip()
