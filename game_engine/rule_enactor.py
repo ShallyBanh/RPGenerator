@@ -7,6 +7,35 @@ class Attribute:
 	def __init__(self, name, value):
 		self.name = name
 		self.value = value
+
+class Relationship:
+	def __init__(self, ruleContent):
+		self._ruleContent = ruleContent
+		self._interruptLine = ruleContent.splitlines()[0]
+		self._interruptBehaviour = "\n".join(ruleContent.splitlines()[1:])
+		
+	def get_interrupt_line(self):
+		return self._interruptLine
+		
+	def get_interrupt_behaviour(self):
+		return self._interruptBehaviour
+		
+class Action:
+	def __init__(self, name, content):
+		self._actionName = name
+		self._ruleContent = content
+		
+	def get_action_name(self):
+		return self._actionName
+	
+	def set_action_name(self, name):
+		self._actionName = name
+		
+	def get_rule_content(self):
+		return self._ruleContent
+		
+	def set_rule_content(self, ruleContent):
+		self._ruleContent = ruleContent
 		
 class Size:
 	width = 1
@@ -78,8 +107,8 @@ class RuleEnactor:
 	# key: variable name (string), value: variable value
 	variables = {}
 	
-	# key: entity_type.ActionName, value: rule string to execute
-	relationships = {}
+	#list of relationships
+	relationships = []
 	
 	current_entity_in_loop = None
 	
@@ -87,14 +116,19 @@ class RuleEnactor:
 	
 	acting_entity = None
 	
+	current_action = None
+	
+	interrupting_relationship = None
+	
 	
 	def __init__(self):
 		self.selected_item = None
 		self.all_created_entities = []
-		self.relationships = {}
+		self.relationships = []
 		self.current_entity_in_loop = None
 		self.target_of_action = None
 		self.acting_entity = None
+		self.current_action = None
 		
 	def add_new_entity(self, entity):
 		self.all_created_entities.append(entity)
@@ -113,6 +147,9 @@ class RuleEnactor:
 		return None
 		#print("TODO")
 		#TODO
+		
+	def add_new_relationship(self, relationship):
+		self.relationships.append(relationship)
 				
 	def _is_number(self, s):
 		try: 
@@ -121,25 +158,30 @@ class RuleEnactor:
 			return False
 		return True
 		
-	def perform_action(self, written_rule, acting_entity):
+	def perform_action(self, action, acting_entity):
 		# ...
 		# parse out the target type from the action (Entity or point)
-		#print("Rule:")
-		#print(written_rule)
+		self.current_action = action
+		written_rule = action.get_rule_content()
 		lines = written_rule.splitlines()
-		#print("got lines")
-		#print(lines)
 		#set self here
 		self.acting_entity = acting_entity
-		#print("Acting Entity: ")
-		#print(self.acting_entity)
 		# perform each line
+		perform_interrupt = False
 		for line in lines:
-			#print("Evaluating line: " + line)
-			self.evaluate_line(line)
+			result = self.evaluate_line(line)
+			if result == 'INTERRUPT':
+				perform_interrupt = True
+				break
+		if perform_interrupt:
+			# evaluate the relationship
+			interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
+			for line in interrupt_lines:
+				self.evaluate_line(line)
+			
 		
 	def evaluate_line(self, line):
-		words = line.split()
+		words = line.strip().split()
 		#base cases:
 		# just a number
 		if self._is_number(words[0]) and len(words) == 1:
@@ -238,16 +280,20 @@ class RuleEnactor:
 					#print("New Target :")
 					#print(self.target_of_action)
 		#TODO: We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
+		for r in self.relationships:
+			if self.check_for_interrupt(r) == 'INTERRUPT':
+				return 'INTERRUPT'
 		
 	
-	def handle_interrupt(self, interrupt_line, action_line):
-		interrupt_line = interrupt_line.strip(':')
-		action_line = action_line.strip(':')
-		words = line.split()
+	def check_for_interrupt(self, relationship):
+		interrupt_line = relationship.get_interrupt_line().strip(':')
+		words = interrupt_line.split()
 		entity_action = words[1].split('.')
-		
-		#print("TODO")
-		# determine the target of the action so that we can properly manipulate it
+		if self.acting_entity.type == entity_action[0] and self.current_action.get_action_name() == entity_action[1]:
+			conditional = interrupt_line.split(' if ')
+			if self.evaluate_line(conditional[1]) == True:
+				self.interrupting_relationship = relationship
+				return 'INTERRUPT'
 	
 	
 	def handle_if(self, line):
@@ -785,7 +831,7 @@ class RuleEnactor:
 	
 		
 		
-	keywords = {"target":handle_target, "if":handle_if, "interrupt":handle_interrupt,
+	keywords = {"target":handle_target, "if":handle_if, 
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
 				"move":handle_move, "add":handle_add_status, "remove":handle_remove_status}
