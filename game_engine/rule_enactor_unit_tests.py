@@ -105,6 +105,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		# target is at 2,2
 		# entity1 is at 1,1
 		# entity2 is at 10,10
+		# entity3 is at -3,-3 but has width and height of 3 so should be within
 		hp_1 = rule_enactor.Attribute("HP", 10)
 		entity1 = rule_enactor.Entity("entity1", "entity", self.isTemplate)
 		entity1.add_attribute(hp_1)
@@ -117,8 +118,16 @@ class TestRuleInterpreter(unittest.TestCase):
 		entity2.x = 10
 		entity2.y = 10
 		
+		hp_3 = rule_enactor.Attribute("HP", 10)
+		entity3 = rule_enactor.Entity("entity3", "entity", self.isTemplate)
+		entity3.add_attribute(hp_3)
+		entity3.x = -3
+		entity3.y = -3
+		entity3.set_size(rule_enactor.Size(3,3))
+		
 		self.enactor.add_new_entity(entity1)
 		self.enactor.add_new_entity(entity2)
+		self.enactor.add_new_entity(entity3)
 		#print("target hp: " + str(self.target.get_attribute("HP").get_attribute_value()))
 		self.rule += "if all self within(2,2) of entity then reduce entity.HP by 5\n"
 		action = rule_enactor.Action(self.action_name, self.rule)
@@ -129,6 +138,8 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.get_entity("entity1").get_attribute("HP").get_attribute_value(), 5)
 		#entity2 hp should be 10
 		self.assertEqual(self.enactor.get_entity("entity2").get_attribute("HP").get_attribute_value(), 10)
+		#entity3 HP should be 5
+		self.assertEqual(self.enactor.get_entity("entity3").get_attribute("HP").get_attribute_value(), 5)
 		#target hp should be 15
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").get_attribute_value(), 15)
 		

@@ -58,6 +58,18 @@ class Size:
 			self._height = height
 		else:
 			raise Exception("width and height must be greater than 0. The given value of width was " + str(width) + " and the given value of height was " + str(height))
+			
+	def get_width(self):
+		return self._width
+		
+	def set_width(self, width):
+		self._width = width
+		
+	def get_height(self):
+		return self._height
+		
+	def set_height(self, height):
+		self._height = height
 	
 class Entity:
 	
@@ -158,12 +170,16 @@ class Entity:
 		return "Name: " + self._name + " Type: " + self._type + attrs
 		
 class Point:
-	x = 0
-	y = 0
+	# x = 0
+	# y = 0
 	
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
+		self._size = Size(1,1)
+		
+	def get_size(self):
+		return self._size
 
 
 class RuleEnactor:
@@ -595,19 +611,19 @@ class RuleEnactor:
 		if item1 is not None and item2 is not None:
 			# x cases
 			if item1.x < item2.x:
-				if item1.x + x_dist >= item2.x:
+				if item1.x + item1.get_size().get_width() - 1 + x_dist >= item2.x:
 					within_x = True
 			elif item1.x > item2.x:
-				if item1.x - x_dist <= item2.x:
+				if item1.x - x_dist <= item2.x + item2.get_size().get_width() - 1:
 					within_x = True
 			elif item1.x == item2.x:
 				within_x = True
 			# y cases	
 			if item1.y < item2.y:
-				if item1.y + y_dist >= item2.y:
+				if item1.y + y_dist + item1.get_size().get_height() - 1 >= item2.y:
 					within_y = True
 			elif item1.y > item2.y:
-				if item1.y - y_dist <= item2.y:
+				if item1.y - y_dist <= item2.y + item2.get_size().get_width() - 1:
 					within_y = True
 			elif item1.y == item2.y:
 				within_y = True
