@@ -1,6 +1,7 @@
 import re
 import random
 import sys
+import copy
 sys.path.append('../rule_interpreter')
 from entity import Entity
 from action import Action
@@ -8,6 +9,7 @@ from attribute import Attribute
 from relationship import Relationship
 from size import Size
 from point import Point	
+from validator import _Validator
 
 class RuleEnactor:
 	"""
@@ -19,6 +21,7 @@ class RuleEnactor:
 	
 	def __init__(self, debug_mode = False):
 		self.selected_item = None
+		self.entity_types = []
 		self.all_created_entities = []
 		
 		#key: variable name (string), value: variable value
@@ -31,23 +34,29 @@ class RuleEnactor:
 		self.interrupting_relationship = None
 		self._debug_mode = debug_mode
 		
-	def add_new_entity(self, entity):
-		self.all_created_entities.append(entity)
+	def add_new_entity(self, entityType, name = "", x = 0, y = 0):
+		#self.all_created_entities.append(entity)
+		newEntity = None
+		for e in self.entity_types:
+			if e.get_type() == entityType:
+				newEntity = copy.deepcopy(e)
+				break
+		if newEntity is None:
+			return None
+		newEntity.x = x
+		newEntity.y = y
+		newEntity.set_name(name)
+		self.all_created_entities.append(newEntity)
+		return newEntity
 		
 	def get_entity(self, name):
 		for e in self.all_created_entities:
 			if e.get_name() == name:
 				return e
 		
-	def add_all_entities(self, line):
-		return None
-		#print("TODO")
-		#TODO
-	
-	def add_all_relationships(self, line):
-		return None
-		#print("TODO")
-		#TODO
+	def parse_validator(self, validator):
+		self.relationships = validator.get_relationships()
+		self.entity_types = validator.get_entities()
 		
 	def add_new_relationship(self, relationship):
 		self.relationships.append(relationship)

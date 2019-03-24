@@ -8,32 +8,55 @@ from attribute import Attribute
 from relationship import Relationship
 from size import Size
 from point import Point
+from validator import _Validator
 
 class TestRuleInterpreter(unittest.TestCase):
 	def setUp(self):
+		# self.action_name = "Action"
+		# debug_mode = True
+		# self.enactor = rule_enactor.RuleEnactor(debug_mode)
+
+		# self.rule = "target guy\n"
+		# self.isTemplate = False
+		# self.hp_time = rule_enactor.Attribute("HP", 10)	
+		# self.actor = rule_enactor.Entity("entity", "self", self.isTemplate)
+		# self.actor.add_attribute(self.hp_time)
+	
+		# self.hp_boys = rule_enactor.Attribute("HP", 20)
+		# self.target = rule_enactor.Entity("entity", "guy", self.isTemplate)
+		# self.target.add_attribute(self.hp_boys)
+		# self.target.x = 2
+		# self.target.y = 2
+		# self.ac_time = rule_enactor.Attribute("AC", 15)	
+		# self.actor.add_attribute(self.ac_time)
+	
+		# self.ac_boys = rule_enactor.Attribute("AC", 15)
+		# self.target.add_attribute(self.ac_boys)
+		
+		
+		
+		
 		self.action_name = "Action"
 		debug_mode = True
 		self.enactor = rule_enactor.RuleEnactor(debug_mode)
-
+	
+		validator = _Validator()
+		
 		self.rule = "target guy\n"
 		self.isTemplate = False
 		self.hp_time = rule_enactor.Attribute("HP", 10)	
-		self.actor = rule_enactor.Entity("entity", "self", self.isTemplate)
-		self.actor.add_attribute(self.hp_time)
-	
-		self.hp_boys = rule_enactor.Attribute("HP", 20)
-		self.target = rule_enactor.Entity("entity", "guy", self.isTemplate)
-		self.target.add_attribute(self.hp_boys)
-		self.target.x = 2
-		self.target.y = 2
 		self.ac_time = rule_enactor.Attribute("AC", 15)	
-		self.actor.add_attribute(self.ac_time)
-	
-		self.ac_boys = rule_enactor.Attribute("AC", 15)
-		self.target.add_attribute(self.ac_boys)
-	
-		self.enactor.add_new_entity(self.actor)
-		self.enactor.add_new_entity(self.target)
+		self.template = rule_enactor.Entity("entity", "", self.isTemplate)
+		self.template.add_attribute(self.hp_time)
+		self.template.add_attribute(self.ac_time)
+		
+		validator.add_entity(self.template)
+		# validator.add_entity(self.target)
+		self.enactor.parse_validator(validator)
+		self.actor = self.enactor.add_new_entity("entity", "self", 0, 0)
+		self.target = self.enactor.add_new_entity("entity", "guy", 2, 2)
+		# self.enactor.add_new_entity(self.actor)
+		# self.enactor.add_new_entity(self.target)
 		
 	# def tearDown(self):
 		# print("Done test.")
