@@ -1,186 +1,13 @@
 import re
 import random
-class Attribute:
-	# name = ""
-	# value = None
-		
-	def __init__(self, name, value):
-		self._name = name.lower()
-		self._value = value
-		
-	def get_attribute_name(self):
-		return self._name
-		
-	def set_attribute_name(self, name):
-		self._name = name
-		
-	def get_attribute_value(self):
-		return self._value
-		
-	def set_attribute_value(self, value):
-		self._value = value
-
-class Relationship:
-	def __init__(self, ruleContent):
-		self._ruleContent = ruleContent
-		self._interruptLine = ruleContent.splitlines()[0]
-		self._interruptBehaviour = "\n".join(ruleContent.splitlines()[1:])
-		
-	def get_interrupt_line(self):
-		return self._interruptLine
-		
-	def get_interrupt_behaviour(self):
-		return self._interruptBehaviour
-		
-class Action:
-	def __init__(self, name, content):
-		self._actionName = name
-		self._ruleContent = content
-		
-	def get_action_name(self):
-		return self._actionName
-	
-	def set_action_name(self, name):
-		self._actionName = name
-		
-	def get_rule_content(self):
-		return self._ruleContent
-		
-	def set_rule_content(self, ruleContent):
-		self._ruleContent = ruleContent
-		
-class Size:
-	# width = 1
-	# height = 1
-	def __init__(self, width, height):
-		if height > 0 and width > 0:
-			self._width = width
-			self._height = height
-		else:
-			raise Exception("width and height must be greater than 0. The given value of width was " + str(width) + " and the given value of height was " + str(height))
-			
-	def get_width(self):
-		return self._width
-		
-	def set_width(self, width):
-		self._width = width
-		
-	def get_height(self):
-		return self._height
-		
-	def set_height(self, height):
-		self._height = height
-	
-class Entity:
-	
-	# x = 0
-	# y = 0
-	# name = ""
-	# type = ""
-	# attributes = []
-	# size = Size()
-	# statuses = []
-		
-	def __init__(self, name, type, isTemplate):
-		self._name = name
-		self._type = type
-		self._id = None
-		self._actions = []
-		self._attributes = []
-		self._size = Size(1,1)
-		self._isTemplate = isTemplate
-		self._statuses = []
-		self.x = 0
-		self.y = 0
-		#Validator???
-			
-	def get_type(self):
-		return self._type
-		
-	def set_type(self, type):
-		self._type = type
-		
-	def get_name(self):
-		return self._name
-		
-	def set_name(self, name):
-		self._name = name
-		
-	def get_id(self):
-		return self._id
-		
-	def set_id(self, id):
-		self._id = id
-	
-	def get_actions(self):
-		return self._actions
-		
-	def set_actions(self, actions):
-		self._actions = actions
-		
-	def add_action(self, action):
-		self._actions.append(action)
-			
-	def add_attribute(self, attribute):
-		#print(self.name)
-		self._attributes.append(attribute)
-		#print(self.attributes)
-		
-	def get_attribute(self, attributeName):
-		attributeName = attributeName.lower()
-		for a in self._attributes:
-			if a.get_attribute_name() == attributeName:
-				return a
-		print("No attribute of name " + attributeName + " found.")
-				
-	def set_attributes(self, attributes):
-		self._attributes = attributes
-		
-	def get_all_attributes(self):
-		return self._attributes
-		
-	def get_size(self):
-		return self._size
-		
-	def set_size(self, size):
-		self._size = size
-		
-	def get_is_template(self):
-		return self._isTemplate
-		
-	def set_is_template(self, isTemplate):
-		self._isTemplate = isTemplate
-				
-	def add_status(self, statusString):
-		self._statuses.append(statusString)
-		
-	def remove_status(self, statusString):
-		self._statuses.remove(statusString)
-		
-	def get_current_statuses(self):
-		return self._statuses
-		
-	def set_current_statuses(self, statuses):
-		self._statuses = statuses
-		
-	def __str__(self):
-		attrs = ""
-		for a in self._attributes:
-			attrs += a.get_attribute_name() + ":" + str(a.get_attribute_value()) + " "
-		return "Name: " + self._name + " Type: " + self._type + attrs
-		
-class Point:
-	# x = 0
-	# y = 0
-	
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
-		self._size = Size(1,1)
-		
-	def get_size(self):
-		return self._size
-
+import sys
+sys.path.append('../rule_interpreter')
+from entity import Entity
+from action import Action
+from attribute import Attribute
+from relationship import Relationship
+from size import Size
+from point import Point	
 
 class RuleEnactor:
 	"""
@@ -190,34 +17,10 @@ class RuleEnactor:
 			
 	valid_dice_regex = "^[0-9]*d[0-9]+$"
 	
-	# all_created_entities = []
-	
-	##see bottom
-	# keywords = {}
-	
-	##see bottom
-	# operators = {}
-	
-	##key: variable name (string), value: variable value
-	# variables = {}
-	
-	##list of relationships
-	# relationships = []
-	
-	# current_entity_in_loop = None
-	
-	# target_of_action = None
-	
-	# acting_entity = None
-	
-	# current_action = None
-	
-	# interrupting_relationship = None
-	
-	
-	def __init__(self):
+	def __init__(self, debug_mode = False):
 		self.selected_item = None
 		self.all_created_entities = []
+		
 		#key: variable name (string), value: variable value
 		self.variables = {}
 		self.relationships = []
@@ -226,7 +29,7 @@ class RuleEnactor:
 		self.acting_entity = None
 		self.current_action = None
 		self.interrupting_relationship = None
-		
+		self._debug_mode = debug_mode
 		
 	def add_new_entity(self, entity):
 		self.all_created_entities.append(entity)
@@ -340,15 +143,15 @@ class RuleEnactor:
 		entity_attribute = line.split('.')
 		if len(entity_attribute) > 1:
 			if entity_attribute[0] == 'self':
-				for attr in self.acting_entity.get_all_attributes():
+				for attr in self.acting_entity.get_attributes():
 					if attr.get_attribute_name() == entity_attribute[1]:
 						return attr.get_attribute_value()
 			elif entity_attribute[0] == 'target':
-				for attr in self.target_of_action.get_all_attributes():
+				for attr in self.target_of_action.get_attributes():
 					if attr.get_attribute_name() == entity_attribute[1]:
 						return attr.get_attribute_value()
 			elif entity_attribute[0] == self.current_entity_in_loop.get_type():
-				for attr in self.current_entity_in_loop.get_all_attributes():
+				for attr in self.current_entity_in_loop.get_attributes():
 					if attr.get_attribute_name() == entity_attribute[1]:
 						return attr.get_attribute_value()
 		
@@ -363,26 +166,37 @@ class RuleEnactor:
 		target_type = words[1]
 		# they can either be targeting a point or an entity
 		#point case:
-		#TODO: we need to be calling a GUI function to give us a point. For now, this is hard coded in. 
-		if words[1] == 'point':
-			self.target_of_action = Point(1,1)
-		# entity case:
-		#TODO: in reality we need to be calling a GUI function that gives us the targeted entity...
-		#thus this is a placeholder for now
+		
+		if self._debug_mode:
+			# point case
+			if words[1] == 'point':
+				self.target_of_action = Point(1,1)
+			# entity case:
+			else:
+				for entity in self.all_created_entities:
+					if entity.get_name() == target_type:
+						self.target_of_action = entity
 		else:
-			for entity in self.all_created_entities:
-				if entity.get_name() == target_type:
-					self.target_of_action = entity
-					#print("New Target :")
-					#print(self.target_of_action)
-		#TODO: We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
+			#TODO: we need to be calling a GUI function to give us a point. 
+			# point case
+			if words[1] == 'point':
+				raise Exception("SELECT POINT WITH GUI UNIMPLEMENTED")
+			# entity case:
+			#TODO: in reality we need to be calling a GUI function that gives us the targeted entity.
+			else:
+				for entity in self.all_created_entities:
+					if entity.get_name() == target_type:
+						raise Exception("SELECT ENTITY WITH GUI UNIMPLEMENTED")
+			
+			
+		#We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
 		for r in self.relationships:
 			if self.check_for_interrupt(r) == 'INTERRUPT':
 				return 'INTERRUPT'
 		
 	
 	def check_for_interrupt(self, relationship):
-		interrupt_line = relationship.get_interrupt_line().strip(':')
+		interrupt_line = relationship.get_interrupt_line().lower().strip(':')
 		words = interrupt_line.split()
 		entity_action = words[1].split('.')
 		if self.acting_entity.get_type() == entity_action[0] and self.current_action.get_action_name() == entity_action[1]:
@@ -398,27 +212,19 @@ class RuleEnactor:
 		if 'all' in line:
 			line = line.replace('all', '')
 			post_if = line.split('if')[1].strip()
-			#print(post_if)
 			conditional_and_action = post_if.split('then')
-			#print(conditional_and_action)
 			conditional = conditional_and_action[0].strip()
 			action = conditional_and_action[1].strip()
 			
 			for entity in self.all_created_entities:
-				#print("all created entities: " + str(self.all_created_entities))
-				#print("Setting current entitiy in loop to" + str(entity))
 				self.current_entity_in_loop = entity
 				tf = self.evaluate_line(conditional)
-				#print("Did said entity satisfy condition?")
-				#print(tf)
 				if tf:
 					self.evaluate_line(action)
 				self.current_entity_in_loop = None
 		else:
 			post_if = line.split('if')[1].strip()
-			#print(post_if)
 			conditional_and_action = post_if.split('then')
-			#print(conditional_and_action)
 			conditional = conditional_and_action[0].strip()
 			action = conditional_and_action[1].strip()
 			
@@ -441,16 +247,16 @@ class RuleEnactor:
 		else:
 			entity_info = words[1].split('.')
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(" ".join(rest_of_sentence)))
 			#targeting target entity
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(" ".join(rest_of_sentence)))
 		
@@ -470,16 +276,16 @@ class RuleEnactor:
 		else:
 			entity_info = words[1].split('.')
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(" ".join(rest_of_sentence)))
 			#targeting target entity
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(" ".join(rest_of_sentence)))
 		
@@ -499,16 +305,16 @@ class RuleEnactor:
 		else:
 			entity_info = words[1].split('.')
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(" ".join(rest_of_sentence)))
 			#targeting target entity
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(" ".join(rest_of_sentence)))
 		
@@ -528,16 +334,16 @@ class RuleEnactor:
 		else:
 			entity_info = words[1].split('.')
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(" ".join(rest_of_sentence)))
 			#targeting target entity
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(" ".join(rest_of_sentence)))
 		
@@ -557,21 +363,20 @@ class RuleEnactor:
 		else:
 			entity_info = words[1].split('.')
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(" ".join(rest_of_sentence)))
 			#targeting target entity
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(" ".join(rest_of_sentence)))
 		
 	def handle_within(self, written_rule):
-		#TODO: Not currently considering the size in this calculation
 		# expecting: item1 within(3,3) of item2
 		# or:		 item1 within (3, 3) of item2
 		# handle detecting entities within a given distance of the selection
@@ -587,17 +392,15 @@ class RuleEnactor:
 			item1 = self.acting_entity
 		elif item1_string == 'target':
 			item1 = self.target_of_action
-		elif item1_string == self.current_entity_in_loop.get_type():
+		elif item1_string == self.current_entity_in_loop.get_type().lower():
 			item1 = self.current_entity_in_loop
-			##print("setting current entity in loop to" + str(self.current_entity_in_loop))
 		#item 2
 		if item2_string == 'self':
 			item2 = self.acting_entity
 		elif item2_string == 'target':
 			item2 = self.target_of_action
-		elif item2_string == self.current_entity_in_loop.get_type():
+		elif item2_string == self.current_entity_in_loop.get_type().lower():
 			item2 = self.current_entity_in_loop
-			##print("setting current entity in loop to" + statuses(self.current_entity_in_loop))
 		
 		left_bracket_idx = written_rule.find('(')
 		right_bracket_idx = written_rule.find(')')
@@ -670,7 +473,6 @@ class RuleEnactor:
 		if abs(x_dist) >= abs(y_dist):
 			if x_dist < 0:
 				#entity to move is to the left, so move more left
-				
 				entity_to_move.x -= distance_to_move
 			else:
 				# otherwise go right
@@ -776,15 +578,15 @@ class RuleEnactor:
 		entity_info = words[0].strip().split('.')
 		if len(entity_info) > 1:
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(words[1].strip()))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self.evaluate_line(words[1].strip()))
 		else:
@@ -796,15 +598,15 @@ class RuleEnactor:
 		entity_info = words[0].strip().split('.')
 		if len(entity_info) > 1:
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(words[1].strip()))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self.evaluate_line(words[1].strip()))
 		else:
@@ -816,15 +618,15 @@ class RuleEnactor:
 		entity_info = words[0].strip().split('.')
 		if len(entity_info) > 1:
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(words[1].strip()))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self.evaluate_line(words[1].strip()))
 		else:
@@ -836,15 +638,15 @@ class RuleEnactor:
 		entity_info = words[0].strip().split('.')
 		if len(entity_info) > 1:
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(words[1].strip()))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self.evaluate_line(words[1].strip()))
 		else:
@@ -856,15 +658,15 @@ class RuleEnactor:
 		entity_info = words[0].strip().split('.')
 		if len(entity_info) > 1:
 			if entity_info[0] == 'self':
-				for attribute in self.acting_entity.get_all_attributes():
+				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(" ".join(rest_of_sentence)))
 			elif entity_info[0] == 'target':
-				for attribute in self.target_of_action.get_all_attributes():
+				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(words[1].strip()))
 			elif entity_info[0] == self.current_entity_in_loop.get_type():
-				for attribute in self.current_entity_in_loop.get_all_attributes():
+				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self.evaluate_line(words[1].strip()))
 		else:
@@ -919,6 +721,8 @@ class RuleEnactor:
 		else:
 			if roll_data[0] == '':
 				return random.randint(1,int(roll_data[1]))
+			elif roll_data[0] == '0':
+				return 0
 			else:
 				total = 0
 				for i in range(int(roll_data[0])):
