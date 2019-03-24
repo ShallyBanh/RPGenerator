@@ -8,6 +8,7 @@ class _Validator(object):
     def __init__(self):
         self._isValid = None
         self._allEntities = []
+        self._allRelationships = []
     
     def is_valid_syntax(self, target, content):
         """
@@ -17,6 +18,22 @@ class _Validator(object):
             if the content was valid syntax
         """
         return True
+    
+    def add_relationship(self, relationship):
+        self._allRelationships.append(relationship)
+    
+    def remove_relationship(self, entity):
+        self._allRelationships.remove(entity)
+    
+    def get_relationships(self):
+        return self._allRelationships
+    
+    def get_relationship_idx(self, name):
+        for relationshipIdx in range(len(self.get_relationships())):
+            if self.get_relationships()[relationshipIdx].get_name() == name:
+                return relationshipIdx
+        
+        return -1
     
     def add_entity(self, entity):
         self._allEntities.append(entity)
