@@ -1,5 +1,5 @@
 import json
-from map import Map
+from .map import Map
 
 class Game:
     def __init__(self):
