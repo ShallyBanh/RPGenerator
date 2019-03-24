@@ -33,9 +33,9 @@ class RulesetView:
     def load_ruleset(self):
         self._database.cur.execute("SELECT rulename, rules from Ruleset;")
         data = self._database.cur.fetchall()
+        self._rulesetList = []
         for ruleName, rule in data:
             self._rulesetList.append((ruleName, rule))
-        self._database.close()
 
     def main(self, rulesetName):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -78,6 +78,7 @@ class RulesetView:
                     x, y = clickpos
                     if x in range(1110, 1150) and y in range(110, 140):
                         RulesetCreationEditView().main("")
+                        self.load_ruleset()
                     #save button
                     for editIdx in range(len(self._rulesetPositionList)):
                         x1 = int(self._rulesetPositionList[editIdx][0])
@@ -89,7 +90,6 @@ class RulesetView:
                             deserializedRule = pickle.loads(rule)
                             Validator().clear_entities()
                             Validator().set_entities(deserializedRule.get_entities())
-                            print(Validator().get_entities())
                             RulesetCreationEditView().main(self._rulesetList[editIdx][0])
                             self.load_ruleset()
                             # currentEntityName = entities[moreIdx]
@@ -105,8 +105,8 @@ class RulesetView:
             self._rulesetPositionList = []
             for ruleIdx in range(len(self._rulesetList)):
                 ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
-                screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.05*100))
-                self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.05*100))
+                screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
+                self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
             ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
             
             pygame.display.flip()

@@ -27,6 +27,7 @@ class EntityCreationView:
         self._currentlySelectedColorList = ["#553300", "#553300", "#553300", "#553300", "#553300", "#553300"]
         self._allInputList = [self._entityNameInput, self._entityTypeInput, self._widthInput, self._heightInput, self._isTemplateInput, self._inheritanceInput]
         self._currentlySelectedInputIdx = 0
+        self._invalidSubmissionText = "All fields must be complete in order to submit"
 
     def main(self):
 
@@ -93,6 +94,10 @@ class EntityCreationView:
                     if x in range(1100,1300) and y in range(600,750):
                         if self._allInputList[0] == "" or self._allInputList[1] == "" or self._allInputList[2]== "" or self._allInputList[3]== "" or self._allInputList[4] == "":
                             self._invalidSubmission = True
+                            self._invalidSubmissionText = "All fields must be complete in order to submit"
+                        elif self._allInputList[2].isdigit() == False or self._allInputList[3].isdigit() == False :
+                            self._invalidSubmission = True
+                            self._invalidSubmissionText = "Width and Height fields must be a number"
                         else:
                             self._playing = False
                             return self._allInputList[0], self._allInputList[1], self._allInputList[2], self._allInputList[3], self._allInputList[4], self._allInputList[5]
@@ -105,7 +110,7 @@ class EntityCreationView:
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
             if self._invalidSubmission == True:
-                ptext.draw("All fields must be complete in order to submit", (615, 500), fontname="Boogaloo", color="red", fontsize=30)
+                ptext.draw(self._invalidSubmissionText, (615, 500), fontname="Boogaloo", color="red", fontsize=30)
 
 
             ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=30)

@@ -29,6 +29,7 @@ class AttributeActionCreationView:
         if entityIdx != -1:
             return Validator().get_entities()[entityIdx]
         return -1
+
         
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -42,8 +43,9 @@ class AttributeActionCreationView:
         buttonrects = [pygame.Rect((50, 50, 300, 650)),  pygame.Rect((400, 50, 800, 300)), pygame.Rect((400, 400, 800, 300))]
         textSizes = [(50, 10), (400, 10), (400, 360),]
         buttonnames = ["Entity Info", "Attributes", "Actions"]
-        actionNames = []
-        attributes = []
+        currentEntity = self.get_entity_info()
+        actionNames = [action.get_action_name() for action in currentEntity.get_actions()]
+        attributes = [attribute.get_attribute_name() for attribute in currentEntity.get_attributes()]
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -59,7 +61,7 @@ class AttributeActionCreationView:
                     actionNames.append(actionName)
                     entityIdx = Validator().get_entity_idx(self._currentEntityName)
                     if entityIdx != -1:
-                        Validator().set_attribute(entityIdx, attrName, attrType, attrValue)
+                        Validator().set_action(entityIdx, actionName, rule)
                 self._action_view = False
             
             if self._attribute_view == True:

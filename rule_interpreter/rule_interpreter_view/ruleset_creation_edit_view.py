@@ -33,6 +33,7 @@ class RulesetCreationEditView:
         self._unvalid = False
         self._rulesetName = ""
         self._entities = [entity.get_name() for entity in Validator().get_entities()]
+        self._invalidSubmission = False
 
     def save_ruleset(self, database, user, rulesetName, jsonBlob):
         self._database.cur.execute("SELECT MAX(ID) FROM Ruleset;")
@@ -44,13 +45,17 @@ class RulesetCreationEditView:
         self._database.cur.execute("insert into Ruleset values(?, ?, ?, ?);", (currentIdx, user, rulesetName, jsonBlob,))
         self._database.conn.commit()
 
-        self._database.close()
+    def update_database(self, database, user, rulesetName, jsonBlob):
+        self._database.cur.execute("UPDATE Ruleset SET rules = ? WHERE rulename = ?;", (jsonBlob, rulesetName, ))
+        self._database.conn.commit()
 
     def main(self, rulesetName):
         if rulesetName == "":
             self._newRuleset = True
             self._entities = []
             Validator().clear_entities()
+        else:
+            self._rulesetName = rulesetName
 
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
@@ -125,19 +130,25 @@ class RulesetCreationEditView:
                         if buttonrects[1].collidepoint(x,y):
                             self._currentlySelected = True
                     if x in range(10,40) and y in range(10,40):
-                        return
+                        return True
                     if x in range(960, 1000) and y in range(135, 175):
                         self._entity_view = True
                     #save button
                     if x in range(1050, 1200) and y in range(160, 200):
                         database = Database("../../account/shallysdb.db")
                         picklestring = pickle.dumps(Validator())
-                        print(Validator().get_entities())
-                        self.save_ruleset(database, "shally", self._rulesetName, picklestring)
-                        self._newRuleset = False
+                        if self._newRuleset == False:
+                            self.update_database(database, "shally", self._rulesetName, picklestring)
+                        else:
+                            if self._rulesetName == "":
+                                self._invalidSubmission = True
+                            else:
+                                self.save_ruleset(database, "shally", self._rulesetName, picklestring)
+                                self._newRuleset = False
+                                if len(buttonrects) > 1:
+                                    buttonrects.pop()
+                                
                         titleargs = ptext.draw("{}".format(self._rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
-                        if len(buttonrects) > 1:
-                            buttonrects.pop()
 
                     for moreIdx in range(len(self._moreButtonList)):
                         print(self._moreButtonList)
@@ -166,6 +177,9 @@ class RulesetCreationEditView:
             ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
             if self._newRuleset == True:
                 ptext.draw(self._rulesetName, (70, 60), fontname="Boogaloo", color="white", fontsize=30)
+            
+            if self._invalidSubmission == True:
+                ptext.draw("Ruleset name cannot be empty", (60, 690), fontname="Boogaloo", color="red", fontsize=30)
 
             if self._newRuleset == False:
                 screen.blit(*titleargs)
