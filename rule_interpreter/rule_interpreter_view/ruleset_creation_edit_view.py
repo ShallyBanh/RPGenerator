@@ -99,6 +99,7 @@ class RulesetCreationEditView:
             for event in events:
                 if event.type == pygame.QUIT:
                     self._playing = False
+                    exit()
                 elif event.type == pygame.KEYDOWN :
                     if event.key == pygame.K_ESCAPE:
                         self._playing = False
@@ -151,7 +152,6 @@ class RulesetCreationEditView:
                         titleargs = ptext.draw("{}".format(self._rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
                     for moreIdx in range(len(self._moreButtonList)):
-                        print(self._moreButtonList)
                         x1 = int(self._moreButtonList[moreIdx][0])
                         y1 = int(self._moreButtonList[moreIdx][1])
                         if x in range(x1, x1 + 60) and y in range(y1, y1+30):

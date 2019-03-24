@@ -46,6 +46,7 @@ class RulesetView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Rulesets")
+        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         buttonrects = [pygame.Rect((50, 150, 1100, 550))]
         textSizes = [(50, 100)]
@@ -83,8 +84,6 @@ class RulesetView:
                     for editIdx in range(len(self._rulesetPositionList)):
                         x1 = int(self._rulesetPositionList[editIdx][0])
                         y1 = int(self._rulesetPositionList[editIdx][1])
-                        print(x1, y1)
-                        print(x,y)
                         if x in range(x1, x1 + 200) and y in range(y1, y1+60):
                             rule = self._rulesetList[editIdx][1]
                             deserializedRule = pickle.loads(rule)
@@ -109,6 +108,7 @@ class RulesetView:
                 self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
             ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
             
+            screen.blit(*titleargs)
             pygame.display.flip()
 
 

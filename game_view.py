@@ -17,7 +17,7 @@ DIFFICULTY = ['EASY']
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
 # COLOR_BACKGROUND = (128, 0, 128)
-COLOR_BACKGROUND = (21,156,207)  
+COLOR_BACKGROUND = (0,50,50)  
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
