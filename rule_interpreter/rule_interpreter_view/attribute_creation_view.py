@@ -32,9 +32,9 @@ class AttributeCreationView:
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Attribute Creation")
 
-        buttonrects = [pygame.Rect((50, 150 + 160 * j, 1100, 70)) for j in range(3)]
-        textSizes = [(50, 100 + 155 * j) for j in range(3)]
-        buttonnames = ["Attribute Name", "Attribute Type", "Attribute Value"]
+        buttonrects = [pygame.Rect((50, 150 + 160 * j, 1100, 70)) for j in range(2)]
+        textSizes = [(50, 100 + 155 * j) for j in range(2)]
+        buttonnames = ["Attribute Name", "Attribute Value"]
 
         titleargs = ptext.draw("Attribute Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
@@ -84,11 +84,11 @@ class AttributeCreationView:
                         return None, None, None
 
                     if x in range(1100,1300) and y in range(600,750):
-                        if self._allInputList[0] == "" or self._allInputList[1] == "" or self._allInputList[2]== "":
+                        if self._allInputList[0] == "" or self._allInputList[1] == "":
                             self._invalidSubmission = True
                         else:
                             self._playing = False
-                            return self._allInputList[0], self._allInputList[1], self._allInputList[2]
+                            return self._allInputList[0], self._allInputList[1]
 
             for rect, name, size, color in zip(buttonrects, buttonnames, textSizes, self._currentlySelectedColorList):
                 screen.fill(pygame.Color(color), rect)
@@ -102,7 +102,6 @@ class AttributeCreationView:
 
             ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=30)
             ptext.draw(self._allInputList[1], (60, 150 + 185 * 1), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[2], (60, 130 + 185 * 2), fontname="Boogaloo", color="white", fontsize=30)
             
             screen.blit(*titleargs)
             pygame.display.flip()

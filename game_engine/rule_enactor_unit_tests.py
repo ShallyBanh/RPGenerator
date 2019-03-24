@@ -1,20 +1,28 @@
 import unittest
 import rule_enactor
-
+import sys
+sys.path.append('../rule_interpreter')
+from entity import Entity
+from action import Action
+from attribute import Attribute
+from relationship import Relationship
+from size import Size
+from point import Point
 
 class TestRuleInterpreter(unittest.TestCase):
 	def setUp(self):
 		self.action_name = "Action"
-		self.enactor = rule_enactor.RuleEnactor()
+		debug_mode = True
+		self.enactor = rule_enactor.RuleEnactor(debug_mode)
 
 		self.rule = "target guy\n"
 		self.isTemplate = False
 		self.hp_time = rule_enactor.Attribute("HP", 10)	
-		self.actor = rule_enactor.Entity("self", "entity", self.isTemplate)
+		self.actor = rule_enactor.Entity("entity", "self", self.isTemplate)
 		self.actor.add_attribute(self.hp_time)
 	
 		self.hp_boys = rule_enactor.Attribute("HP", 20)
-		self.target = rule_enactor.Entity("guy", "entity", self.isTemplate)
+		self.target = rule_enactor.Entity("entity", "guy", self.isTemplate)
 		self.target.add_attribute(self.hp_boys)
 		self.target.x = 2
 		self.target.y = 2
@@ -36,7 +44,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(isinstance(newEnactor, rule_enactor.RuleEnactor))
 	
 	def test_add_new_entity(self):
-		newEntity = rule_enactor.Entity("newGuy", "entity", self.isTemplate)
+		newEntity = rule_enactor.Entity("entity", "newGuy", self.isTemplate)
 		self.enactor.add_new_entity(newEntity)
 		self.assertTrue(newEntity in self.enactor.all_created_entities)
 	
@@ -107,19 +115,19 @@ class TestRuleInterpreter(unittest.TestCase):
 		# entity2 is at 10,10
 		# entity3 is at -3,-3 but has width and height of 3 so should be within
 		hp_1 = rule_enactor.Attribute("HP", 10)
-		entity1 = rule_enactor.Entity("entity1", "entity", self.isTemplate)
+		entity1 = rule_enactor.Entity("entity", "entity1", self.isTemplate)
 		entity1.add_attribute(hp_1)
 		entity1.x = 1
 		entity1.y = 1
 		
 		hp_2 = rule_enactor.Attribute("HP", 10)
-		entity2 = rule_enactor.Entity("entity2", "entity", self.isTemplate)
+		entity2 = rule_enactor.Entity("entity", "entity2", self.isTemplate)
 		entity2.add_attribute(hp_2)
 		entity2.x = 10
 		entity2.y = 10
 		
 		hp_3 = rule_enactor.Attribute("HP", 10)
-		entity3 = rule_enactor.Entity("entity3", "entity", self.isTemplate)
+		entity3 = rule_enactor.Entity("entity", "entity3", self.isTemplate)
 		entity3.add_attribute(hp_3)
 		entity3.x = -3
 		entity3.y = -3
@@ -168,7 +176,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, -3)
 		
-		entity1 = rule_enactor.Entity("test1","entity", self.isTemplate)
+		entity1 = rule_enactor.Entity("entity", "test1", self.isTemplate)
 		entity1.x = 5
 		entity1.y = 0
 		self.enactor.add_new_entity(entity1)
@@ -200,7 +208,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, 2)
 		
-		entity1 = rule_enactor.Entity("test1","entity", self.isTemplate)
+		entity1 = rule_enactor.Entity("entity", "test1", self.isTemplate)
 		entity1.x = 15
 		entity1.y = 0
 		self.enactor.add_new_entity(entity1)

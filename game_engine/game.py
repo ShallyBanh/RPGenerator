@@ -1,70 +1,85 @@
-from map import Map
+import json
+from .map import Map
 
 class Game:
-    """
-    Game Class
-    args:
-        None for now
-    """
-
     def __init__(self):
-        self._uniqueID = None
-        self._name = None
-        self._GM = None
-        self._players = []
-        self._entities = []
-        self._map = None
-        self._rulsetCopy = None
-        self._assets = []
+        self.uniqueID = None
+        self.GM = None
+        self.name = None
+        self.players = []
+        self.entities = [] # possibly use dict instead
+        self.map = Map(50, 10, 18) # parameters?
+        self.ruleset_copy = None
+        self.assets = []
+        self.transcript = ""
+    
+    def __str__(self):
+        string = "Game:"
+        for k in self.__dict__.keys():
+            string += "\n\t{}: {}".format(k, self.__dict__[k])
+        return string
 
+    def serialize(self):
+        return self.__dict__
+
+    def to_JSON(self):
+        # automatically do nested calls https://stackoverflow.com/a/15538391
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True,
+                          indent=4)
+    
     def get_uniqueID(self):
-        return self._uniqueID
+        return self.uniqueID
 
-    def set_uniqueID(self, uniqueID):
-        self._uniqueID = uniqueID
+    def set_uniqueID(self, ID):
+        self.uniqueID = ID
 
     def get_GM(self):
-        return _GM
+        return self.GM
 
     def set_GM(self, GM):
-        self._GM = GM
+        self.GM = GM
 
     def get_name(self):
-        return _name
+        return self.name
 
     def set_name(self, name):
-        self._name = name
+        self.name = name
 
     def get_players(self):
-        return _players
+        return self.players
 
     def set_players(self, players):
-        self._players = players
+        self.players = players
 
     def get_entities(self):
-        return _entities
+        return self.entities
 
     def set_entities(self, entities):
-        self._entities = entities
+        self.uniqueentities = entities
 
     def get_map(self):
-        return _map
+        return self.map
 
     def set_map(self, map):
-        self._map = map
+        self.map = map
 
-    def get_rulesetCopy(self):
-        return _rulesetCopy
+    def get_ruleset_copy(self):
+        return self.ruleset_copy
 
-    def set_rulesetCopy(self, rulesetCopy):
-        self._rulesetCopy = rulesetCopy
+    def set_ruleset_copy(self, ruleset_copy):
+        self.ruleset_copy = ruleset_copy
 
     def get_assets(self):
-        return _assets
+        return self.assets
 
     def add_asset(self, asset):
-        self._assets.append(asset)
+        self.assets.append(asset)
 
     def remove_asset(self, asset):
-        self._assets.remove(asset)
+        self.assets.pop(asset.get_name, None)
 
+    def get_transcript(self):
+        return self.transcript
+
+    def append_transcript(self, new_content):
+        self.transcript += "\n" + new_content

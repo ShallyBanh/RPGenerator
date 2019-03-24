@@ -12,21 +12,6 @@ import pygame
 import ptext
 import pygame.locals as pl
 
-
-parser = SyntaxParser()
-
-print("Shally's dank test suite for the parser:\n")
-print("adding entity goblin..")
-goblin = Entity("goblin", "steve", 1)
-print("adding atrributes for goblin: hp..")
-testAttribute = Attribute("hp", 1, 1)
-goblin.add_attribute(testAttribute)
-print("adding actions for goblin: Attack..")
-testAction = Action("Attack", 1)
-goblin.add_action(testAction)
-print("adding status for goblin: Dodge..")
-goblin.add_status("Dodge")
-
 class RuleInputView:
     def __init__(self):
         self._user_input = ""
@@ -39,6 +24,7 @@ class RuleInputView:
         self._currentlySelected = False
         self._unvalid = False
         self._valid = False
+        self._parser = SyntaxParser()
 
     def main(self): 
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -64,7 +50,7 @@ class RuleInputView:
                         x, y = pygame.mouse.get_pos()
                         self._currentlySelected = False
                         if x in range(1100,1300) and y in range(600,750):
-                            if parser.is_valid_rule(self._user_input) == True:
+                            if self._parser.is_valid_rule(self._user_input) == True:
                                 self._valid = True
                                 return self._user_input
                             else:

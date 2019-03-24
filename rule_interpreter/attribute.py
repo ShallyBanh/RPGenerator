@@ -1,12 +1,17 @@
-
+import numbers
 class Attribute:
     """
     Attribute Class
     """
 
-    def __init__(self, attributeName, attributeType, attributeValue):
+    def __init__(self, attributeName, attributeValue):
         self._attributeName = attributeName.lower()
-        self._attributeType = attributeType
+        if isinstance(attributeValue, str):
+            self._attributeType = "string"
+        elif isinstance(attributeValue, bool):
+            self._attributeType = "boolean"
+        elif isinstance(attributeValue, numbers.Real):
+            self._attributeType = "number"
         self._attributeValue = attributeValue
     
     def get_attribute_name(self):
@@ -14,12 +19,6 @@ class Attribute:
 
     def set_attribute_name(self, name):
         self._attributeName = name
-    
-    def get_attribute_type(self):
-        return self._attributeType 
-
-    def set_attribute_type(self, attributeType):
-        self._attributeType = attributeType
 
     def get_attribute_value(self):
         return self._attributeValue 

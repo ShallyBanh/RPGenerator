@@ -7,43 +7,25 @@ class Relationship:
     Relationship Class
     """
 
-    def __init__(self):
-        self._entitiesInvolved = None
-        self._actionsInvolved = None
-        self._ruleContent = None
-    
-    def get_entities_involved(self):
-        return self._entitiesInvolved
+    def __init__(self, name, ruleContent):
+        self._ruleContent = ruleContent
+        self._interruptLine = ruleContent.splitlines()[0]
+        self._interruptBehaviour = "\n".join(ruleContent.splitlines()[1:])
+        self._name = name
 
-    def set_entities_involved(self, entities):
-        self._entitiesInvolved = entities
-    
-    def add_entity(self, entity):
-        self._entitiesInvolved.append(entity)
-    
-    def remove_entity(self, entity):
-        self._entitiesInvolved.remove(entity)
-    
-    def get_actions_involved(self):
-        return self._actionsInvolved
-
-    def set_actions_involved(self, actions):
-        self._actionsInvolved = actions
-    
-    def add_action_involved(self, action):
-        self._actionsInvolved.append(action)
-    
-    def remove_action_involved(self, action):
-        self._actionsInvolved.remove(action)
+    def get_name(self):
+        return self._name
 
     def get_rule_content(self):
         return self._ruleContent
 
     def set_rule_content(self, content):
         self._ruleContent = content
-    
-    def execute_relationship(self):
-        return 
-    
-    def __do_execute_relationship(self):
-        return
+        self._interruptLine = self._ruleContent.splitlines()[0]
+        self._interruptBehaviour = "\n".join(self._ruleContent.splitlines()[1:])
+
+    def get_interrupt_line(self):
+        return self._interruptLine
+		
+    def get_interrupt_behaviour(self):
+        return self._interruptBehaviour
