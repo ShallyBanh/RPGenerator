@@ -48,3 +48,15 @@ Launch a container:
 ./docker_setup.sh -li
 ```
 
+## Environment requirements
+
+To run the game locally, spin up one instance of the server and one of the client game menu.
+
+**Server:**
+```
+python3 server.py
+```
+**Client:**
+```
+python3 play_game.py
+```
