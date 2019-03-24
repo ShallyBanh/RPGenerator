@@ -83,6 +83,15 @@ def which_entity(x, y):
             return e
     return None
 
+def print_gm_information(x,y):
+    # blit hotkey information
+    info = "_GM HOTKEYS:_\n"
+    for key, pair in GM_HOTKEYS.items():
+        info += key + ": " + pair + "\n"
+    ptext.draw(info, (x,y), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
+    return
+
+# CLASSES ------------------------------------------------------------------------------------------------
 # utilized for testing of actions drop down menu
 class Entity:
     def __init__(self, x, y, width, height, name, actions):
@@ -244,7 +253,7 @@ class Transcript:
             self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
-
+# ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
 myMap = Map(tilesize = 50, height = 10, width = 18)
 MAPOFFSET = (200,0)
@@ -261,6 +270,18 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
 ENTITIES = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
+GM_STATUS = False
+GM_HOTKEYS = {"f": "Toggle FOG",
+              "t": "Add Texture",
+              "e": "Edit Entity",
+              "c": "Create New Entity",
+              "a": "Add Asset",
+              "d": "Delete Entity",
+              "p": "Remove Player",
+              "r": "Roll Die"
+              }
+
+# -----------------------------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
 
@@ -295,13 +316,16 @@ if __name__ == "__main__":
         entity_image = pygame.transform.scale(images[entity.name], (entity.width*myMap.tilesize,entity.height*myMap.tilesize))
         DISPLAYSURF.blit(entity_image, offset_blit(entity.y*myMap.tilesize, entity.x*myMap.tilesize))
 
+    print_gm_information(MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10)
+
     my_entity = None
     input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
     history = Transcript(MAPOFFSET[0]+myMap.width*myMap.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
     # transcript = ""
     action_requested = ""
-
-    while True:    
+    
+    RUNNING = True
+    while RUNNING:    
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -354,6 +378,12 @@ if __name__ == "__main__":
                         else:    
                             loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
                         size, location = make_popup(loc_x, loc_y, my_entity)
+            elif event.type == KEYDOWN:   
+                if event.key == K_ESCAPE:
+                    RUNNING = False
+                else:
+                    if event.unicode in GM_HOTKEYS:
+                        print(GM_HOTKEYS[event.unicode])
             # input box handling + transcript update
             transcript = input_box.handle_event(event, history.transcript)
             history.handle_event(event)
