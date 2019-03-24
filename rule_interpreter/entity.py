@@ -11,24 +11,25 @@ class Entity:
         None for now
     """
 
-    def __init__(self, entityType, name, isTemplate):
+    def __init__(self, name, entityType, width, height, isTemplate, inheritedFrom):
         self._type = entityType
         self._name = name
         self._id = None
         self._actions = [] 
         self._attributes = [] 
-        self._size = Size(1,1) 
+        self._size = Size(int(width),int(height)) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
-        self.x = 0
-        self.y = 0
-        Validator().add_entity(self)
+        self._location = None
+        self._isInheritedFrom = inheritedFrom
+        self._x = 0
+        self._y = 0
     
     def get_x(self):
-        return self.x
+        return self._x
     
     def get_y(self):
-        return self.y
+        return self._y
 
     def get_type(self):
         return self._type
@@ -107,6 +108,9 @@ class Entity:
     def set_is_template(self, isTemplate):
         self._isTemplate = isTemplate
     
+    def get_is_inherited_from(self):
+        return self._isInheritedFrom
+    
     def get_current_statuses(self):
         return self._currentStatuses
     
@@ -119,5 +123,8 @@ class Entity:
     def remove_status(self, status):
         self._currentStatuses.remove(status)
     
+    def get_basic_entity_info_to_str(self):
+        return "name: {}\ntype:{}\nwidth: {}\nheight: {}\nisTemplate: {}\ninheritedFrom: {}".format(self.get_name(), self.get_type(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), self.get_is_template(), self.get_is_inherited_from())
+            
     def __str__(self):
         return "Entity:\nName: {}\nwidth: {}\nheight: {}\nx: {}\ny: {}\nactions: {}\nattributes: {}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.get_x()), str(self.get_y()), str(self.get_actions()), str(self.get_attributes()))

@@ -62,20 +62,20 @@ class ActionCreationView:
                         screen.fill((0, 50, 50))
                         screen.blit(self._submitButtonImg,(1100, 600))
                         screen.blit(self._arrowImg,(10, 10))
-                        self._allInputList[self._currentlySelectedInputIdx] = self._allInputList[self._currentlySelectedInputIdx] [:len(user_input)-1]
+                        self._allInputList[self._currentlySelectedInputIdx] = self._allInputList[self._currentlySelectedInputIdx] [:len(self._allInputList[self._currentlySelectedInputIdx])-1]
                 
                     elif event.key == pygame.K_BACKSPACE:
                         screen.fill((0, 50, 50))
                         screen.blit(self._submitButtonImg,(1100, 600))
                         screen.blit(self._arrowImg,(10, 10))
-                        self._allInputList[self._currentlySelectedInputIdx] = self._allInputList[self._currentlySelectedInputIdx] [:len(user_input)-1]
+                        self._allInputList[self._currentlySelectedInputIdx] = self._allInputList[self._currentlySelectedInputIdx] [:len(self._allInputList[self._currentlySelectedInputIdx])-1]
 
                     else:
                         # If no special key is pressed, add unicode of key to input_string
                         self._allInputList[self._currentlySelectedInputIdx] += event.unicode
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    invalidSubmission = False
+                    self._invalidSubmission = False
                     clickpos = event.pos
                     x, y = clickpos
                     for j in range(len(buttonrects)):
