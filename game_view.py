@@ -530,15 +530,68 @@ def join_game_view():
     return
 
 def create_new_game_view():
-    print("it is working create_new_game_view")
+    option_menu.disable()
+    option_menu.reset(1)
+
+    ruleset_name = pygame_textinput.TextInput()
+    login_view = pygame.image.load("images/menu/create-new-game.png")
+    surface.fill(COLOR_BACKGROUND)
+    error_surface = False
+    
+    while True:
+        # Clock tick
+        clock.tick(60)
+
+        # Application events
+        playevents = pygame.event.get()
+
+        for e in playevents:
+            if e.type == QUIT:
+                exit()
+            elif e.type == KEYDOWN:
+                if e.key == K_ESCAPE and main_menu.is_disabled():
+                    option_menu.enable()
+                    option_menu.mainloop(playevents)
+                    return
+            elif e.type == MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                print(mouse_pos)
+                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,450):
+                    # recover ruleset_name
+                    if len(ruleset_name.get_text()) < 1: 
+                        break
+                    # if not ruleset_name.get_text().isdigit(): # CHECK IF EXISTS
+                    #     error_surface = True
+                    #     break
+                    create_room(ruleset_name = ruleset_name.get_text())
+                    return
+                elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
+                    option_menu.enable()
+                    option_menu.mainloop(playevents)
+                    return
+        
+        ruleset_name.update(playevents)   
+            
+        # blit information to the menu based on user input from above
+        surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+        if error_surface:
+            ptext.draw("Ruleset name does not exist", (200, 300), sysfontname="arial", color=COLOR_RED, fontsize=35, width = 300)
+            error_surface = False
+        if len(ruleset_name.get_text()) >= 1:
+            surface.blit(ruleset_name.get_surface(), (250,170))  
+        else:
+            surface.blit(MY_FONT.render('Ruleset', 1, COLOR_BLACK), (250,160))  
+
+        pygame.display.flip()
+
     return
 
 def ruleset_view():
-    print("it is working ruleset_view")
+    print("Ruleset View - TODO FOR SHALLY")
     return
 
 def previous_games_view():
-    print("it is working previous_games_view")
+    print("Previous Games View - TODO FOR SHALLY")
     return
 
 # -----------------------------------------------------------------------------
@@ -568,6 +621,10 @@ def recover_account_credentials(username, code, password):
 
 def enter_room(room_number):
     print(room_number)
+    return
+
+def create_room(ruleset_name):
+    print(ruleset_name)
     return
 
 # -----------------------------------------------------------------------------
