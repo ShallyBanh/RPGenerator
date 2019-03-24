@@ -30,7 +30,7 @@ class Database:
         self.cur = self.conn.cursor()
 
         # enable foreign key constrains
-        self.cur.execute(' PRAGMA forteign_keys=ON; ')
+        self.cur.execute(' PRAGMA foreign_keys=ON; ')
 
         self.create_tables()
         self.conn.commit()
