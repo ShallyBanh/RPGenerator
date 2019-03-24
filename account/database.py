@@ -65,6 +65,7 @@ class Database:
                 create table if not exists Ruleset(
                     id integer,
                     username text,
+                    rulename text,
                     rules blob,
                     primary key (id),
                     foreign key (username) references users(username)

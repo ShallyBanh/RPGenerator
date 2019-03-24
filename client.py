@@ -5,7 +5,7 @@ from account.user import User
 
 class Client():
 
-    def __init__(self, ip_address="localhost", port=5493, encoding="utf-8"):
+    def __init__(self, ip_address="0.0.0.0", port=5493, encoding="utf-8"):
         self.ip_address = ip_address
         self.port = port
         self.URL = "http://{}:{}".format(self.ip_address, self.port)
