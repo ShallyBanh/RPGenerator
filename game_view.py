@@ -94,17 +94,29 @@ class GameView:
         self.clear_GM_info()
         self.display_message("Toggle Fog Mode _ACTIVE_")
 
-        # RUNNING = True
-        # while RUNNING:    
-        #     for event in pygame.event.get():
-        #         if event.type == QUIT:
-        #             pygame.quit()
-        #             sys.exit()
-        #         elif event.type == MOUSEBUTTONDOWN:
-
-        #         elif event.type == KEYDOWN:   
-        #             if event.key == K_ESCAPE:
-        #                 RUNNING = False
+        RUNNING = True
+        while RUNNING:    
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    mousepos = pygame.mouse.get_pos()
+                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                    print(mousepos)
+                    x, y = gameview.which_tile(mousepos)
+                    # draw rectangle surrounding the actual box
+                    left, top = self.tile_location((x, y))
+                    left, top = self.offset_blit(left, top)
+                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
+                    myMap.fogOfWar[x][y]=False
+                    # test if fog of war works in the right location
+                    # self.update_fog()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.help_screen()
+                        RUNNING = False
         return
 
     def add_texture(self):
@@ -159,6 +171,14 @@ class GameView:
 
     def display_message(self, message):
         ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
+        return
+
+    def update_fog(self):
+        fogImage = pygame.transform.scale(images["fog.png"], (myMap.tilesize,myMap.tilesize))
+        for rw in range(myMap.height):
+            for cl in range(myMap.width):
+                if not myMap.fogOfWar[rw][cl]:
+                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*myMap.tilesize, rw*myMap.tilesize))
         return
 
 # CLASSES ------------------------------------------------------------------------------------------------
