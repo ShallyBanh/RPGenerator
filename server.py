@@ -136,7 +136,10 @@ def reset_database():
 def sql_debug():
     """ WARNING: for test purposes only, @TODO remove """
     query = request.args.get("query")
-    server.account_manager.database.query(query, "")
+    data = request.args.get("data")
+    if data is None:
+        data = ""
+    server.account_manager.database.query(query, data)
     rows = server.account_manager.database.cur.fetchall()
     return jsonify(rows)
     
