@@ -28,9 +28,8 @@ class User:
 
     def __str__(self):
         string = "User:"
-        string += "\n\tusername: {}".format(self.get_username())
-        string += "\n\temail: {}".format(self.get_email())
-        string += "\n\tassets: {}".format(self.get_assets())
+        for k in self.__dict__.keys():
+            string += "\n\t{}: {}".format(k, self.__dict__[k])
         return string
 
     def set_username(self, username):
@@ -65,16 +64,16 @@ class User:
 
     def update_asset(self, asset):
         """Update one of the User's assets."""
-        self._assets[asset.get_username] = asset
+        self._assets[asset.get_name] = asset
 
     def delete_asset(self, asset):
         """Delete one of the User's assets."""
         # @TODO delete from database
-        self._assets.pop(asset.get_username, None)
+        self._assets.pop(asset.get_name, None)
 
     def get_asset(self, asset):
         """Return the specified asset of the User."""
-        return self._assets[asset.get_username]
+        return self._assets[asset.get_name]
 
     def set_assets(self, asset_dict):
         """Set the User's dict of assets to the given dict."""
