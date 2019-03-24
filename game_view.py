@@ -122,6 +122,30 @@ class GameView:
     def add_texture(self):
         self.clear_GM_info()
         self.display_message("Add Texture Mode _ACTIVE_")
+
+        RUNNING = True
+        while RUNNING:    
+            pygame.display.flip()
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    mousepos = pygame.mouse.get_pos()
+                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                    print(mousepos)
+                    x, y = gameview.which_tile(mousepos)
+                    # draw rectangle surrounding the actual box
+                    left, top = self.tile_location((x, y))
+                    left, top = self.offset_blit(left, top)
+                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
+                    myMap.fogOfWar[x][y]=False
+                    # test if fog of war works in the right location
+                    # self.update_fog()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.help_screen()
+                        RUNNING = False
         return
 
     def edit_entity(self):
