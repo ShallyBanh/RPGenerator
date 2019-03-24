@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.append('../')
 from validator import Validator
+import validator as vl
 from entity import Entity
 from action import Action
 from attribute import Attribute
@@ -12,7 +13,7 @@ sys.path.append('../rule_interpreter/rule_interpreter_view')
 import pygame
 import ptext
 import pygame_textinput
-import ruleset_creation_edit_view as ruleCreate
+from ruleset_creation_edit_view import RulesetCreationEditView
 import pickle
 
 class RulesetView:
@@ -20,15 +21,27 @@ class RulesetView:
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
+        self._editButton = pygame.image.load('img/editButton.png')
         self._editButtonList = []
         self._playing = True
         self._edit_ruleset_view = False
         self._create_ruleset_view = False
+        self._database = Database("../../account/shallysdb.db")
+        self._rulesetList = []
+        self._rulesetPositionList =[]
+    
+    def load_ruleset(self):
+        self._database.cur.execute("SELECT rulename, rules from Ruleset;")
+        data = self._database.cur.fetchall()
+        for ruleName, rule in data:
+            self._rulesetList.append((ruleName, rule))
+        self._database.close()
 
     def main(self, rulesetName):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
         pygame.init()
+        self.load_ruleset()
 
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
@@ -37,8 +50,6 @@ class RulesetView:
         buttonrects = [pygame.Rect((50, 150, 1100, 550))]
         textSizes = [(50, 100)]
         buttonnames = ["Rulesets"]
-
-        titleargs = ptext.draw("{}".format(rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -65,15 +76,22 @@ class RulesetView:
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clickpos = event.pos
                     x, y = clickpos
-                    if x in range(960, 1000) and y in range(110, 140):
-                        ruleCreate.main("")
+                    if x in range(1110, 1150) and y in range(110, 140):
+                        RulesetCreationEditView().main("")
                     #save button
-                    for moreIdx in range(len(self._editButtonList)):
-                        print(self._editButtonList)
-                        x1 = int(self._editButtonList[moreIdx][0])
-                        y1 = int(self._editButtonList[moreIdx][1])
-                        if x in range(x1, x1 + 60) and y in range(y1, y1+30):
-                            attribute_action_view = True
+                    for editIdx in range(len(self._rulesetPositionList)):
+                        x1 = int(self._rulesetPositionList[editIdx][0])
+                        y1 = int(self._rulesetPositionList[editIdx][1])
+                        print(x1, y1)
+                        print(x,y)
+                        if x in range(x1, x1 + 200) and y in range(y1, y1+60):
+                            rule = self._rulesetList[editIdx][1]
+                            deserializedRule = pickle.loads(rule)
+                            Validator().clear_entities()
+                            Validator().set_entities(deserializedRule.get_entities())
+                            print(Validator().get_entities())
+                            RulesetCreationEditView().main(self._rulesetList[editIdx][0])
+                            self.load_ruleset()
                             # currentEntityName = entities[moreIdx]
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):
@@ -83,15 +101,14 @@ class RulesetView:
                 ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
-            # entites_str = ""
-            # moreButtonList = []
-            # for entityIdx in range(len(entities)):
-            #     entites_str += entities[entityIdx] + "\n"
-            #     screen.blit(moreImage,(900, 210 + entityIdx * 30 + entityIdx*0.05*100))
-            #     moreButtonList.append((900, 210 + entityIdx * 30 + entityIdx*0.05*100))
-            # ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
-
-            screen.blit(*titleargs)
+            ruleNamesString = ""
+            self._rulesetPositionList = []
+            for ruleIdx in range(len(self._rulesetList)):
+                ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
+                screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.05*100))
+                self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.05*100))
+            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
+            
             pygame.display.flip()
 
 
