@@ -26,7 +26,7 @@ class RulesetView:
         self._playing = True
         self._edit_ruleset_view = False
         self._create_ruleset_view = False
-        self._database = Database("../../account/shallysdb.db")
+        self._database = Database("../../account/test.db")
         self._rulesetList = []
         self._rulesetPositionList =[]
     
@@ -78,7 +78,9 @@ class RulesetView:
                     clickpos = event.pos
                     x, y = clickpos
                     if x in range(1110, 1150) and y in range(110, 140):
-                        RulesetCreationEditView().main("")
+                        validator = RulesetCreationEditView().main("")
+                        if validator is not None:
+                            return validator
                         self.load_ruleset()
                     #save button
                     for editIdx in range(len(self._rulesetPositionList)):
@@ -89,7 +91,10 @@ class RulesetView:
                             deserializedRule = pickle.loads(rule)
                             Validator().clear_entities()
                             Validator().set_entities(deserializedRule.get_entities())
-                            RulesetCreationEditView().main(self._rulesetList[editIdx][0])
+                            Validator().set_relationships(deserializedRule.get_relationships())
+                            validator = RulesetCreationEditView().main(self._rulesetList[editIdx][0])
+                            if validator is not None:
+                                return validator
                             self.load_ruleset()
                             # currentEntityName = entities[moreIdx]
 
@@ -112,7 +117,8 @@ class RulesetView:
             pygame.display.flip()
 
 
-RulesetView().main("Shally's ruleset")
+validator = RulesetView().main("Shally's ruleset")
+print(validator)
 
 
 

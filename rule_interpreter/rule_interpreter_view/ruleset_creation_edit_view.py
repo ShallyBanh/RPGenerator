@@ -6,6 +6,7 @@ from entity import Entity
 from action import Action
 from attribute import Attribute
 from syntax_parser import SyntaxParser
+from relationship import Relationship
 sys.path.append('../../account')
 from database import Database
 sys.path.append('../rule_interpreter/rule_interpreter_view')
@@ -14,6 +15,7 @@ import ptext
 import pygame_textinput
 from entity_creation_view import EntityCreationView
 from action_attribute_view import AttributeActionCreationView
+from relationship_creation_view import RelationshipCreationView
 import pickle
 
 class RulesetCreationEditView:
@@ -21,18 +23,20 @@ class RulesetCreationEditView:
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
         self._moreButtonList = []
-        self._database = Database("../../account/shallysdb.db")
+        self._database = Database("../../account/test.db")
         self._moreImage = pygame.image.load('img/moreButton.png')
         self._saveButtonImage = pygame.image.load('img/saveButton.png')
         self._exportButtonImage = pygame.image.load('img/exportButton.png')
         self._currentlySelected = False
         self._newRuleset = False
         self._entity_view = False
+        self._relationship_view = False
         self._playing = True
         self._attribute_action_view = False
         self._unvalid = False
         self._rulesetName = ""
         self._entities = [entity.get_name() for entity in Validator().get_entities()]
+        self._relationships = [relationship.get_name() for relationship in Validator().get_relationships()]
         self._invalidSubmission = False
 
     def save_ruleset(self, database, user, rulesetName, jsonBlob):
@@ -65,12 +69,12 @@ class RulesetCreationEditView:
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Main")
 
-        buttonrects = [pygame.Rect((60, 175, 950, 500))]
-        textSizes = [(60, 125)]
+        buttonrects = [pygame.Rect((60, 175, 575, 500)), pygame.Rect((650, 175, 575, 500))]
+        textSizes = [(60, 125), (650, 125)]
         if self._newRuleset:
-            buttonrects.append(pygame.Rect((60, 50, 950, 50)))
+            buttonrects.append(pygame.Rect((60, 50, 575, 50)))
             textSizes.append((60, 5))
-        buttonnames = ["Entities", "Ruleset Name"]
+        buttonnames = ["Entities", "Relationship Name", "Ruleset Name"]
         currentEntityName = ""
 
         if self._newRuleset == False:
@@ -78,9 +82,10 @@ class RulesetCreationEditView:
 
         while self._playing:
             screen.fill((0, 50, 50))
-            screen.blit(self._plusImage,(960, 135))
-            screen.blit(self._saveButtonImage,(1050, 160))
-            screen.blit(self._exportButtonImage,(1050, 240))
+            screen.blit(self._plusImage,(565, 135))
+            screen.blit(self._plusImage,(1200, 135))
+            screen.blit(self._saveButtonImage,(1100, 10))
+            screen.blit(self._exportButtonImage,(1100, 70))
             screen.blit(self._arrowImg,(10, 10))
             clickpos = None
             events = pygame.event.get()
@@ -91,6 +96,13 @@ class RulesetCreationEditView:
                     self._entities.append(entityTuple[0])
                     Validator().add_entity(Entity(entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4], entityTuple[5]))
                 self._entity_view = False
+
+            if self._relationship_view == True:
+                relationshipTuple = RelationshipCreationView().main()
+                if relationshipTuple[0] is not None:
+                    self._relationships.append(relationshipTuple[0])
+                    Validator().add_relationship(Relationship(relationshipTuple[0], relationshipTuple[1]))
+                self._relationship_view = False
             
             if self._attribute_action_view == True:
                 AttributeActionCreationView(currentEntityName).main()
@@ -106,17 +118,19 @@ class RulesetCreationEditView:
                         return
                     if event.key == pygame.K_DELETE:
                         screen.fill((0, 50, 50))
-                        screen.blit(self._plusImage,(960, 135))
-                        screen.blit(self._saveButtonImage,(1050, 160))
-                        screen.blit(self._exportButtonImage,(1050, 240))
+                        screen.blit(self._plusImage,(565, 135))
+                        screen.blit(self._plusImage,(1200, 135))
+                        screen.blit(self._saveButtonImage,(1100, 10))
+                        screen.blit(self._exportButtonImage,(1100, 70))
                         screen.blit(self._arrowImg,(10, 10))
                         self._rulesetName = self._rulesetName [:len(self._rulesetName)-1]
                 
                     elif event.key == pygame.K_BACKSPACE:
                         screen.fill((0, 50, 50))
-                        screen.blit(self._plusImage,(960, 135))
-                        screen.blit(self._saveButtonImage,(1050, 160))
-                        screen.blit(self._exportButtonImage,(1050, 240))
+                        screen.blit(self._plusImage,(565, 135))
+                        screen.blit(self._plusImage,(1200, 135))
+                        screen.blit(self._saveButtonImage,(1100, 10))
+                        screen.blit(self._exportButtonImage,(1100, 70))
                         screen.blit(self._arrowImg,(10, 10))
                         self._rulesetName = self._rulesetName [:len(self._rulesetName)-1]
 
@@ -131,12 +145,15 @@ class RulesetCreationEditView:
                         if buttonrects[1].collidepoint(x,y):
                             self._currentlySelected = True
                     if x in range(10,40) and y in range(10,40):
-                        return True
-                    if x in range(960, 1000) and y in range(135, 175):
+                        return
+                    if x in range(565, 600) and y in range(135, 175):
                         self._entity_view = True
+                    if x in range(1200, 1250) and y in range(135, 175):
+                        self._relationship_view = True
                     #save button
-                    if x in range(1050, 1200) and y in range(160, 200):
-                        database = Database("../../account/shallysdb.db")
+                    if x in range(1100, 1300) and y in range(10, 60):
+                        database = Database("../../account/test.db")
+                        print(Validator().get_relationships())
                         picklestring = pickle.dumps(Validator())
                         if self._newRuleset == False:
                             self.update_database(database, "shally", self._rulesetName, picklestring)
@@ -150,6 +167,10 @@ class RulesetCreationEditView:
                                     buttonrects.pop()
                                 
                         titleargs = ptext.draw("{}".format(self._rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+
+                    #fake export button for andrew to shoot out an object for him
+                    if x in range(1100, 1300) and y in range(70, 130):
+                        return Validator()
 
                     for moreIdx in range(len(self._moreButtonList)):
                         x1 = int(self._moreButtonList[moreIdx][0])
@@ -172,9 +193,16 @@ class RulesetCreationEditView:
             self._moreButtonList = []
             for entityIdx in range(len(self._entities)):
                 entites_str += self._entities[entityIdx] + "\n"
-                screen.blit(self._moreImage,(900, 210 + entityIdx * 30 + entityIdx*0.05*100))
-                self._moreButtonList.append((900, 210 + entityIdx * 30 + entityIdx*0.05*100))
+                screen.blit(self._moreImage,(465, 210 + entityIdx * 30 + entityIdx*0.05*100))
+                self._moreButtonList.append((465, 210 + entityIdx * 30 + entityIdx*0.05*100))
             ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
+
+
+            relationship_str = ""
+            for relationshipIdx in range(len(self._relationships)):
+                relationship_str += self._relationships[relationshipIdx] + "\n"
+            ptext.draw(relationship_str, (660, 200), fontname="Boogaloo", color="white", fontsize=30)
+
             if self._newRuleset == True:
                 ptext.draw(self._rulesetName, (70, 60), fontname="Boogaloo", color="white", fontsize=30)
             

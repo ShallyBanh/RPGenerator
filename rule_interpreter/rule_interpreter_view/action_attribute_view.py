@@ -65,12 +65,12 @@ class AttributeActionCreationView:
                 self._action_view = False
             
             if self._attribute_view == True:
-                attrName, attrType, attrValue = AttributeCreationView().main()
+                attrName, attrValue = AttributeCreationView().main()
                 if attrName is not None:
                     attributes.append(attrName)
                     entityIdx = Validator().get_entity_idx(self._currentEntityName)
                     if entityIdx != -1:
-                        Validator().set_attribute(entityIdx, attrName, attrType, attrValue)
+                        Validator().set_attribute(entityIdx, attrName, attrValue)
                 self._attribute_view = False
 
             for event in events:

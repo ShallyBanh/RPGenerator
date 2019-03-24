@@ -500,7 +500,7 @@ class SyntaxParser(object):
         for ob in Validator().get_entities():        
             #try to find the matching attribute
             for attribute in ob.get_attributes():
-                if attribute.get_attribute_type() == attr or attribute.get_attribute_name() == attr:
+                if attribute.get_attribute_name() == attr:
                     return True
             
             #try to find the matching action
@@ -530,7 +530,7 @@ class SyntaxParser(object):
         
         #try to find the matching attribute
         for attribute in entity.get_attributes():
-            if attribute.get_attribute_type() == attr or attribute.get_attribute_name() == attr:
+            if attribute.get_attribute_name() == attr:
                 return True
         
         #try to find the matching action

@@ -51,8 +51,8 @@ class _Validator(object):
         
         return -1
     
-    def set_attribute(self, entityIdx, attributeName, attributeType, attributeValue):
-        self._allEntities[entityIdx].add_attribute(Attribute(attributeName, attributeType, attributeValue))
+    def set_attribute(self, entityIdx, attributeName, attributeValue):
+        self._allEntities[entityIdx].add_attribute(Attribute(attributeName, attributeValue))
 
     def set_action(self, entityIdx, actionName, ruleContent):
         self._allEntities[entityIdx].add_action(Action(actionName, ruleContent))
@@ -62,6 +62,9 @@ class _Validator(object):
 
     def set_entities(self, entities):
         self._allEntities = entities
+    
+    def set_relationships(self, relationships):
+        self._allRelationships = relationships
     
     def clear_entities(self):
         self._allEntities = []
