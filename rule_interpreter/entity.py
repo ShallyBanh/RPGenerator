@@ -17,19 +17,18 @@ class Entity:
         self._id = None
         self._actions = [] 
         self._attributes = [] 
-        self._size = Size(0,0) 
+        self._size = Size(1,1) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
-        self._location = None
-        self._x = 0
-        self._y = 0
+        self.x = 0
+        self.y = 0
         Validator().add_entity(self)
     
     def get_x(self):
-        return self._x
+        return self.x
     
     def get_y(self):
-        return self._y
+        return self.y
 
     def get_type(self):
         return self._type
@@ -57,6 +56,13 @@ class Entity:
 
     def get_attributes(self):
         return self._attributes
+		
+    def get_attribute(self, attributeName):
+        attributeName = attributeName.lower()
+        for a in self._attributes:
+            if a.get_attribute_name() == attributeName:
+                return a
+        print("No attribute of name " + attributeName + " found.")
 
     def set_attributes(self, attributes):
         self._attributes = attributes
@@ -67,7 +73,7 @@ class Entity:
             return 
 
         if attribute.get_attribute_name() in self.get_attributes():
-            print("Error, atrribute name already exists")
+            print("Error, attribute name already exists")
             return
         if attribute.get_attribute_name() == "location":
             print("error cannot name attribute location")
@@ -83,9 +89,9 @@ class Entity:
         if action.get_action_name() in self.get_actions():
             print("Error, action name already exists")
             return
-        if action.get_action_name() == "location":
-            print("error cannot name action location")
-            return 
+        # if action.get_action_name() == "location":
+            # print("error cannot name action location")
+            # return 
 
         self._actions.append(action)
 
@@ -95,12 +101,6 @@ class Entity:
     def set_size(self, size):
         self._size = size
 
-    def get_location(self):
-        return self._location
-
-    def set_location(self, location):
-        self._location = location
-    
     def get_is_template(self):
         return self._isTemplate
 
