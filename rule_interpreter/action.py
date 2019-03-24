@@ -1,5 +1,3 @@
-from validator import Validator
-
 class Action:
     """
     Action Class
@@ -8,7 +6,6 @@ class Action:
     def __init__(self, name, content):
         self._actionName = name.lower()
         self._ruleContent = content
-        self._validator = Validator()
     
     def get_action_name(self):
         return self._actionName
