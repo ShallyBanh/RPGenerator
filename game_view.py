@@ -104,13 +104,16 @@ class GameView:
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
-                    print(mousepos)
                     x, y = gameview.which_tile(mousepos)
                     # draw rectangle surrounding the actual box
                     left, top = self.tile_location((x, y))
                     left, top = self.offset_blit(left, top)
-                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
-                    myMap.fogOfWar[x][y]=False
+                    if myMap.fogOfWar[x][y]:
+                        myMap.fogOfWar[x][y] = False
+                        pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
+                    else: 
+                        myMap.fogOfWar[x][y] = True
+                        pygame.draw.lines(DISPLAYSURF, (255,255,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
                     # test if fog of war works in the right location
                     # self.update_fog()
                 elif event.type == KEYDOWN:   
@@ -120,12 +123,21 @@ class GameView:
         return
 
     def add_texture(self):
+        string = "Select a texture:\n"
+        images = self.load_pictures()
+        for key in images:
+            string += key + ", "
+        
         self.clear_GM_info()
-        self.display_message("Add Texture Mode _ACTIVE_")
+        self.display_message(string)
+
+        input_box = InputBox(MAPOFFSET[0] + 200, myMap.tilesize*myMap.height, 200, 32, DISPLAYSURF)
 
         RUNNING = True
+        text = ""
+        selected_image = None
+        blit_input = True
         while RUNNING:    
-            pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -133,24 +145,34 @@ class GameView:
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
-                    print(mousepos)
-                    x, y = gameview.which_tile(mousepos)
-                    # draw rectangle surrounding the actual box
-                    left, top = self.tile_location((x, y))
-                    left, top = self.offset_blit(left, top)
-                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
-                    myMap.fogOfWar[x][y]=False
-                    # test if fog of war works in the right location
-                    # self.update_fog()
+                    if selected_image is not None:
+                        x, y = gameview.which_tile(mousepos)
+                        texture = Map.Texture(x,y,1,1,selected_image)
+                        myMap.textures.append(texture)
+                        texture_image = pygame.transform.scale(selected_image, (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
+                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
+                        self.clear_GM_info()
+                        self.display_message(string)
+                        blit_input = True
+                        selected_image = None
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.help_screen()
                         RUNNING = False
-        return
+                    elif event.key == K_RETURN:
+                        text = input_box.handle_event(event)
+                        text = text.rstrip()
+                        if text in images:
+                            self.clear_GM_info()
+                            blit_input = False
+                            self.display_message("Please select tile you would like to place this texture")
+                            selected_image = images[text]
+                text = input_box.handle_event(event)
+            if blit_input:
+                input_box.wipe()
+                input_box.draw()
+            pygame.display.flip()            
 
-    def edit_entity(self):
-        self.clear_GM_info()
-        self.display_message("Edit Entity _ACTIVE_")
         return
 
     def create_new_entity(self):
@@ -158,9 +180,9 @@ class GameView:
         self.display_message("Create New Entity _ACTIVE_")
         return
 
-    def add_asset(self):
+    def edit_entity(self):
         self.clear_GM_info()
-        self.display_message("Add Asset _ACTIVE_")
+        self.display_message("Edit Entity _ACTIVE_")
         return
 
     def delete_entity(self):
@@ -168,6 +190,11 @@ class GameView:
         self.display_message("Delete Entity _ACTIVE_")
         return
 
+    def add_asset(self):
+        self.clear_GM_info()
+        self.display_message("Add Asset _ACTIVE_")
+        return
+    
     def remove_player(self):
         self.clear_GM_info()
         self.display_message("Remove Player")
@@ -194,8 +221,8 @@ class GameView:
         return
 
     def display_message(self, message):
-        ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
-        return
+        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
+        return txt_surface
 
     def update_fog(self):
         fogImage = pygame.transform.scale(images["fog.png"], (myMap.tilesize,myMap.tilesize))
@@ -232,7 +259,7 @@ class InputBox:
         self.active = False
         self.screen = screen
 
-    def handle_event(self, event, transcript):
+    def handle_event(self, event, transcript=""):
         if event.type == MOUSEBUTTONDOWN:
             # If the user clicked on the input_box rect.
             if self.rect.collidepoint(event.pos):
