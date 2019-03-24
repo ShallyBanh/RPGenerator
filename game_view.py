@@ -91,28 +91,55 @@ class GameView:
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
 
     def toggle_fog(self):
+        self.clear_GM_info()
+        self.display_message("Toggle Fog Mode _ACTIVE_")
+
+        # RUNNING = True
+        # while RUNNING:    
+        #     for event in pygame.event.get():
+        #         if event.type == QUIT:
+        #             pygame.quit()
+        #             sys.exit()
+        #         elif event.type == MOUSEBUTTONDOWN:
+
+        #         elif event.type == KEYDOWN:   
+        #             if event.key == K_ESCAPE:
+        #                 RUNNING = False
         return
 
     def add_texture(self):
         self.clear_GM_info()
+        self.display_message("Add Texture Mode _ACTIVE_")
         return
 
     def edit_entity(self):
+        self.clear_GM_info()
+        self.display_message("Edit Entity _ACTIVE_")
         return
 
     def create_new_entity(self):
+        self.clear_GM_info()
+        self.display_message("Create New Entity _ACTIVE_")
         return
 
     def add_asset(self):
+        self.clear_GM_info()
+        self.display_message("Add Asset _ACTIVE_")
         return
 
     def delete_entity(self):
+        self.clear_GM_info()
+        self.display_message("Delete Entity _ACTIVE_")
         return
 
     def remove_player(self):
+        self.clear_GM_info()
+        self.display_message("Remove Player")
         return
 
     def roll_die(self):
+        self.clear_GM_info()
+        self.display_message("_Roll Die_")
         return
 
     def clear_GM_info(self):
@@ -122,11 +149,16 @@ class GameView:
         return
 
     def help_screen(self):
+        self.clear_GM_info()
         # blit hotkey information
         info = "_GM HOTKEYS:_\n"
         for key, pair in GM_HOTKEYS.items():
             info += key + ": " + pair["name"] + "\n"
-        ptext.draw(info, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
+        self.display_message(info)
+        return
+
+    def display_message(self, message):
+        ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
         return
 
 # CLASSES ------------------------------------------------------------------------------------------------
