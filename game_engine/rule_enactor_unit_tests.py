@@ -12,30 +12,6 @@ from validator import _Validator
 
 class TestRuleInterpreter(unittest.TestCase):
 	def setUp(self):
-		# self.action_name = "Action"
-		# debug_mode = True
-		# self.enactor = rule_enactor.RuleEnactor(debug_mode)
-
-		# self.rule = "target guy\n"
-		# self.isTemplate = False
-		# self.hp_time = rule_enactor.Attribute("HP", 10)	
-		# self.actor = rule_enactor.Entity("entity", "self", self.isTemplate)
-		# self.actor.add_attribute(self.hp_time)
-	
-		# self.hp_boys = rule_enactor.Attribute("HP", 20)
-		# self.target = rule_enactor.Entity("entity", "guy", self.isTemplate)
-		# self.target.add_attribute(self.hp_boys)
-		# self.target.x = 2
-		# self.target.y = 2
-		# self.ac_time = rule_enactor.Attribute("AC", 15)	
-		# self.actor.add_attribute(self.ac_time)
-	
-		# self.ac_boys = rule_enactor.Attribute("AC", 15)
-		# self.target.add_attribute(self.ac_boys)
-		
-		
-		
-		
 		self.action_name = "Action"
 		debug_mode = True
 		self.enactor = rule_enactor.RuleEnactor(debug_mode)
@@ -46,30 +22,24 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.isTemplate = False
 		self.hp_time = rule_enactor.Attribute("HP", 10)	
 		self.ac_time = rule_enactor.Attribute("AC", 15)	
-		self.template = rule_enactor.Entity("entity", "", self.isTemplate)
+		self.template = rule_enactor.Entity("", "entity", 1, 1, self.isTemplate, None)
 		self.template.add_attribute(self.hp_time)
 		self.template.add_attribute(self.ac_time)
 		
 		validator.add_entity(self.template)
-		# validator.add_entity(self.target)
 		self.enactor.parse_validator(validator)
 		self.actor = self.enactor.add_new_entity("entity", "self", 0, 0)
 		self.target = self.enactor.add_new_entity("entity", "guy", 2, 2)
-		# self.enactor.add_new_entity(self.actor)
-		# self.enactor.add_new_entity(self.target)
+		self.target.get_attribute("HP").set_attribute_value(20)
 		
-	# def tearDown(self):
-		# print("Done test.")
-	
-	
 	def test_constructor(self):
 		newEnactor = rule_enactor.RuleEnactor()
 		self.assertTrue(isinstance(newEnactor, rule_enactor.RuleEnactor))
 	
 	def test_add_new_entity(self):
-		newEntity = rule_enactor.Entity("entity", "newGuy", self.isTemplate)
-		self.enactor.add_new_entity(newEntity)
-		self.assertTrue(newEntity in self.enactor.all_created_entities)
+		amt = len(self.enactor.all_created_entities)
+		self.enactor.add_new_entity("entity", "newGuy", 0, 0)
+		self.assertTrue(amt < len(self.enactor.all_created_entities))
 	
 	def test_target(self):
 		rule = "target guy\n"
@@ -132,34 +102,11 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").get_attribute_value(), 5)
 		
 	def test_within(self):
-		# actor is at 0,0
-		# target is at 2,2
-		# entity1 is at 1,1
-		# entity2 is at 10,10
-		# entity3 is at -3,-3 but has width and height of 3 so should be within
-		hp_1 = rule_enactor.Attribute("HP", 10)
-		entity1 = rule_enactor.Entity("entity", "entity1", self.isTemplate)
-		entity1.add_attribute(hp_1)
-		entity1.x = 1
-		entity1.y = 1
-		
-		hp_2 = rule_enactor.Attribute("HP", 10)
-		entity2 = rule_enactor.Entity("entity", "entity2", self.isTemplate)
-		entity2.add_attribute(hp_2)
-		entity2.x = 10
-		entity2.y = 10
-		
-		hp_3 = rule_enactor.Attribute("HP", 10)
-		entity3 = rule_enactor.Entity("entity", "entity3", self.isTemplate)
-		entity3.add_attribute(hp_3)
-		entity3.x = -3
-		entity3.y = -3
+		entity1 = self.enactor.add_new_entity("entity","entity1",1,1)
+		entity2 = self.enactor.add_new_entity("entity","entity2",10,10)
+		entity3 = self.enactor.add_new_entity("entity","entity3",-3,-3)
 		entity3.set_size(rule_enactor.Size(3,3))
 		
-		self.enactor.add_new_entity(entity1)
-		self.enactor.add_new_entity(entity2)
-		self.enactor.add_new_entity(entity3)
-		#print("target hp: " + str(self.target.get_attribute("HP").get_attribute_value()))
 		self.rule += "if all self within(2,2) of entity then reduce entity.HP by 5\n"
 		action = rule_enactor.Action(self.action_name, self.rule)
 		self.enactor.perform_action(action, self.actor)
@@ -199,10 +146,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, -3)
 		
-		entity1 = rule_enactor.Entity("entity", "test1", self.isTemplate)
-		entity1.x = 5
-		entity1.y = 0
-		self.enactor.add_new_entity(entity1)
+		entity1 = self.enactor.add_new_entity("entity", "test1", 5, 0)
 		rule = "target test1\n move target 10 away from self\nmove self 10 away from target"
 		action = rule_enactor.Action(self.action_name, rule)
 		self.enactor.perform_action(action, self.actor)
@@ -231,9 +175,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, 2)
 		
-		entity1 = rule_enactor.Entity("entity", "test1", self.isTemplate)
-		entity1.x = 15
-		entity1.y = 0
+		entity1 = self.enactor.add_new_entity("entity","test1",15,0)
 		self.enactor.add_new_entity(entity1)
 		rule = "target test1\n move target 5 towards self\nmove self 10 towards target"
 		action = rule_enactor.Action(self.action_name, rule)
@@ -448,7 +390,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 	def test_interrupt(self):
 		relationship_rule = "interrupt entity.Action if target.statuses has \"Dodge\"\nincrease target.HP by 10\n"
-		relationship = rule_enactor.Relationship(relationship_rule)
+		relationship = rule_enactor.Relationship("Dodge", relationship_rule)
 		self.rule += "add status \"Dodge\" to target"
 		action = rule_enactor.Action("Setup", self.rule)
 		self.enactor.perform_action(action, self.actor)
@@ -477,8 +419,6 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(self.target.get_attribute("HP").get_attribute_value() <= 20 and self.target.get_attribute("HP").get_attribute_value() >= -16)
 		self.assertTrue(self.enactor.acting_entity.get_attribute("HP").get_attribute_value() <= 10 and self.enactor.acting_entity.get_attribute("HP").get_attribute_value() >= -26)
 		
-	#ETC ETC (test complex and concrete examples of actions)
-
 
 if __name__=="__main__":
 	unittest.main()
