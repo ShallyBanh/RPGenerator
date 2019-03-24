@@ -10,21 +10,6 @@ import ptext
 # http://usingpython.com/pygame-tilemaps/
 # http://usingpython.com/list-comprehension/
 
-# utilized for testing of actions drop down menu
-class Entity:
-    def __init__(self, x, y, width, height, name, actions):
-        self.width = width
-        self.height = height
-        self.x = x
-        self.y = y
-        self.name = name
-        self.actions = actions
-        self.attributes = ["example attributes", "example 2", "example 3"]
-
-    def __str__(self):
-        return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
-
-
 def offset_blit(x,y):
     return (x+MAPOFFSET[0],y+MAPOFFSET[1])
 
@@ -74,7 +59,7 @@ def make_popup(x, y, entity):
     left, top = offset_blit(left, top)
     pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.width*myMap.tilesize, top), (left+entity.width*myMap.tilesize, top+entity.height*myMap.tilesize), (left, top+entity.height*myMap.tilesize)], 3)
 
-    # entity information
+    # entity information to display on the left
     ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
 
     return (popupSurf.get_width(), popupSurf.get_height()), (x,y)
@@ -97,6 +82,20 @@ def which_entity(x, y):
         if x in range(e.x,e.x+e.width) and y in range(e.y,e.y+e.height):
             return e
     return None
+
+# utilized for testing of actions drop down menu
+class Entity:
+    def __init__(self, x, y, width, height, name, actions):
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+        self.name = name
+        self.actions = actions
+        self.attributes = ["example attributes", "example 2", "example 3"]
+
+    def __str__(self):
+        return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
 
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
@@ -329,20 +328,15 @@ if __name__ == "__main__":
                     x, y = which_tile(mousepos)
                     # if it is a valid locatin and there are no other entities there
                     if x != -1 and y != -1 and check_entity_fit(my_entity.width, my_entity.height, x, y, my_entity):
-                        # remove old image                       
+                        # remove old image and replace with generic block, then cover with texture if there are any       
                         for i in range(0,my_entity.width):
                             for j in range(0,my_entity.height):
                                 DISPLAYSURF.blit(greyImage, offset_blit((my_entity.y+i)*myMap.tilesize, (my_entity.x+j)*myMap.tilesize))
                                 for texture in myMap.textures:
-                                    # print(texture)
-                                    # print("x: " + str(my_entity.x))
-                                    # print("y: " + str(my_entity.y))
-                                    # print("i: " + str(i))
-                                    # print("j: " + str(j))
                                     if texture.x == (my_entity.x+j) and texture.y == (my_entity.y+i):
                                         texture_image = pygame.transform.scale(images[texture.name], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
-                                        DISPLAYSURF.blit(texture_image, offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
-                                        
+                                        DISPLAYSURF.blit(texture_image, offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))  
+                                        break # to speed up the loop checking
                         # blit entity to it
                         my_entity.x = x
                         my_entity.y = y
@@ -355,7 +349,10 @@ if __name__ == "__main__":
                     x, y = which_tile(mousepos)
                     my_entity = which_entity(x, y)
                     if my_entity is not None:
-                        loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
+                        if (my_entity.y + my_entity.width) >= myMap.width or (my_entity.x + my_entity.height) >= myMap.height:
+                            loc_x, loc_y = tile_location((my_entity.x,my_entity.y))
+                        else:    
+                            loc_x, loc_y = tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
                         size, location = make_popup(loc_x, loc_y, my_entity)
             # input box handling + transcript update
             transcript = input_box.handle_event(event, history.transcript)
