@@ -1,4 +1,5 @@
-from .map import Map
+import json
+from map import Map
 
 class Game:
     def __init__(self):
@@ -18,6 +19,14 @@ class Game:
             string += "\n\t{}: {}".format(k, self.__dict__[k])
         return string
 
+    def serialize(self):
+        return self.__dict__
+
+    def to_JSON(self):
+        # automatically do nested calls https://stackoverflow.com/a/15538391
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True,
+                          indent=4)
+    
     def get_uniqueID(self):
         return self.uniqueID
 
