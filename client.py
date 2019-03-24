@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import requests
 from flask import jsonify
 import json
@@ -11,6 +12,15 @@ class Client():
         self.URL = "http://{}:{}".format(self.ip_address, self.port)
         self.encoding = "utf-8"
         self.user = None
+        self.help = "Usage:"
+        self.help += "\n\tlogin [username] [password]"
+        self.help += "\n\tcreate_account [username] [password] [email]"
+        self.help += "\n\tchange_credentials [username] [old_password] [new_password]"
+        self.help += "\n\tsend_recovery [email]"
+        self.help += "\n\trecover_account [username] [code] [new_password] [new_password]"
+        self.help += "\n\nDebug commands (to be removed)"
+        self.help += "\n\treset_database"
+        self.help += "\n\tsql_debug [query]"
 
     def default(self, line):
         print("\"{0}\" is not one of the given commands. Type in 'help' for more options.".format(line))
@@ -88,13 +98,58 @@ class Client():
         response = requests.post("{}/reset_database".format(self.URL))
         return 0 if (response.status_code == 200) else -1
 
+    def sql_debug(self, query):
+        """ WARNING: for test purposes only, @TODO remove """
+        payload = {'query': query}
+        response = requests.post("{}/sql_debug".format(self.URL), params = payload)
+        data = json.loads(response.text)
+        print("query resulted in: {}".format(data))
+        return 0 if (response.status_code == 200) else -1
+
+    def parse_command(self, command):
+        # @TODO argparse/getops would be cleaner but is it worth it
+        tokens = command.split()
+        try:
+            if tokens[0] == "login":
+                if len(tokens) < 3:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))                    
+                self.login(tokens[1], tokens[2])
+            elif tokens[0] == "create_account":
+                if len(tokens) < 4:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))
+                self.create_account(tokens[1], tokens[2], tokens[3])
+            elif tokens[0] == "change_credentials":
+                if len(tokens) < 4:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))
+                self.change_credentials(tokens[1], tokens[2], tokens[3])
+            elif tokens[0] == "send_recovery":
+                if len(tokens) < 2:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))
+                self.send_recovery(tokens[1])
+            elif tokens[0] == "recover_account":
+                if len(tokens) < 5:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))
+                self.recover_account(tokens[1], tokens[2], tokens[3], tokens[4])
+            elif tokens[0] == "reset_database":
+                self.reset_database()
+            elif tokens[0] == "sql_debug":
+                if len(tokens) < 2:
+                    raise ValueError("Incorrect number of args for {}".format(tokens[0]))
+                query = " ".join(tokens[1:])
+                self.sql_debug(query)
+            else:
+                raise ValueError("Invalid command")
+        except ValueError as error_msg:
+            print(error_msg)
+            print(self.help)
+
+    def run(self):
+        while True:
+            command = input("client > ")
+            print("the command was {}".format(command))
+            if command:
+                self.parse_command(command)
+
 if __name__ == "__main__":
     client = Client()
-    client.login("user1", "pass1")
-    client.create_account("user1", "password", "thomas.tetz@gmail.com")
-    client.login("user1", "password")
-
-    # client.send_recovery("thomas.tetz@gmail.com")
-    # code = input("code: ")
-    # client.recover_account("user1", code, "newpass", "newpass")
-    # client.login("user1", "newpass")
+    client.run()

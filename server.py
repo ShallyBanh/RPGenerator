@@ -132,4 +132,12 @@ def reset_database():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/sql_debug", methods=['POST', 'GET'])
+def sql_debug():
+    """ WARNING: for test purposes only, @TODO remove """
+    query = request.args.get("query")
+    server.account_manager.database.query(query, "")
+    rows = server.account_manager.database.cur.fetchall()
+    return jsonify(rows)
+    
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)
