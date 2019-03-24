@@ -1,8 +1,8 @@
 from map import Map
 
-class GameEngine:
+class Game:
     """
-    Game Engine Class
+    Game Class
     args:
         None for now
     """
