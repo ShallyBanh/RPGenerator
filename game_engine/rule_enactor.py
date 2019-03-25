@@ -68,7 +68,7 @@ class RuleEnactor:
 			return False
 		return True
 		
-	def perform_action(self, action, acting_entity):
+	def perform_action_testmode(self, action, acting_entity):
 		# ...
 		# parse out the target type from the action (Entity or point)
 		self.current_action = action
@@ -88,7 +88,28 @@ class RuleEnactor:
 			interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
 			for line in interrupt_lines:
 				self.evaluate_line(line)
+				
+	def perform_action(self, action, acting_entity):
+		target = self.determine_target(action.get_target_line())
+		self.acting_entity = acting_entity
+		if target is None:
+			self.target_of_action = acting_entity
+		else:
+			return target
 			
+			
+	def determine_target(self, target_line):
+		words = target_line.strip().strip(':').split()
+		if words[1] == 'self':
+			# we don't need a new target
+			return None
+		elif words[1] == 'point':
+			# we need to target a point
+			return 'point'
+		else:
+			# we need to target an entity of this type
+			return words[1]
+		
 		
 	def evaluate_line(self, line):
 		line = line.lower()
