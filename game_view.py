@@ -5,6 +5,8 @@ import os
 import math
 import re
 import ptext
+from shutil import copyfile
+
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -79,13 +81,15 @@ class GameView:
         direc = os.getcwd() + "/images/textures/"
         pictures = [i for i in os.listdir(direc)]
         for p in pictures:
-            images[p] = pygame.image.load("images/textures/"+p)
+            if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
+                images[p] = pygame.image.load("images/textures/"+p)
 
         if os.path.exists("/tmp"):
             direc = os.getcwd() + "/tmp/"
             pictures = [i for i in os.listdir(direc)]
             for p in pictures:
-                images[p] = pygame.image.load("tmp/"+p)
+                if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
+                    images[p] = pygame.image.load("tmp/"+p)
 
         return images
 
@@ -139,7 +143,7 @@ class GameView:
         self.clear_GM_info()
         self.display_message(string)
 
-        input_box = InputBox(MAPOFFSET[0] + 200, myMap.tilesize*myMap.height, 200, 32, DISPLAYSURF)
+        input_box = InputBox(MAPOFFSET[0] + 200, myMap.tilesize*myMap.height, 500, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -201,11 +205,15 @@ class GameView:
 
     def add_asset(self):
         self.clear_GM_info()
-        self.display_message("Select an asset to add to the database. Press RETURN for selection.\n")
+        general_message = "_Add Asset Mode_\nEnter in the path to an image.\nPress ESC to exit this mode."
+        self.display_message(general_message)
         if not os.path.exists("/tmp"):
             os.makedirs('/tmp')
 
+        input_box = InputBox(MAPOFFSET[0] + 300, myMap.tilesize*myMap.height, 500, 32, DISPLAYSURF)
+
         RUNNING = True
+        text = ""
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -215,11 +223,27 @@ class GameView:
                     pass
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
+                        self.clear_GM_info()
                         self.help_screen()
-                        RUNNING = False
+                        return
                     elif event.key == K_RETURN:
-                        # opendlg() NEED TO FIND A WAY TO IMPORT ASSETS
-                        pass
+                        text = input_box.handle_event(event)
+                        text = text.rstrip()
+                        if os.path.isfile(text):
+                            if text.split(".")[1] not in ["png", "jpg", "jpeg"]:
+                                self.clear_GM_info()
+                                self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
+                            else:
+                                new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
+                                copyfile(text, new_name)
+                                self.clear_GM_info()
+                                self.display_message("_FILE ADDED_\n"+general_message)
+                        else: 
+                            self.clear_GM_info()
+                            self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
+                text = input_box.handle_event(event)
+            input_box.wipe()
+            input_box.draw()
             pygame.display.flip()  
 
         return
