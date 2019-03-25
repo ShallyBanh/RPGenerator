@@ -13,8 +13,7 @@ from validator import _Validator
 class TestRuleInterpreter(unittest.TestCase):
 	def setUp(self):
 		self.action_name = "Action"
-		debug_mode = True
-		self.enactor = rule_enactor.RuleEnactor(debug_mode)
+		self.enactor = rule_enactor.RuleEnactor()
 	
 		validator = _Validator()
 		
