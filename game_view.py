@@ -163,7 +163,7 @@ class GameView:
                         x, y = gameview.which_tile(mousepos)
                         texture = Map.Texture(x,y,1,1,selected_image)
                         myMap.textures.append(texture)
-                        texture_image = pygame.transform.scale(selected_image, (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
+                        texture_image = pygame.transform.scale(images[selected_image], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
                         DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
                         self.clear_GM_info()
                         self.display_message(string)
@@ -181,7 +181,7 @@ class GameView:
                             self.clear_GM_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
-                            selected_image = images[text]
+                            selected_image = text
                 text = input_box.handle_event(event)
             if blit_input:
                 input_box.wipe()
@@ -493,6 +493,7 @@ MAPOFFSET = (200,0)
 OLDSURF = None
 gameview = GameView()
 ruleenactor = RuleEnactor()
+images = gameview.load_pictures()
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
@@ -519,9 +520,6 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
 # -----------------------------------------------------------------------------------------------------------------------
 
 def main():
-
-    images = gameview.load_pictures()
-
     # create the map and add add textures to it
     myMap.textures = [Map.Texture(3,3,1,1,"grass.png"),Map.Texture(3,4,1,1,"grass.png")]
     
