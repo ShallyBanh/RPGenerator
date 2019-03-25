@@ -164,6 +164,7 @@ class AccountManager:
         """Fetches all exisiting rulesets"""
         self.database.query("SELECT rulename, rules FROM Ruleset WHERE username = ?", (username, ))
         rows = self.database.cur.fetchall()
+        print(rows)
         return rows
     
     def create_ruleset(self, username, rulesetName, jsonBlob):

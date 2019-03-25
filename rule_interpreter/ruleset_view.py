@@ -30,19 +30,14 @@ class RulesetView:
         self._rulesetPositionList =[]
         self._client = client
         self._username = username
-    
-    def load_ruleset(self):
-        self._database.cur.execute("SELECT rulename, rules from Ruleset;")
-        data = self._database.cur.fetchall()
-        self._rulesetList = []
-        for ruleName, rule in data:
-            self._rulesetList.append((ruleName, rule))
 
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
         pygame.init()
-        self.load_ruleset()
+        print(self._username)
+        # self._rulesetList = self._client.load_existing_rulesets(self._username)
+        print(self._rulesetList)
 
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
@@ -72,7 +67,7 @@ class RulesetView:
                         validator = RulesetCreationEditView( self._username, self._client).main("")
                         if validator is not None:
                             return validator
-                        self.load_ruleset()
+                        # self._rulesetList = self._client.load_existing_rulesets(self._username)
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                     for editIdx in range(len(self._rulesetPositionList)):
@@ -87,7 +82,7 @@ class RulesetView:
                             validator = RulesetCreationEditView().main(self._rulesetList[editIdx][0])
                             if validator is not None:
                                 return validator
-                            self.load_ruleset()
+                            # self._rulesetList = self._client.load_existing_rulesets(self._username)
                             # currentEntityName = entities[moreIdx]
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):

@@ -148,6 +148,33 @@ def sql_debug():
     rows = server.account_manager.database.cur.fetchall()
     return jsonify(rows)
 
+@app.route("/load_existing_rulesets", methods=['POST'])
+def load_existing_rulesets():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [load_existing_rulesets] got username = {}".format(username))
+    #start encrpytion
+    print("before encription")
+    response = server.account_manager.load_existing_rulesets(username)
+    print("herer")
+    print(response)
+    print(jsonify(response))
+    return jsonify(response)
+    if response is not None:
+        print("inside")
+        responses = jsonify(response)
+        print(responses)
+        decryptedResponse = []
+        f = Fernet(testkey)
+        for rulename, rulecontent in responses:
+            decryptedResponse.append((rulename, f.decrypt(rulecontent)))
+        return decryptedResponse
+
+    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/create_ruleset", methods=['POST'])
 def create_ruleset():
     username = request.args.get("username")

@@ -121,6 +121,21 @@ class Client():
             return -1
         return data
 
+    def load_existing_rulesets(self, username):
+        print("[client] [load_existing_rulesets] attempting to load rulesets from user with username {}".format(username))        
+        payload = {'username': username}
+        response = requests.post("{}/load_existing_rulesets".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        print("query resulted in: {}".format(data))
+        print("[client] [load_existing_rulesets] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        print(response)
+        print(response.content)
+        exit()
+        return response.content
+
     def create_game(self):
         """ WARNING: for test purposes only, @TODO remove """
         game = Game()
