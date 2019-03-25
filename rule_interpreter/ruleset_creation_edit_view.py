@@ -1,15 +1,11 @@
 import os
 import sys
-sys.path.append('../')
-from validator import Validator
-from entity import Entity
-from action import Action
-from attribute import Attribute
-from syntax_parser import SyntaxParser
-from relationship import Relationship
-sys.path.append('../../account')
-from database import Database
-sys.path.append('../rule_interpreter/rule_interpreter_view')
+sys.path.append('/account/')
+from account.database import Database
+from models.validator import Validator
+from models.action import Action
+from models.attribute import Attribute
+from models.entity import Entity
 import pygame
 import ptext
 import pygame_textinput
@@ -23,7 +19,7 @@ class RulesetCreationEditView:
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
         self._moreButtonList = []
-        self._database = Database("../../account/test.db")
+        self._database = Database("database.db")
         self._moreImage = pygame.image.load('img/moreButton.png')
         self._saveButtonImage = pygame.image.load('img/saveButton.png')
         self._exportButtonImage = pygame.image.load('img/exportButton.png')
@@ -142,7 +138,7 @@ class RulesetCreationEditView:
                     clickpos = event.pos
                     x, y = clickpos
                     if self._newRuleset == True:
-                        if buttonrects[1].collidepoint(x,y):
+                        if buttonrects[2].collidepoint(x,y):
                             self._currentlySelected = True
                     if x in range(10,40) and y in range(10,40):
                         return
@@ -152,9 +148,9 @@ class RulesetCreationEditView:
                         self._relationship_view = True
                     #save button
                     if x in range(1100, 1300) and y in range(10, 60):
-                        database = Database("../../account/test.db")
-                        print(Validator().get_relationships())
-                        picklestring = pickle.dumps(Validator())
+                        database = 1#Database("../../account/test.db")
+                        # print(Validator().get_relationships())
+                        picklestring = 2 #pickle.dumps(Validator())
                         if self._newRuleset == False:
                             self.update_database(database, "shally", self._rulesetName, picklestring)
                         else:

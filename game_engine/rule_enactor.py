@@ -1,7 +1,7 @@
 import re
 import random
 import sys
-sys.path.append('../rule_interpreter')
+sys.path.append('../rule_interpreter/models')
 from entity import Entity
 from action import Action
 from attribute import Attribute

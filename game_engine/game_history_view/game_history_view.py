@@ -2,9 +2,8 @@ import os
 import sys
 import pygame
 import pickle
-sys.path.append('../../account')
-from database import Database
-sys.path.append('../../rule_interpreter/rule_interpreter_view')
+# sys.path.append('../../account')
+# from database import Database
 import ptext
 
 
@@ -15,6 +14,7 @@ class GameHistoryView:
         self._playing = True
         self._gameHistoryList = []
         self._gameHistoryPositionList =[]
+        self._arrowImg = pygame.image.load('img/arrow.png')
     
     def load_game_history(self):
         # self._database.cur.execute("SELECT rulename, rules from Ruleset;")
@@ -33,16 +33,17 @@ class GameHistoryView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Game History")
-        titleargs = ptext.draw("Game History", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64)
+        titleargs = ptext.draw("Game History", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         buttonrects = [pygame.Rect((50, 150, 1200, 550))]
         textSizes = [(50, 100)]
-        buttonnames = ["Name                               Room code                    Status                          Resume Game"]
+        buttonnames = ["Name                               Room code                    Status                          "]
 
         while self._playing:
             screen.fill((0, 50, 50))
             clickpos = None
             events = pygame.event.get()
+            screen.blit(self._arrowImg,(10, 10))
 
             # if entity_view == True:
             #     entityTuple = EntityCreationView().main()
@@ -64,6 +65,8 @@ class GameHistoryView:
                     clickpos = event.pos
                     x, y = clickpos
                     #save button
+                    if x in range(10,40) and y in range(10,40):
+                        return
                     for joinIdx in range(len(self._gameHistoryPositionList)):
                         x1 = int(self._gameHistoryPositionList[joinIdx][0])
                         y1 = int(self._gameHistoryPositionList[joinIdx][1])
@@ -81,7 +84,7 @@ class GameHistoryView:
                 screen.fill(pygame.Color("#553300"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-8, 100)
-                ptext.draw(name, size, color="white", owidth=0.5, fontsize=40)
+                ptext.draw(name, size, color="white", owidth=0.5, fontsize=40, fontname="Boogaloo")
                 ptext.drawbox("", box, color = "white", owidth=0.5)
             
             # ruleNamesString = ""
@@ -95,8 +98,6 @@ class GameHistoryView:
             screen.blit(*titleargs)
             pygame.display.flip()
 
-
-GameHistoryView().main()
 
 
 

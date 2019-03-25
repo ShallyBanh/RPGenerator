@@ -1,13 +1,11 @@
 
 import os
 import sys
-sys.path.append('../')
-from validator import Validator
-from entity import Entity
-from action import Action
-from attribute import Attribute
-from syntax_parser import SyntaxParser
-sys.path.append('/rule_interpreter_view')
+from models.validator import Validator
+from models.action import Action
+from models.attribute import Attribute
+from models.entity import Entity
+from models.relationship import Relationship
 import pygame
 import ptext
 import pygame.locals as pl
@@ -15,7 +13,7 @@ import pygame_textinput
 from rule_input_view import RuleInputView
 
 
-class ActionCreationView:
+class RelationshipCreationView:
     def __init__(self):
         self._rule = ""
         self._submitButtonImg = pygame.image.load('img/submit.png')
@@ -39,8 +37,8 @@ class ActionCreationView:
 
         buttonrects = [pygame.Rect((50, 150, 1000, 70)), pygame.Rect((50, 325, 1000, 350))]
         textSizes = [(50, 100 + 170 * j) for j in range(2)]
-        buttonnames = ["Action Name", "Rule"]
-        titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        buttonnames = ["Relationship Name", "Relationship"]
+        titleargs = ptext.draw("Relationship Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None

@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-sys.path.append('../')
+sys.path.append('../rule_interpreter_models')
 from validator import Validator
 from entity import Entity
 from action import Action

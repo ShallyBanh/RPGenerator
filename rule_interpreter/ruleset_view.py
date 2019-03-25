@@ -1,24 +1,22 @@
 import os
 import sys
-sys.path.append('../')
-from validator import Validator
-import validator as vl
-from entity import Entity
-from action import Action
-from attribute import Attribute
-from syntax_parser import SyntaxParser
-sys.path.append('../../account')
-from database import Database
-sys.path.append('../rule_interpreter/rule_interpreter_view')
+from models.validator import Validator
+from models.action import Action
+from models.attribute import Attribute
+from models.entity import Entity
 import pygame
 import ptext
 import pygame_textinput
 from ruleset_creation_edit_view import RulesetCreationEditView
 import pickle
+sys.path.append('/account/')
+from account.database import Database
 
 class RulesetView:
     def __init__(self):
-        self._submitButtonImg = pygame.image.load('img/submit.png')
+        print(sys.path)
+        print(os.path)
+        self._submitButtonImg = pygame.image.load("img/submit.png")
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
         self._editButton = pygame.image.load('img/editButton.png')
@@ -26,7 +24,7 @@ class RulesetView:
         self._playing = True
         self._edit_ruleset_view = False
         self._create_ruleset_view = False
-        self._database = Database("../../account/test.db")
+        self._database = Database("database.db")
         self._rulesetList = []
         self._rulesetPositionList =[]
     
@@ -37,7 +35,7 @@ class RulesetView:
         for ruleName, rule in data:
             self._rulesetList.append((ruleName, rule))
 
-    def main(self, rulesetName):
+    def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
         pygame.init()
@@ -55,19 +53,9 @@ class RulesetView:
         while self._playing:
             screen.fill((0, 50, 50))
             screen.blit(self._plusImage,(1110, 110))
+            screen.blit(self._arrowImg,(10, 10))
             clickpos = None
             events = pygame.event.get()
-
-            # if entity_view == True:
-            #     entityTuple = EntityCreationView().main()
-            #     if entityTuple[0] is not None:
-            #         entities.append(entityTuple[0])
-            #         Validator().add_entity(Entity(entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4], entityTuple[5]))
-            #     entity_view = False
-            
-            # if attribute_action_view == True:
-            #     AttributeActionCreationView(currentEntityName).main()
-            #     attribute_action_view = False
 
             for event in events:
                 if event.type == pygame.QUIT:
@@ -82,6 +70,8 @@ class RulesetView:
                         if validator is not None:
                             return validator
                         self.load_ruleset()
+                    if x in range(10,40) and y in range(10,40):
+                        self._playing = False
                     #save button
                     for editIdx in range(len(self._rulesetPositionList)):
                         x1 = int(self._rulesetPositionList[editIdx][0])
@@ -115,11 +105,6 @@ class RulesetView:
             
             screen.blit(*titleargs)
             pygame.display.flip()
-
-
-validator = RulesetView().main("Shally's ruleset")
-print(validator)
-
 
 
 
