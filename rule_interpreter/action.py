@@ -6,8 +6,8 @@ class Action:
     def __init__(self, name, content):
         self._actionName = name.lower()
         self._ruleContent = content
-        self._targetLine = ruleContent.splitlines()[0]
-        self._actionBehaviour = "\n".join(ruleContent.splitlines()[1:])
+        self._targetLine = self._ruleContent.splitlines()[0]
+        self._actionBehaviour = "\n".join(self._ruleContent.splitlines()[1:])
     
     def get_action_name(self):
         return self._actionName

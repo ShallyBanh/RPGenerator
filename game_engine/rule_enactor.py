@@ -68,35 +68,53 @@ class RuleEnactor:
 			return False
 		return True
 		
-	def perform_action_testmode(self, action, acting_entity):
-		# ...
-		# parse out the target type from the action (Entity or point)
-		self.current_action = action
-		written_rule = action.get_rule_content()
-		lines = written_rule.splitlines()
-		#set self here
-		self.acting_entity = acting_entity
-		# perform each line
-		perform_interrupt = False
-		for line in lines:
-			result = self.evaluate_line(line)
-			if result == 'INTERRUPT':
-				perform_interrupt = True
-				break
-		if perform_interrupt:
-			# evaluate the relationship
-			interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
-			for line in interrupt_lines:
-				self.evaluate_line(line)
+	# def perform_action_testmode(self, action, acting_entity):
+		# # ...
+		# # parse out the target type from the action (Entity or point)
+		# self.current_action = action
+		# written_rule = action.get_rule_content()
+		# lines = written_rule.splitlines()
+		# #set self here
+		# self.acting_entity = acting_entity
+		# # perform each line
+		# perform_interrupt = False
+		# for line in lines:
+			# result = self.evaluate_line(line)
+			# if result == 'INTERRUPT':
+				# perform_interrupt = True
+				# break
+		# if perform_interrupt:
+			# # evaluate the relationship
+			# interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
+			# for line in interrupt_lines:
+				# self.evaluate_line(line)
+				
+	
 				
 	def perform_action(self, action, acting_entity):
 		target = self.determine_target(action.get_target_line())
-		self.acting_entity = acting_entity
 		if target is None:
-			self.target_of_action = acting_entity
+			self.perform_action_given_target(action, acting_entity, acting_entity)
 		else:
 			return target
-			
+	
+	def perform_action_given_target(self, action, acting_entity, target_entity):
+		self.acting_entity = acting_entity
+		self.target_of_action = target_entity
+		self.current_action = action
+		written_rule = action.get_action_behaviour()
+		lines = written_rule.splitlines()
+		# check for interrupts
+		for r in self.relationships:
+			if self.check_for_interrupt(r) == 'INTERRUPT':
+				interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
+				for line in interrupt_lines:
+					self.evaluate_line(line)
+				return 
+		# otherwise perform the action
+		for line in lines:
+			result = self.evaluate_line(line)
+				
 			
 	def determine_target(self, target_line):
 		words = target_line.strip().strip(':').split()
@@ -190,39 +208,39 @@ class RuleEnactor:
 			return self.variables[words[0]]
 		
 		
-	def handle_target(self, line):
-		line = line.strip(':')
-		words = line.split()
-		target_type = words[1]
-		# they can either be targeting a point or an entity
-		#point case:
+	# def handle_target(self, line):
+		# line = line.strip(':')
+		# words = line.split()
+		# target_type = words[1]
+		# # they can either be targeting a point or an entity
+		# #point case:
 		
-		if self._debug_mode:
-			# point case
-			if words[1] == 'point':
-				self.target_of_action = Point(1,1)
-			# entity case:
-			else:
-				for entity in self.all_created_entities:
-					if entity.get_name() == target_type:
-						self.target_of_action = entity
-		else:
-			#TODO: we need to be calling a GUI function to give us a point. 
-			# point case
-			if words[1] == 'point':
-				raise Exception("SELECT POINT WITH GUI UNIMPLEMENTED")
-			# entity case:
-			#TODO: in reality we need to be calling a GUI function that gives us the targeted entity.
-			else:
-				for entity in self.all_created_entities:
-					if entity.get_name() == target_type:
-						raise Exception("SELECT ENTITY WITH GUI UNIMPLEMENTED")
+		# if self._debug_mode:
+			# # point case
+			# if words[1] == 'point':
+				# self.target_of_action = Point(1,1)
+			# # entity case:
+			# else:
+				# for entity in self.all_created_entities:
+					# if entity.get_name() == target_type:
+						# self.target_of_action = entity
+		# else:
+			# #TODO: we need to be calling a GUI function to give us a point. 
+			# # point case
+			# if words[1] == 'point':
+				# raise Exception("SELECT POINT WITH GUI UNIMPLEMENTED")
+			# # entity case:
+			# #TODO: in reality we need to be calling a GUI function that gives us the targeted entity.
+			# else:
+				# for entity in self.all_created_entities:
+					# if entity.get_name() == target_type:
+						# raise Exception("SELECT ENTITY WITH GUI UNIMPLEMENTED")
 			
 			
-		#We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
-		for r in self.relationships:
-			if self.check_for_interrupt(r) == 'INTERRUPT':
-				return 'INTERRUPT'
+		# #We need to potentially interrupt the recursive flow here by returning an INTERRUPT code, in case there is a relationship that overrides this behaviour
+		# for r in self.relationships:
+			# if self.check_for_interrupt(r) == 'INTERRUPT':
+				# return 'INTERRUPT'
 		
 	
 	def check_for_interrupt(self, relationship):
@@ -762,7 +780,7 @@ class RuleEnactor:
 	
 		
 		
-	keywords = {"target":handle_target, "if":handle_if, 
+	keywords = {"if":handle_if, 
 				"increase":handle_increase,"decrease":handle_decrease, "multiply":handle_multiply,
 				"divide":handle_divide, "set":handle_set, "reduce":handle_decrease, 
 				"move":handle_move, "add":handle_add_status, "remove":handle_remove_status}
