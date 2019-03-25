@@ -62,6 +62,16 @@ class Client():
         #     response = str(response.text)
         return 0 if (response.status_code == 200) else -1
     
+    def create_ruleset(self, username, rulesetName, jsonBlob):
+        print("[client] [create_ruleset] attempting to create a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
+        payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
+        response = requests.post("{}/create_ruleset".format(self.URL), params=payload)
+        print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+    
     def change_credentials(self, username, old_password, new_password): #,email):
         print("[client] [change_credentials] attempting to change credentials of with username,old_password,new_password = {},{},{}".format(username,old_password, new_password))        
         payload = {'username': username, 'old_password': old_password, 'new_password': new_password}
@@ -110,6 +120,21 @@ class Client():
         if response.status_code == 400:
             return -1
         return data
+
+    def load_existing_rulesets(self, username):
+        print("[client] [load_existing_rulesets] attempting to load rulesets from user with username {}".format(username))        
+        payload = {'username': username}
+        response = requests.post("{}/load_existing_rulesets".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        print("query resulted in: {}".format(data))
+        print("[client] [load_existing_rulesets] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        print(response)
+        print(response.content)
+        exit()
+        return response.content
 
     def create_game(self):
         """ WARNING: for test purposes only, @TODO remove """
