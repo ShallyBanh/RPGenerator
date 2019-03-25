@@ -8,7 +8,9 @@ import ptext
 from shutil import copyfile
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
+from game_engine.game import Game
 from game_engine.rule_enactor import RuleEnactor
+from rule_interpreter.models.validator import _Validator
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -23,14 +25,14 @@ class GameView:
         return (x+MAPOFFSET[0],y+MAPOFFSET[1])
 
     def which_tile(self,mousepos):
-        x = math.ceil(mousepos[1]/myMap.tilesize)-1
-        y = math.ceil(mousepos[0]/myMap.tilesize)-1
-        if y in range(0,myMap.width) and x in range(0,myMap.height):
+        x = math.ceil(mousepos[1]/game.map.tilesize)-1
+        y = math.ceil(mousepos[0]/game.map.tilesize)-1
+        if y in range(0,game.map.width) and x in range(0,game.map.height):
             return x,y
         return -1,-1
 
     def check_entity_fit(self,width, height, x, y, entity):
-        if (y + width) > myMap.width or (x + height) > myMap.height:
+        if (y + width) > game.map.width or (x + height) > game.map.height:
             return False
         for i in range(0,width):
             for j in range(0,height):
@@ -40,7 +42,7 @@ class GameView:
         return True
 
     def tile_location(self,size):
-        return size[1]*myMap.tilesize, size[0]*myMap.tilesize
+        return size[1]*game.map.tilesize, size[0]*game.map.tilesize
 
     def make_popup(self,x, y, entity):
         global OLDSURF
@@ -66,7 +68,7 @@ class GameView:
         # draw rectangle surrounding the actual box
         left, top = self.tile_location((entity.x, entity.y))
         left, top = self.offset_blit(left, top)
-        pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.width*myMap.tilesize, top), (left+entity.width*myMap.tilesize, top+entity.height*myMap.tilesize), (left, top+entity.height*myMap.tilesize)], 3)
+        pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.width*game.map.tilesize, top), (left+entity.width*game.map.tilesize, top+entity.height*game.map.tilesize), (left, top+entity.height*game.map.tilesize)], 3)
 
         # entity information to display on the left
         ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
@@ -96,7 +98,7 @@ class GameView:
         return images
 
     def which_entity(self,x, y):
-        for e in ENTITIES:
+        for e in game.entities:
             if x in range(e.x,e.x+e.width) and y in range(e.y,e.y+e.height):
                 return e
         return None
@@ -121,12 +123,12 @@ class GameView:
                     # draw rectangle surrounding the actual box
                     left, top = self.tile_location((x, y))
                     left, top = self.offset_blit(left, top)
-                    if myMap.fogOfWar[x][y]:
-                        myMap.fogOfWar[x][y] = False
-                        pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
+                    if game.map.fogOfWar[x][y]:
+                        game.map.fogOfWar[x][y] = False
+                        pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
                     else: 
-                        myMap.fogOfWar[x][y] = True
-                        pygame.draw.lines(DISPLAYSURF, (255,255,255), True, [(left, top), (left+myMap.tilesize, top), (left+myMap.tilesize, top+myMap.tilesize), (left, top+myMap.tilesize)], 3)
+                        game.map.fogOfWar[x][y] = True
+                        pygame.draw.lines(DISPLAYSURF, (255,255,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
                     # test if fog of war works in the right location
                     # self.update_fog()
                 elif event.type == KEYDOWN:   
@@ -146,7 +148,7 @@ class GameView:
         self.clear_GM_info()
         self.display_message(string)
 
-        input_box = InputBox(MAPOFFSET[0] + 200, myMap.tilesize*myMap.height, 500, 32, DISPLAYSURF)
+        input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -163,18 +165,21 @@ class GameView:
                     if selected_image is not None:
                         x, y = gameview.which_tile(mousepos)
                         texture = Map.Texture(x,y,1,1,selected_image)
-                        myMap.textures.append(texture)
-                        texture_image = pygame.transform.scale(images[selected_image], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
-                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
-                        self.clear_GM_info()
-                        self.display_message(string)
-                        blit_input = True
-                        selected_image = None
+                        game.map.textures.append(texture)
+                        texture_image = pygame.transform.scale(images[selected_image], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+                        if self.which_entity(x,y) is None:
+                            DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
-                        self.clear_GM_info()
-                        self.help_screen()
-                        return
+                        if selected_image is not None:
+                            self.clear_GM_info()
+                            self.display_message(string)
+                            blit_input = True
+                            selected_image = None
+                        else:
+                            self.clear_GM_info()
+                            self.help_screen()
+                            return
                     elif event.key == K_RETURN:
                         text = input_box.handle_event(event)
                         text = text.rstrip()
@@ -213,7 +218,7 @@ class GameView:
         if not os.path.exists("/tmp"):
             os.makedirs('/tmp')
 
-        input_box = InputBox(MAPOFFSET[0] + 300, myMap.tilesize*myMap.height, 500, 32, DISPLAYSURF)
+        input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -263,12 +268,12 @@ class GameView:
         surf, tpos = self.display_message("Roll:")
 
         buf = MAPOFFSET[0] + surf.get_width() + 10
-        number_of = InputBox(buf, myMap.tilesize*myMap.height, 50, 32, DISPLAYSURF)
-        surf, tpos = ptext.draw("d", (buf + 60, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        number_of = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
+        surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
         buf = tpos[0] + surf.get_width() + 10
-        d_roll = InputBox(buf, myMap.tilesize*myMap.height, 50, 32, DISPLAYSURF)
+        d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
 
-        myrect = pygame.Rect(MAPOFFSET[0], myMap.tilesize*myMap.height + surf.get_height() + 10, myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-(myMap.tilesize*myMap.height))
+        myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height + surf.get_height() + 10, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
 
         RUNNING = True
         while RUNNING:    
@@ -288,7 +293,7 @@ class GameView:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
                             result = ruleenactor.roll_dice(d_string)
-                            surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                            surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
                             number_of.text = ""
                             d_roll.text = ""
                 number_of.handle_event(event)
@@ -302,7 +307,7 @@ class GameView:
 
     def clear_GM_info(self):
         # clear screen 
-        myrect = pygame.Rect(MAPOFFSET[0], myMap.tilesize*myMap.height, myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-(myMap.tilesize*myMap.height))
+        myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
         pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
         return
 
@@ -316,31 +321,16 @@ class GameView:
         return
 
     def display_message(self, message):
-        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
+        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = game.map.width*game.map.tilesize, underlinetag="_")
         return txt_surface, tpos
 
     def update_fog(self):
-        fogImage = pygame.transform.scale(images["fog.png"], (myMap.tilesize,myMap.tilesize))
-        for rw in range(myMap.height):
-            for cl in range(myMap.width):
-                if not myMap.fogOfWar[rw][cl]:
-                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*myMap.tilesize, rw*myMap.tilesize))
+        fogImage = pygame.transform.scale(images["fog.png"], (game.map.tilesize,game.map.tilesize))
+        for rw in range(game.map.height):
+            for cl in range(game.map.width):
+                if not game.map.fogOfWar[rw][cl]:
+                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
         return
-
-# CLASSES ------------------------------------------------------------------------------------------------
-# utilized for testing of actions drop down menu
-class Entity:
-    def __init__(self, x, y, width, height, name, actions):
-        self.width = width
-        self.height = height
-        self.x = x
-        self.y = y
-        self.name = name
-        self.actions = actions
-        self.attributes = ["example attributes", "example 2", "example 3"]
-
-    def __str__(self):
-        return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
 
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
@@ -489,17 +479,46 @@ class Transcript:
             self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
+# utilized for testing of actions drop down menu
+class Entity:
+    def __init__(self, x, y, width, height, name, actions):
+        self.width = width
+        self.height = height
+        self.x = x
+        self.y = y
+        self.name = name
+        self.actions = actions
+        self.attributes = ["example attributes", "example 2", "example 3"]
+
+    def __str__(self):
+        return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
+
+
 # ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
-myMap = Map(tilesize = 50, height = 10, width = 18)
 MAPOFFSET = (200,0)
 OLDSURF = None
 gameview = GameView()
-ruleenactor = RuleEnactor()
+
 images = gameview.load_pictures()
+
+# Game Functionality
+game = Game()
+game.name = "Test Suite"
+game.uniqueID = 1
+game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
+game.map = Map(tilesize = 50, height = 10, width = 18)
+
+
+# Rule Validation
+ruleenactor = RuleEnactor()
+_validator = _Validator()
+ruleenactor.parse_validator(_validator) # sets up relationships and entity types
+
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
+# GENERAL COLORS AND ITEMS
 FONTTYPE = pygame.font.Font(None, 32)
 DISPLAYSURF = pygame.display.set_mode((1300,750))
 COLOR_INACTIVE = pygame.Color('lightskyblue3')
@@ -507,7 +526,6 @@ COLOR_ACTIVE = pygame.Color('dodgerblue2')
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
-ENTITIES = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 GM_STATUS = True
 GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "t": {"name": "Add Texture", "function": gameview.add_texture},
@@ -524,40 +542,40 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
 
 def main():
     # create the map and add add textures to it
-    myMap.textures = [Map.Texture(3,3,1,1,"grass.png"),Map.Texture(3,4,1,1,"grass.png")]
+    game.map.textures = [Map.Texture(3,3,1,1,"grass.png"),Map.Texture(3,4,1,1,"grass.png")]
     
     #example fog
-    myMap.fogOfWar[8][15] = False
-    myMap.fogOfWar[8][16] = False
-    myMap.fogOfWar[9][15] = False
-    myMap.fogOfWar[9][16] = False
+    game.map.fogOfWar[8][15] = False
+    game.map.fogOfWar[8][16] = False
+    game.map.fogOfWar[9][15] = False
+    game.map.fogOfWar[9][16] = False
 
     # create the entire background
-    greyImage = pygame.transform.scale(images["grey.png"], (myMap.tilesize,myMap.tilesize))
-    fogImage = pygame.transform.scale(images["fog.png"], (myMap.tilesize,myMap.tilesize))
-    for rw in range(myMap.height):
-        for cl in range(myMap.width):
-            if myMap.fogOfWar[rw][cl]:
-                DISPLAYSURF.blit(greyImage, gameview.offset_blit(cl*myMap.tilesize, rw*myMap.tilesize))
+    greyImage = pygame.transform.scale(images["grey.png"], (game.map.tilesize,game.map.tilesize))
+    fogImage = pygame.transform.scale(images["fog.png"], (game.map.tilesize,game.map.tilesize))
+    for rw in range(game.map.height):
+        for cl in range(game.map.width):
+            if game.map.fogOfWar[rw][cl]:
+                DISPLAYSURF.blit(greyImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
             else: 
-                DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*myMap.tilesize, rw*myMap.tilesize))
+                DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
 
     # put all the textures on the map
-    for texture in myMap.textures:
-        texture_image = pygame.transform.scale(images[texture.name], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
-        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))
+    for texture in game.map.textures:
+        texture_image = pygame.transform.scale(images[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
 
     # put all the entities on the map
-    for entity in ENTITIES:
-        entity_image = pygame.transform.scale(images[entity.name], (entity.width*myMap.tilesize,entity.height*myMap.tilesize))
-        DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*myMap.tilesize, entity.x*myMap.tilesize))
+    for entity in game.entities:
+        entity_image = pygame.transform.scale(images[entity.name], (entity.width*game.map.tilesize,entity.height*game.map.tilesize))
+        DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
 
     if GM_STATUS:
         gameview.help_screen()
 
     my_entity = None
-    input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
-    history = Transcript(MAPOFFSET[0]+myMap.width*myMap.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
+    input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
+    history = Transcript(MAPOFFSET[0]+game.map.width*game.map.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
     # transcript = ""
     action_requested = ""
 
@@ -587,22 +605,22 @@ def main():
                 elif my_entity is not None and action_requested is "Move":
                     # grab new location
                     x, y = gameview.which_tile(mousepos)
-                    # if it is a valid locatin and there are no other entities there
+                    # if it is a valid locatin and there are no other game.entities there
                     if x != -1 and y != -1 and gameview.check_entity_fit(my_entity.width, my_entity.height, x, y, my_entity):
                         # remove old image and replace with generic block, then cover with texture if there are any       
                         for i in range(0,my_entity.width):
                             for j in range(0,my_entity.height):
-                                DISPLAYSURF.blit(greyImage, gameview.offset_blit((my_entity.y+i)*myMap.tilesize, (my_entity.x+j)*myMap.tilesize))
-                                for texture in myMap.textures:
+                                DISPLAYSURF.blit(greyImage, gameview.offset_blit((my_entity.y+i)*game.map.tilesize, (my_entity.x+j)*game.map.tilesize))
+                                for texture in game.map.textures:
                                     if texture.x == (my_entity.x+j) and texture.y == (my_entity.y+i):
-                                        texture_image = pygame.transform.scale(images[texture.name], (texture.width*myMap.tilesize,texture.height*myMap.tilesize))
-                                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*myMap.tilesize, texture.x*myMap.tilesize))  
+                                        texture_image = pygame.transform.scale(images[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+                                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))  
                                         break # to speed up the loop checking
                         # blit entity to it
                         my_entity.x = x
                         my_entity.y = y
-                        my_entity_image = pygame.transform.scale(images[my_entity.name], (my_entity.width*myMap.tilesize,my_entity.height*myMap.tilesize))
-                        DISPLAYSURF.blit(my_entity_image, gameview.offset_blit(my_entity.y*myMap.tilesize, my_entity.x*myMap.tilesize))
+                        my_entity_image = pygame.transform.scale(images[my_entity.name], (my_entity.width*game.map.tilesize,my_entity.height*game.map.tilesize))
+                        DISPLAYSURF.blit(my_entity_image, gameview.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                     # wipe signals
                     action_requested = ""
                     my_entity = None
@@ -610,7 +628,7 @@ def main():
                     x, y = gameview.which_tile(mousepos)
                     my_entity = gameview.which_entity(x, y)
                     if my_entity is not None:
-                        if (my_entity.y + my_entity.width) >= myMap.width or (my_entity.x + my_entity.height) >= myMap.height:
+                        if (my_entity.y + my_entity.width) >= game.map.width or (my_entity.x + my_entity.height) >= game.map.height:
                             loc_x, loc_y = gameview.tile_location((my_entity.x,my_entity.y))
                         else:    
                             loc_x, loc_y = gameview.tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))

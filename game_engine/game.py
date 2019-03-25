@@ -8,7 +8,7 @@ class Game:
         self.name = None
         self.players = []
         self.entities = [] # possibly use dict instead
-        self.map = Map(50, 10, 18) # parameters?
+        self.map = None 
         self.ruleset_copy = None
         self.assets = []
         self.transcript = ""
