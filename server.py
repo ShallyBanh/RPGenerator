@@ -8,12 +8,13 @@ from account.account_manager import AccountManager
 import configparser
 from configurator import Configurator
 import network.email_sender
+from cryptography.fernet import Fernet
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 IP_ADDRESS = "0.0.0.0"
 PORT = 5493
-
+testkey = ""
 class Server:
     """A User account.
 
@@ -39,9 +40,13 @@ class Server:
         self.clients = []
         self.running = False
 
-if len(sys.argv) > 1:
+if len(sys.argv) > 2:
     print("creating server with config file {}".format(sys.argv[1]))
-    server = Server(sys.argv[1])
+    testkey = sys.argv[1]
+    server = Server(sys.argv[2])
+elif len(sys.argv) > 1:
+    testkey = sys.argv[1]
+    server = Server()
 else:
     server = Server()
 
@@ -142,5 +147,49 @@ def sql_debug():
     server.account_manager.database.query(query, data)
     rows = server.account_manager.database.cur.fetchall()
     return jsonify(rows)
+
+@app.route("/load_existing_rulesets", methods=['POST'])
+def load_existing_rulesets():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [load_existing_rulesets] got username = {}".format(username))
+    #start encrpytion
+    print("before encription")
+    response = server.account_manager.load_existing_rulesets(username)
+    print("herer")
+    print(response)
+    print(jsonify(response))
+    return jsonify(response)
+    if response is not None:
+        print("inside")
+        responses = jsonify(response)
+        print(responses)
+        decryptedResponse = []
+        f = Fernet(testkey)
+        for rulename, rulecontent in responses:
+            decryptedResponse.append((rulename, f.decrypt(rulecontent)))
+        return decryptedResponse
+
+    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/create_ruleset", methods=['POST'])
+def create_ruleset():
+    username = request.args.get("username")
+    rulesetName = request.args.get("rulesetName")
+    jsonBlob = request.args.get("jsonBlob")
+    if username is None or rulesetName is None or jsonBlob is None:
+        return Response(status=400)
+    print("[server] [create_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
+    #start encrpytion
+    f = Fernet(testkey)
+    token = f.encrypt(bytes(jsonBlob, 'utf-8'))
+    response = server.account_manager.create_ruleset(username, rulesetName, token)
+
+    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)

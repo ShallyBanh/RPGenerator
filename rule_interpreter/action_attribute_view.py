@@ -1,12 +1,9 @@
 import os
 import sys
-sys.path.append('../')
-from validator import Validator
-from entity import Entity
-from action import Action
-from attribute import Attribute
-from syntax_parser import SyntaxParser
-sys.path.append('/rule_interpreter_view')
+from models.validator import Validator
+from models.action import Action
+from models.attribute import Attribute
+from models.entity import Entity
 import pygame
 import ptext
 import pygame_textinput
