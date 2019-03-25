@@ -6,6 +6,9 @@ import math
 import re
 import ptext
 from shutil import copyfile
+sys.path.append('rule_interpreter/')
+sys.path.append('rule_interpreter/models')
+from game_engine.rule_enactor import RuleEnactor
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -281,8 +284,7 @@ class GameView:
                         if len(number_of.text)>0 and len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
-                            # call andrew's function
-                            result = int(number_of.text.rstrip())*int(d_roll.text.rstrip()) 
+                            result = ruleenactor.roll_dice(d_string)
                             surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
                             number_of.text = ""
                             d_roll.text = ""
@@ -490,7 +492,7 @@ myMap = Map(tilesize = 50, height = 10, width = 18)
 MAPOFFSET = (200,0)
 OLDSURF = None
 gameview = GameView()
-# ruleenactor = RuleEnactor()
+ruleenactor = RuleEnactor()
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
