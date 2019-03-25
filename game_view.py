@@ -255,7 +255,43 @@ class GameView:
 
     def roll_die(self):
         self.clear_GM_info()
-        self.display_message("_Roll Die_")
+        surf, tpos = self.display_message("Roll:")
+
+        buf = MAPOFFSET[0] + surf.get_width() + 10
+        number_of = InputBox(buf, myMap.tilesize*myMap.height, 50, 32, DISPLAYSURF)
+        surf, tpos = ptext.draw("d", (buf + 60, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        buf = tpos[0] + surf.get_width() + 10
+        d_roll = InputBox(buf, myMap.tilesize*myMap.height, 50, 32, DISPLAYSURF)
+
+        myrect = pygame.Rect(MAPOFFSET[0], myMap.tilesize*myMap.height + surf.get_height() + 10, myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-(myMap.tilesize*myMap.height))
+
+        RUNNING = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    pass
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.clear_GM_info()
+                        self.help_screen()
+                        return
+                    elif event.key == K_RETURN:
+                        if len(number_of.text)>0 and len(d_roll.text)>0:
+                            pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
+                            result = int(number_of.text.rstrip())*int(d_roll.text.rstrip()) # NEED TO CHANGE MATH HERE -- ANDREW
+                            surf, tpos = ptext.draw(number_of.text + " d" + d_roll.text +" = "+ str(result), (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                            number_of.text = ""
+                            d_roll.text = ""
+                number_of.handle_event(event)
+                d_roll.handle_event(event)
+            number_of.wipe()
+            number_of.draw()
+            d_roll.wipe()
+            d_roll.draw()
+            pygame.display.flip()
         return
 
     def clear_GM_info(self):
@@ -275,7 +311,7 @@ class GameView:
 
     def display_message(self, message):
         txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = myMap.width*myMap.tilesize, underlinetag="_")
-        return txt_surface
+        return txt_surface, tpos
 
     def update_fog(self):
         fogImage = pygame.transform.scale(images["fog.png"], (myMap.tilesize,myMap.tilesize))
