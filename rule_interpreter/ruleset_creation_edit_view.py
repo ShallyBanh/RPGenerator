@@ -2,6 +2,8 @@ import os
 import sys
 sys.path.append('/account/')
 from account.database import Database
+from account.account_manager import AccountManager
+from client import Client
 from models.validator import Validator
 from models.action import Action
 from models.attribute import Attribute
@@ -15,7 +17,7 @@ from relationship_creation_view import RelationshipCreationView
 import pickle
 
 class RulesetCreationEditView:
-    def __init__(self):
+    def __init__(self, username, client):
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
         self._moreButtonList = []
@@ -34,16 +36,8 @@ class RulesetCreationEditView:
         self._entities = [entity.get_name() for entity in Validator().get_entities()]
         self._relationships = [relationship.get_name() for relationship in Validator().get_relationships()]
         self._invalidSubmission = False
-
-    def save_ruleset(self, database, user, rulesetName, jsonBlob):
-        self._database.cur.execute("SELECT MAX(ID) FROM Ruleset;")
-        data = self._database.cur.fetchone()
-        if data[0] is None:
-            currentIdx = 0
-        else: 
-            currentIdx = data[0] + 1
-        self._database.cur.execute("insert into Ruleset values(?, ?, ?, ?);", (currentIdx, user, rulesetName, jsonBlob,))
-        self._database.conn.commit()
+        self._client = client
+        self._username = username
 
     def update_database(self, database, user, rulesetName, jsonBlob):
         self._database.cur.execute("UPDATE Ruleset SET rules = ? WHERE rulename = ?;", (jsonBlob, rulesetName, ))
@@ -148,16 +142,14 @@ class RulesetCreationEditView:
                         self._relationship_view = True
                     #save button
                     if x in range(1100, 1300) and y in range(10, 60):
-                        database = 1#Database("../../account/test.db")
-                        # print(Validator().get_relationships())
-                        picklestring = 2 #pickle.dumps(Validator())
+                        picklestring = pickle.dumps(Validator())
                         if self._newRuleset == False:
                             self.update_database(database, "shally", self._rulesetName, picklestring)
                         else:
                             if self._rulesetName == "":
                                 self._invalidSubmission = True
                             else:
-                                self.save_ruleset(database, "shally", self._rulesetName, picklestring)
+                                self._client.create_ruleset(self._username, self._rulesetName, picklestring)
                                 self._newRuleset = False
                                 if len(buttonrects) > 1:
                                     buttonrects.pop()

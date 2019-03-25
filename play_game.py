@@ -40,6 +40,7 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 pygame.init()
 client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
+currentUsername = ""
 
 # Create pygame screen and objects
 surface = pygame.display.set_mode(WINDOW_SIZE)
@@ -66,6 +67,7 @@ def account_login_view():
     password = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/login-copy.png")
     surface.fill(COLOR_BACKGROUND)
+    global currentUsername
     
 
     selected = "username"
@@ -112,6 +114,7 @@ def account_login_view():
                         break
                     success = login(username = username.get_text(), password = password.get_text())
                     if success == 0:
+                        currentUsername = username.get_text()
                         option_menu.enable()
                         option_menu.mainloop(playevents)
                         return
@@ -596,7 +599,7 @@ def create_new_game_view():
     return
 
 def ruleset_view():
-    RulesetView().main()
+    RulesetView(currentUsername, client).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -610,7 +613,6 @@ def previous_games_view():
 # CALLING EXTERNAL FUNCTIONS 
 def login(username, password, email=None):
     if email is None:
-        print("logging in")
         return client.login(username, password)
     else:   
         print("creating account")

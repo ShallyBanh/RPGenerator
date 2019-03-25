@@ -159,4 +159,28 @@ class AccountManager:
         else:
             print("email {} not found in database".format(email))
             return -1
+
+    def load_existing_rulesets(self, username):
+        """Fetches all exisiting rulesets"""
+        self.database.query("SELECT rulename, rules FROM Ruleset WHERE username = ?", (username, ))
+        rows = self.database.cur.fetchall()
+        return rows
+    
+    def create_ruleset(self, username, rulesetName, jsonBlob):
+        """Inserts a ruleset into the database."""
+        self.database.query("SELECT MAX(ID) FROM Ruleset;", [])
+        row = self.database.cur.fetchone()
+
+        if row[0] is None:
+            currentIdx = 0
+        else: 
+            currentIdx = row[0] + 1
+
+        self.database.query("INSERT INTO Ruleset VALUES(?, ?, ?, ?);", (currentIdx, username, rulesetName, jsonBlob,))
+        return 0
+    
+    def update_ruleset(self, username, rulesetName, jsonBlob):
+        """Updates an existing ruleset"""
+        self.database.query("UPDATE Ruleset SET rules = ? WHERE rulename = ? and username = ?;", (jsonBlob, rulesetName, username, ))
+        return 0
     

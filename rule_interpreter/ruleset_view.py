@@ -11,11 +11,11 @@ from ruleset_creation_edit_view import RulesetCreationEditView
 import pickle
 sys.path.append('/account/')
 from account.database import Database
+from account.account_manager import AccountManager
+from client import Client
 
 class RulesetView:
-    def __init__(self):
-        print(sys.path)
-        print(os.path)
+    def __init__(self, username, client):
         self._submitButtonImg = pygame.image.load("img/submit.png")
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
@@ -25,8 +25,11 @@ class RulesetView:
         self._edit_ruleset_view = False
         self._create_ruleset_view = False
         self._database = Database("database.db")
+        self._dbManager = AccountManager
         self._rulesetList = []
         self._rulesetPositionList =[]
+        self._client = client
+        self._username = username
     
     def load_ruleset(self):
         self._database.cur.execute("SELECT rulename, rules from Ruleset;")
@@ -66,13 +69,12 @@ class RulesetView:
                     clickpos = event.pos
                     x, y = clickpos
                     if x in range(1110, 1150) and y in range(110, 140):
-                        validator = RulesetCreationEditView().main("")
+                        validator = RulesetCreationEditView( self._username, self._client).main("")
                         if validator is not None:
                             return validator
                         self.load_ruleset()
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
-                    #save button
                     for editIdx in range(len(self._rulesetPositionList)):
                         x1 = int(self._rulesetPositionList[editIdx][0])
                         y1 = int(self._rulesetPositionList[editIdx][1])

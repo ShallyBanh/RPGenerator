@@ -62,6 +62,16 @@ class Client():
         #     response = str(response.text)
         return 0 if (response.status_code == 200) else -1
     
+    def create_ruleset(self, username, rulesetName, jsonBlob):
+        print("[client] [create_ruleset] attempting to create a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
+        payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
+        response = requests.post("{}/create_ruleset".format(self.URL), params=payload)
+        print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+    
     def change_credentials(self, username, old_password, new_password): #,email):
         print("[client] [change_credentials] attempting to change credentials of with username,old_password,new_password = {},{},{}".format(username,old_password, new_password))        
         payload = {'username': username, 'old_password': old_password, 'new_password': new_password}

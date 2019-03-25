@@ -142,5 +142,18 @@ def sql_debug():
     server.account_manager.database.query(query, data)
     rows = server.account_manager.database.cur.fetchall()
     return jsonify(rows)
+
+@app.route("/create_ruleset", methods=['POST'])
+def create_ruleset():
+    username = request.args.get("username")
+    rulesetName = request.args.get("rulesetName")
+    jsonBlob = request.args.get("jsonBlob")
+    if username is None or rulesetName is None or jsonBlob is None:
+        return Response(status=400)
+    print("[server] [create_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
+    response = server.account_manager.create_ruleset(username, rulesetName, jsonBlob)
+    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)
