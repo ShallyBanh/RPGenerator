@@ -7,7 +7,6 @@ import re
 import ptext
 from shutil import copyfile
 
-
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
 # http://usingpython.com/list-comprehension/
@@ -281,8 +280,10 @@ class GameView:
                     elif event.key == K_RETURN:
                         if len(number_of.text)>0 and len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
-                            result = int(number_of.text.rstrip())*int(d_roll.text.rstrip()) # NEED TO CHANGE MATH HERE -- ANDREW
-                            surf, tpos = ptext.draw(number_of.text + " d" + d_roll.text +" = "+ str(result), (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                            d_string = number_of.text + "d" + d_roll.text
+                            # call andrew's function
+                            result = int(number_of.text.rstrip())*int(d_roll.text.rstrip()) 
+                            surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, myMap.tilesize*myMap.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
                             number_of.text = ""
                             d_roll.text = ""
                 number_of.handle_event(event)
@@ -489,6 +490,7 @@ myMap = Map(tilesize = 50, height = 10, width = 18)
 MAPOFFSET = (200,0)
 OLDSURF = None
 gameview = GameView()
+# ruleenactor = RuleEnactor()
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
@@ -500,7 +502,7 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
 ENTITIES = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
-GM_STATUS = False
+GM_STATUS = True
 GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "t": {"name": "Add Texture", "function": gameview.add_texture},
               "e": {"name": "Edit Entity", "function": gameview.edit_entity},
@@ -547,7 +549,8 @@ def main():
         entity_image = pygame.transform.scale(images[entity.name], (entity.width*myMap.tilesize,entity.height*myMap.tilesize))
         DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*myMap.tilesize, entity.x*myMap.tilesize))
 
-    gameview.help_screen()
+    if GM_STATUS:
+        gameview.help_screen()
 
     my_entity = None
     input_box = InputBox(MAPOFFSET[0]+myMap.width*myMap.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
@@ -612,7 +615,7 @@ def main():
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     RUNNING = False
-                elif event.unicode in GM_HOTKEYS:
+                elif GM_STATUS and event.unicode in GM_HOTKEYS:
                     print(GM_HOTKEYS[event.unicode]["name"])
                     # execute functionality
                     GM_HOTKEYS[event.unicode]["function"]()
