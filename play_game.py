@@ -1,4 +1,6 @@
 # Import pygame and libraries
+import sys
+import os
 import pygame
 from pygame.locals import *
 from random import randrange
@@ -6,6 +8,13 @@ import os
 import pygame_textinput
 from client import Client
 import ptext
+sys.path.append('rule_interpreter/')
+sys.path.append('rule_interpreter/models')
+from rule_interpreter.models import *
+from rule_interpreter.ruleset_view import RulesetView
+from game_engine.game_history_view.game_history_view import GameHistoryView
+
+
 
 # Import pygameMenu
 import pygameMenu
@@ -17,7 +26,7 @@ DIFFICULTY = ['EASY']
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
 # COLOR_BACKGROUND = (128, 0, 128)
-COLOR_BACKGROUND = (21,156,207)  
+COLOR_BACKGROUND = (0,50,50)  
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
@@ -31,6 +40,7 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 pygame.init()
 client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
+currentUsername = ""
 
 # Create pygame screen and objects
 surface = pygame.display.set_mode(WINDOW_SIZE)
@@ -57,6 +67,7 @@ def account_login_view():
     password = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/login-copy.png")
     surface.fill(COLOR_BACKGROUND)
+    global currentUsername
     
 
     selected = "username"
@@ -103,6 +114,7 @@ def account_login_view():
                         break
                     success = login(username = username.get_text(), password = password.get_text())
                     if success == 0:
+                        currentUsername = username.get_text()
                         option_menu.enable()
                         option_menu.mainloop(playevents)
                         return
@@ -587,10 +599,13 @@ def create_new_game_view():
     return
 
 def ruleset_view():
-    print("Ruleset View - TODO FOR SHALLY")
+    RulesetView(currentUsername, client).main()
+    surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
 def previous_games_view():
+    GameHistoryView().main()
+    surface = pygame.display.set_mode(WINDOW_SIZE)
     print("Previous Games View - TODO FOR SHALLY")
     return
 
@@ -598,7 +613,6 @@ def previous_games_view():
 # CALLING EXTERNAL FUNCTIONS 
 def login(username, password, email=None):
     if email is None:
-        print("logging in")
         return client.login(username, password)
     else:   
         print("creating account")
