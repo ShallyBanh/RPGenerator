@@ -138,7 +138,8 @@ class GameView:
 
     def add_texture(self):
         string = "_Add Texture Mode_\nPress ESC to exit this mode.\n\nSelect a texture:\n"
-        images = self.load_pictures()
+        global images
+        images = self.load_pictures() # update the current images stored
         for key in images:
             string += key + ", "
         
@@ -240,6 +241,8 @@ class GameView:
                                 copyfile(text, new_name)
                                 self.clear_GM_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
+                                global images
+                                images = self.load_pictures() # update the current images stored
                         else: 
                             self.clear_GM_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
