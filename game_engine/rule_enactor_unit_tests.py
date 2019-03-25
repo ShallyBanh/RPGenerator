@@ -19,9 +19,9 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 		self.rule = "target guy\n"
 		self.isTemplate = False
-		self.hp_time = rule_enactor.Attribute("HP", 10)	
-		self.ac_time = rule_enactor.Attribute("AC", 15)	
-		self.template = rule_enactor.Entity("", "entity", 1, 1, self.isTemplate, None)
+		self.hp_time = Attribute("HP", 10)	
+		self.ac_time = Attribute("AC", 15)	
+		self.template = Entity("", "entity", 1, 1, self.isTemplate, None)
 		self.template.add_attribute(self.hp_time)
 		self.template.add_attribute(self.ac_time)
 		
