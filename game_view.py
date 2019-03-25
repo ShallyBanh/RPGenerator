@@ -11,6 +11,8 @@ sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
 from game_engine.rule_enactor import RuleEnactor
 from rule_interpreter.models.validator import _Validator
+from rule_interpreter.models.attribute import Attribute
+from rule_interpreter.models.entity import Entity
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -49,7 +51,7 @@ class GameView:
 
         # draw drop down
         options = ["Move"] # mandatory option to have
-        options += entity.actions
+        options += entity.get_actions()
         textSurf = []
         width = 0
         height = 0
@@ -68,7 +70,7 @@ class GameView:
         # draw rectangle surrounding the actual box
         left, top = self.tile_location((entity.x, entity.y))
         left, top = self.offset_blit(left, top)
-        pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.width*game.map.tilesize, top), (left+entity.width*game.map.tilesize, top+entity.height*game.map.tilesize), (left, top+entity.height*game.map.tilesize)], 3)
+        pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.size.get_width()*game.map.tilesize, top), (left+entity.size.get_width()*game.map.tilesize, top+entity.size.get_height()*game.map.tilesize), (left, top+entity.size.get_height()*game.map.tilesize)], 3)
 
         # entity information to display on the left
         ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
@@ -99,7 +101,7 @@ class GameView:
 
     def which_entity(self,x, y):
         for e in game.entities:
-            if x in range(e.x,e.x+e.width) and y in range(e.y,e.y+e.height):
+            if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
 
@@ -139,14 +141,11 @@ class GameView:
         return
 
     def add_texture(self):
-        string = "_Add Texture Mode_\nPress ESC to exit this mode.\n\nSelect a texture:\n"
-        global images
-        images = self.load_pictures() # update the current images stored
-        for key in images:
-            string += key + ", "
+        display_string = "_Add Texture Mode_\nPress ESC to exit this mode.\n\nSelect a texture:\n"
+        display_string = self._images_string(display_string)
         
         self.clear_GM_info()
-        self.display_message(string)
+        self.display_message(display_string)
 
         input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
@@ -173,7 +172,7 @@ class GameView:
                     if event.key == K_ESCAPE:
                         if selected_image is not None:
                             self.clear_GM_info()
-                            self.display_message(string)
+                            self.display_message(display_string)
                             blit_input = True
                             selected_image = None
                         else:
@@ -196,9 +195,100 @@ class GameView:
 
         return
 
-    def create_new_entity(self):
+    def _create_entity_help(self, reblit, error=""):
         self.clear_GM_info()
-        self.display_message("Create New Entity _ACTIVE_")
+        buf, tpos = self.display_message("Create New Entity")
+        if len(error)>0:
+            ptext.draw(error, (tpos[0] + buf.get_width() + 10, tpos[1]), sysfontname="arial", color=COLOR_RED, fontsize=30)
+
+        if reblit:
+            input_name = None
+            input_type = None
+            input_image_filename = None
+
+        surf_name, tpos = ptext.draw("Name: ", (tpos[0], tpos[1]+buf.get_height()), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        if not reblit:
+            input_name = InputBox(tpos[0]+surf_name.get_width()+10, tpos[1], 300, 32, DISPLAYSURF)
+        surf_type, tpos = ptext.draw("Type: ", (tpos[0], tpos[1]+surf_name.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        if not reblit:
+            input_type = InputBox(tpos[0]+surf_type.get_width()+10, tpos[1], 300, 32, DISPLAYSURF)
+        surf_image_filename, tpos = ptext.draw("Image: ", (tpos[0], tpos[1]+surf_type.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        if not reblit:
+            input_image_filename = InputBox(tpos[0]+surf_image_filename.get_width()+10, tpos[1], 300, 32, DISPLAYSURF)
+        type_names = ""
+        types = []
+        for entity_type in ruleenactor.entity_types:
+            type_names += entity_type.get_type() + ", "
+            types.append(entity_type.get_type())
+        display_string = "Type Options: " + type_names + "\nImage Options: "
+        display_string = self._images_string(display_string)
+        surf_types, tpos = ptext.draw(display_string, (tpos[0], tpos[1]+surf_image_filename.get_height()+10), sysfontname="arial", color=COLOR_WHITE, fontsize=30,  width = game.map.width*game.map.tilesize)
+        return types, input_name, input_type, input_image_filename
+
+    def create_new_entity(self):
+        
+        types, input_name, input_type, input_image_filename = self._create_entity_help(False)
+        
+        RUNNING = True
+        selected_name = ""
+        selected_type = ""
+        selected_image_filename = ""
+        blit_input = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    mousepos = pygame.mouse.get_pos()
+                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                    x, y = gameview.which_tile(mousepos)
+                    if len(selected_type)>0 and x != -1 and y != -1 and self.which_entity(x,y) is None:
+                        entity = ruleenactor.add_new_entity(selected_type, selected_name, x, y)
+                        entity.set_image_filename(selected_image_filename)
+                        texture_image = pygame.transform.scale(images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+                        selected_name = ""
+                        selected_type = ""
+                        selected_image_filename = ""
+                        input_name.text = ""
+                        input_type.text = ""
+                        input_image_filename.text = ""
+                        game.entities.append(entity)
+                        blit_input = True
+                        self._create_entity_help(True)
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.clear_GM_info()
+                        self.help_screen()
+                        return
+                    elif event.key == K_RETURN:
+                        selected_name = input_name.text.rstrip()
+                        selected_type = input_type.text.rstrip()
+                        selected_image_filename = input_image_filename.text.rstrip()
+                        if selected_image_filename not in images:
+                            selected_image_filename = "default-image.png"
+                        if selected_type in types:
+                            blit_input = False
+                            self.clear_GM_info()
+                            self.display_message("Please select tile you would like to place this " + selected_name)
+                        else:
+                            input_name.text = ""
+                            input_type.text = ""
+                            input_image_filename.text = ""
+                            self._create_entity_help(True, "WRONG TYPE")
+                input_name.handle_event(event)
+                input_type.handle_event(event)
+                input_image_filename.handle_event(event)
+            if blit_input:
+                input_name.wipe()
+                input_name.draw()
+                input_type.wipe()
+                input_type.draw()
+                input_image_filename.wipe()
+                input_image_filename.draw()
+            pygame.display.flip()  
+
         return
 
     def edit_entity(self):
@@ -331,6 +421,13 @@ class GameView:
                 if not game.map.fogOfWar[rw][cl]:
                     DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
         return
+
+    def _images_string(self, display_string=""):
+        global images
+        images = self.load_pictures() # update the current images stored
+        for key in images:
+            display_string += key + ", "
+        return display_string
 
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
@@ -480,18 +577,18 @@ class Transcript:
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
 
 # utilized for testing of actions drop down menu
-class Entity:
-    def __init__(self, x, y, width, height, name, actions):
-        self.width = width
-        self.height = height
-        self.x = x
-        self.y = y
-        self.name = name
-        self.actions = actions
-        self.attributes = ["example attributes", "example 2", "example 3"]
+# class Entity:
+#     def __init__(self, x, y, width, height, name, actions):
+#         self.width = width
+#         self.height = height
+#         self.x = x
+#         self.y = y
+#         self.name = name
+#         self.actions = actions
+#         self.attributes = ["example attributes", "example 2", "example 3"]
 
-    def __str__(self):
-        return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
+#     def __str__(self):
+#         return  "Entity:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\nactions: "+str(self.actions)+"\nattributes: "+str(self.attributes)
 
 
 # ------------------------------------------------------------------------------------------------------------
@@ -502,17 +599,25 @@ gameview = GameView()
 
 images = gameview.load_pictures()
 
-# Game Functionality
+# Game Class
 game = Game()
 game.name = "Test Suite"
 game.uniqueID = 1
-game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
+# game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 game.map = Map(tilesize = 50, height = 10, width = 18)
 
 
 # Rule Validation
 ruleenactor = RuleEnactor()
 _validator = _Validator()
+isTemplate = False
+hp_time = Attribute("HP", 10)    
+ac_time = Attribute("AC", 15)    
+template = Entity("", "entity", 1, 1, isTemplate, None)
+template.add_attribute(hp_time)
+template.add_attribute(ac_time)
+_validator.add_entity(template)
+
 ruleenactor.parse_validator(_validator) # sets up relationships and entity types
 
 
@@ -566,9 +671,9 @@ def main():
         DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
 
     # put all the entities on the map
-    for entity in game.entities:
-        entity_image = pygame.transform.scale(images[entity.name], (entity.width*game.map.tilesize,entity.height*game.map.tilesize))
-        DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+    # for entity in game.entities:
+    #     entity_image = pygame.transform.scale(images[entity.name], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+    #     DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
 
     if GM_STATUS:
         gameview.help_screen()
@@ -592,12 +697,12 @@ def main():
                 if my_entity is not None and action_requested is not "Move":
                     gameview.remove_previous_popup()
                     if mousepos[0] in range(location[0],location[0]+size[0]) and mousepos[1] in range(location[1],location[1]+size[1]):
-                        rowsize = size[1]/(len(my_entity.actions)+1)
+                        rowsize = size[1]/(len(my_entity.get_actions())+1)
                         option_selected = math.floor((mousepos[1]-location[1])/rowsize)
                         if option_selected == 0:
                             action_requested = "Move"
                         else:
-                            action_requested = my_entity.actions[option_selected-1]
+                            action_requested = my_entity.get_actions()[option_selected-1]
                             my_entity = None
                         print(action_requested)
                     else:
@@ -606,10 +711,10 @@ def main():
                     # grab new location
                     x, y = gameview.which_tile(mousepos)
                     # if it is a valid locatin and there are no other game.entities there
-                    if x != -1 and y != -1 and gameview.check_entity_fit(my_entity.width, my_entity.height, x, y, my_entity):
+                    if x != -1 and y != -1 and gameview.check_entity_fit(my_entity.size.get_width(), my_entity.size.get_height(), x, y, my_entity):
                         # remove old image and replace with generic block, then cover with texture if there are any       
-                        for i in range(0,my_entity.width):
-                            for j in range(0,my_entity.height):
+                        for i in range(0,my_entity.size.get_width()):
+                            for j in range(0,my_entity.size.get_height()):
                                 DISPLAYSURF.blit(greyImage, gameview.offset_blit((my_entity.y+i)*game.map.tilesize, (my_entity.x+j)*game.map.tilesize))
                                 for texture in game.map.textures:
                                     if texture.x == (my_entity.x+j) and texture.y == (my_entity.y+i):
@@ -619,7 +724,7 @@ def main():
                         # blit entity to it
                         my_entity.x = x
                         my_entity.y = y
-                        my_entity_image = pygame.transform.scale(images[my_entity.name], (my_entity.width*game.map.tilesize,my_entity.height*game.map.tilesize))
+                        my_entity_image = pygame.transform.scale(images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, gameview.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                     # wipe signals
                     action_requested = ""
@@ -628,10 +733,10 @@ def main():
                     x, y = gameview.which_tile(mousepos)
                     my_entity = gameview.which_entity(x, y)
                     if my_entity is not None:
-                        if (my_entity.y + my_entity.width) >= game.map.width or (my_entity.x + my_entity.height) >= game.map.height:
+                        if (my_entity.y + my_entity.size.get_width()) >= game.map.width or (my_entity.x + my_entity.size.get_height()) >= game.map.height:
                             loc_x, loc_y = gameview.tile_location((my_entity.x,my_entity.y))
                         else:    
-                            loc_x, loc_y = gameview.tile_location((my_entity.width+my_entity.x,my_entity.height+my_entity.y))
+                            loc_x, loc_y = gameview.tile_location((my_entity.size.get_width()+my_entity.x,my_entity.size.get_height()+my_entity.y))
                         size, location = gameview.make_popup(loc_x, loc_y, my_entity)
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:

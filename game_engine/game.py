@@ -7,7 +7,7 @@ class Game:
         self.GM = None
         self.name = None
         self.players = []
-        self.entities = [] # possibly use dict instead
+        self.entities = [] 
         self.map = None 
         self.ruleset_copy = None
         self.assets = []

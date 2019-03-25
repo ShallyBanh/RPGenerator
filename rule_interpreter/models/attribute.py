@@ -25,3 +25,6 @@ class Attribute:
 
     def set_attribute_value(self, attributeValue):
         self._attributeValue = attributeValue
+
+    def __str__(self):
+        return "Name: {}, Value: {}\n".format(self.get_attribute_name(), self.get_attribute_value())

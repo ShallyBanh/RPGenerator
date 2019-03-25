@@ -11,25 +11,19 @@ class Entity:
         None for now
     """
 
-    def __init__(self, name, entityType, width, height, isTemplate, inheritedFrom):
+    def __init__(self, name, entityType, width, height, isTemplate, inheritedFrom, x=0, y=0):
         self._type = entityType
         self._name = name
-        self._id = None
+        self._image_filename = ""
         self._actions = [] 
         self._attributes = [] 
-        self._size = Size(int(width),int(height)) 
+        self.size = Size(int(width),int(height)) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
-        self._location = None
         self._isInheritedFrom = inheritedFrom
-        self._x = 0
-        self._y = 0
+        self.x = x
+        self.y = y
     
-    def get_x(self):
-        return self._x
-    
-    def get_y(self):
-        return self._y
 
     def get_type(self):
         return self._type
@@ -43,11 +37,11 @@ class Entity:
     def set_name(self, name):
         self._name = name
 
-    def get_id(self):
-        return self._id
+    def get_image_filename(self):
+        return self._image_filename
 
-    def set_id(self, id):
-        self._id = id
+    def set_image_filename(self, id):
+        self._image_filename = id
 
     def get_actions(self):
         return self._actions
@@ -57,6 +51,12 @@ class Entity:
 
     def get_attributes(self):
         return self._attributes
+
+    def get_attributes_string(self):
+        disp_str = ""
+        for i in self.get_attributes():
+            disp_str += str(i)
+        return disp_str
 		
     def get_attribute(self, attributeName):
         attributeName = attributeName.lower()
@@ -97,10 +97,10 @@ class Entity:
         self._actions.append(action)
 
     def get_size(self):
-        return self._size
+        return self.size
 
     def set_size(self, size):
-        self._size = size
+        self.size = size
 
     def get_is_template(self):
         return self._isTemplate
@@ -127,4 +127,6 @@ class Entity:
         return "name: {}\ntype:{}\nwidth: {}\nheight: {}\nisTemplate: {}\ninheritedFrom: {}".format(self.get_name(), self.get_type(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), self.get_is_template(), self.get_is_inherited_from())
             
     def __str__(self):
-        return "Entity:\nName: {}\nwidth: {}\nheight: {}\nx: {}\ny: {}\nactions: {}\nattributes: {}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.get_x()), str(self.get_y()), str(self.get_actions()), str(self.get_attributes()))
+        return "Entity:\nName: {}\nwidth: {}\nheight: {}\ny: {}\nx: {}\nactions: {}\nattributes:\n{}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.x), str(self.y), str(self.get_actions()), self.get_attributes_string())
+
+
