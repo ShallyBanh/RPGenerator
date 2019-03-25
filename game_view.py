@@ -100,7 +100,7 @@ class GameView:
         return images
 
     def which_entity(self,x, y):
-        for e in game.entities:
+        for e in ruleenactor.all_created_entities:
             if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
@@ -254,7 +254,7 @@ class GameView:
                         input_name.text = ""
                         input_type.text = ""
                         input_image_filename.text = ""
-                        game.entities.append(entity)
+                        # game.entities.append(entity)
                         blit_input = True
                         self._create_entity_help(True)
                 elif event.type == KEYDOWN:   
@@ -299,6 +299,7 @@ class GameView:
     def delete_entity(self):
         self.clear_GM_info()
         self.display_message("Delete Entity _ACTIVE_")
+        # pick which one from the map and delete it
         return
 
     def add_asset(self):
