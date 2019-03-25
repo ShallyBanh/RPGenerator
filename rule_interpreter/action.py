@@ -6,6 +6,8 @@ class Action:
     def __init__(self, name, content):
         self._actionName = name.lower()
         self._ruleContent = content
+        self._targetLine = ruleContent.splitlines()[0]
+        self._actionBehaviour = "\n".join(ruleContent.splitlines()[1:])
     
     def get_action_name(self):
         return self._actionName
@@ -14,7 +16,13 @@ class Action:
         self._actionName = name
     
     def get_rule_content(self):
-        return self._ruleContent 
+        return self._ruleContent
+
+    def get_target_line(self):
+        return self._targetLine
+
+    def get_action_behaviour(self):
+        return self._actionBehaviour
 
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
