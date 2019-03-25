@@ -73,12 +73,19 @@ class GameView:
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
     def load_pictures(self):
-        # Grab all pictures located in the textures directory
-        direc = os.getcwd() + "/images/textures/"
+        # Grab all pictures located in the textures directory and temporary folder
         images = {}
+
+        direc = os.getcwd() + "/images/textures/"
         pictures = [i for i in os.listdir(direc)]
         for p in pictures:
             images[p] = pygame.image.load("images/textures/"+p)
+
+        if os.path.exists("/tmp"):
+            direc = os.getcwd() + "/tmp/"
+            pictures = [i for i in os.listdir(direc)]
+            for p in pictures:
+                images[p] = pygame.image.load("tmp/"+p)
 
         return images
 
@@ -92,7 +99,7 @@ class GameView:
 
     def toggle_fog(self):
         self.clear_GM_info()
-        self.display_message("Toggle Fog Mode _ACTIVE_")
+        self.display_message("_Toggle Fog Mode_\n\nPress ESC to exit this mode.")
 
         RUNNING = True
         while RUNNING:    
@@ -118,12 +125,13 @@ class GameView:
                     # self.update_fog()
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
+                        self.clear_GM_info()
                         self.help_screen()
-                        RUNNING = False
+                        return
         return
 
     def add_texture(self):
-        string = "Select a texture:\n"
+        string = "_Add Texture Mode_\nPress ESC to exit this mode.\n\nSelect a texture:\n"
         images = self.load_pictures()
         for key in images:
             string += key + ", "
@@ -157,8 +165,9 @@ class GameView:
                         selected_image = None
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
+                        self.clear_GM_info()
                         self.help_screen()
-                        RUNNING = False
+                        return
                     elif event.key == K_RETURN:
                         text = input_box.handle_event(event)
                         text = text.rstrip()
@@ -192,7 +201,27 @@ class GameView:
 
     def add_asset(self):
         self.clear_GM_info()
-        self.display_message("Add Asset _ACTIVE_")
+        self.display_message("Select an asset to add to the database. Press RETURN for selection.\n")
+        if not os.path.exists("/tmp"):
+            os.makedirs('/tmp')
+
+        RUNNING = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    pass
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.help_screen()
+                        RUNNING = False
+                    elif event.key == K_RETURN:
+                        # opendlg() NEED TO FIND A WAY TO IMPORT ASSETS
+                        pass
+            pygame.display.flip()  
+
         return
     
     def remove_player(self):
@@ -425,7 +454,7 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-if __name__ == "__main__":
+def main():
 
     images = gameview.load_pictures()
 
@@ -540,3 +569,7 @@ if __name__ == "__main__":
         history.draw()
 
         pygame.display.flip()
+
+
+if __name__ == "__main__":
+    main()
