@@ -69,6 +69,13 @@ class Client():
         print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
         return 0 if (response.status_code == 200) else -1
     
+    def update_ruleset(self, username, rulesetName, jsonBlob):
+        print("[client] [update_ruleset] attempting to update a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
+        payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
+        response = requests.post("{}/update_ruleset".format(self.URL), params=payload)
+        print("[client] [update_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        return 0 if (response.status_code == 200) else -1
+    
     def change_credentials(self, username, old_password, new_password): #,email):
         print("[client] [change_credentials] attempting to change credentials of with username,old_password,new_password = {},{},{}".format(username,old_password, new_password))        
         payload = {'username': username, 'old_password': old_password, 'new_password': new_password}

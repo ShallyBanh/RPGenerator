@@ -163,7 +163,7 @@ def load_existing_rulesets():
         #start decryption
         f = Fernet(testkey)
         for rulename, rulecontent in response:
-            decryptedResponse.append((f.decrypt(rulename).decode("utf"), f.decrypt(rulecontent).decode("utf")))
+            decryptedResponse.append((rulename, f.decrypt(rulecontent).decode("utf")))
         return jsonify(decryptedResponse)
 
     print("[server] [load_existing_rulesets] response from account_manager was {}".format(response))
@@ -180,9 +180,25 @@ def create_ruleset():
     print("[server] [create_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
     #start encryption
     f = Fernet(testkey)
-    response = server.account_manager.create_ruleset(username, f.encrypt(rulesetName.encode('utf-8')), f.encrypt(jsonBlob.encode('utf-8')))
+    response = server.account_manager.create_ruleset(username, rulesetName, f.encrypt(jsonBlob.encode('utf-8')))
 
     print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/update_ruleset", methods=['POST'])
+def update_ruleset():
+    username = request.args.get("username")
+    rulesetName = request.args.get("rulesetName")
+    jsonBlob = request.args.get("jsonBlob")
+    if username is None or rulesetName is None or jsonBlob is None:
+        return Response(status=400)
+    print("[server] [update_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
+    #start encryption
+    f = Fernet(testkey)
+    response = server.account_manager.update_ruleset(username, rulesetName, f.encrypt(jsonBlob.encode('utf-8')))
+
+    print("[server] [update_ruleset] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
     

@@ -40,10 +40,6 @@ class RulesetCreationEditView:
         self._client = client
         self._username = username
 
-    def update_database(self, database, user, rulesetName, jsonBlob):
-        self._database.cur.execute("UPDATE Ruleset SET rules = ? WHERE rulename = ?;", (jsonBlob, rulesetName, ))
-        self._database.conn.commit()
-
     def main(self, rulesetName):
         if rulesetName == "":
             self._newRuleset = True
@@ -145,7 +141,7 @@ class RulesetCreationEditView:
                     if x in range(1100, 1300) and y in range(10, 60):
                         serializedValidator = jsonpickle.encode(Validator())
                         if self._newRuleset == False:
-                            self.update_database(database, "shally", self._rulesetName, serializedValidator)
+                            self._client.update_ruleset(self._username, self._rulesetName, serializedValidator)
                         else:
                             if self._rulesetName == "":
                                 self._invalidSubmission = True

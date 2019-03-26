@@ -606,7 +606,6 @@ def ruleset_view():
 def previous_games_view():
     GameHistoryView().main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
-    print("Previous Games View - TODO FOR SHALLY")
     return
 
 # -----------------------------------------------------------------------------

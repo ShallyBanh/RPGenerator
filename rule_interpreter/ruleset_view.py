@@ -37,7 +37,6 @@ class RulesetView:
 
         pygame.init()
         self._rulesetList = self._client.load_existing_rulesets(self._username)
-        print(self._rulesetList)
 
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
@@ -67,7 +66,7 @@ class RulesetView:
                         validator = RulesetCreationEditView( self._username, self._client).main("")
                         if validator is not None:
                             return validator
-                        # self._rulesetList = self._client.load_existing_rulesets(self._username)
+                        self._rulesetList = self._client.load_existing_rulesets(self._username)
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                     for editIdx in range(len(self._rulesetPositionList)):
