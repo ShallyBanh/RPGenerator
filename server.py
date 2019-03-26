@@ -15,6 +15,7 @@ app.config['SECRET_KEY'] = 'secret!'
 IP_ADDRESS = "0.0.0.0"
 PORT = 5493
 testkey = ""
+
 class Server:
     """A User account.
 
@@ -49,6 +50,8 @@ elif len(sys.argv) > 1:
     server = Server()
 else:
     server = Server()
+
+testkey.encode('utf8')
 
 @app.route("/login", methods=['POST'])
 def login():
@@ -154,24 +157,16 @@ def load_existing_rulesets():
     if username is None:
         return Response(status=400)
     print("[server] [load_existing_rulesets] got username = {}".format(username))
-    #start encrpytion
-    print("before encription")
     response = server.account_manager.load_existing_rulesets(username)
-    print("herer")
-    print(response)
-    print(jsonify(response))
-    return jsonify(response)
     if response is not None:
-        print("inside")
-        responses = jsonify(response)
-        print(responses)
         decryptedResponse = []
+        #start decryption
         f = Fernet(testkey)
-        for rulename, rulecontent in responses:
-            decryptedResponse.append((rulename, f.decrypt(rulecontent)))
-        return decryptedResponse
+        for rulename, rulecontent in response:
+            decryptedResponse.append((f.decrypt(rulename).decode("utf"), f.decrypt(rulecontent).decode("utf")))
+        return jsonify(decryptedResponse)
 
-    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    print("[server] [load_existing_rulesets] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
@@ -183,10 +178,9 @@ def create_ruleset():
     if username is None or rulesetName is None or jsonBlob is None:
         return Response(status=400)
     print("[server] [create_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
-    #start encrpytion
+    #start encryption
     f = Fernet(testkey)
-    token = f.encrypt(bytes(jsonBlob, 'utf-8'))
-    response = server.account_manager.create_ruleset(username, rulesetName, token)
+    response = server.account_manager.create_ruleset(username, f.encrypt(rulesetName.encode('utf-8')), f.encrypt(jsonBlob.encode('utf-8')))
 
     print("[server] [create_ruleset] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
