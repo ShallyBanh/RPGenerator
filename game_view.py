@@ -113,7 +113,6 @@ class GameView:
 
         RUNNING = True
         while RUNNING:    
-            pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == QUIT:
                     pygame.quit()
@@ -138,6 +137,7 @@ class GameView:
                         self.clear_GM_info()
                         self.help_screen()
                         return
+            pygame.display.flip()
         return
 
     def add_texture(self):
@@ -165,9 +165,8 @@ class GameView:
                     if selected_image is not None and x != -1 and y != -1:
                         texture = Map.Texture(x,y,1,1,selected_image)
                         game.map.textures[(x,y)] = texture
-                        texture_image = pygame.transform.scale(IMAGES[selected_image], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
                         if self.which_entity(x,y) is None:
-                            DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
+                            self.blit_texture(texture)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         if selected_image is not None:
@@ -303,8 +302,47 @@ class GameView:
 
     def delete_entity(self):
         self.clear_GM_info()
-        self.display_message("Delete Entity _ACTIVE_")
+        self.display_message("_Delete Entity_\nTo delete an entity please select a tile.\nOnce it is selected RED, press ENTER as a confirmation you wish to delete it.")
         # pick which one from the map and delete it
+
+        RUNNING = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    mousepos = pygame.mouse.get_pos()
+                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                    x, y = gameview.which_tile(mousepos)
+                    if x != -1 and y != -1:
+                        my_entity = gameview.which_entity(x, y)
+                        if my_entity is not None:
+                            # draw rectangle surrounding the actual box
+                            left, top = self.tile_location((x, y))
+                            saved_left, saved_top = self.offset_blit(left, top)
+                            saved_x = x
+                            saved_y = y
+                            saved_entity = my_entity
+                            pygame.draw.lines(DISPLAYSURF, COLOR_RED, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        if saved_entity is not None:
+                            saved_entity = None
+                            pygame.draw.lines(DISPLAYSURF, COLOR_WHITE, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
+                        else:
+                            self.clear_GM_info()
+                            self.help_screen()
+                            return
+                    elif event.key == K_RETURN:
+                        ruleenactor.remove_entity(saved_entity)
+                        if (saved_x,saved_y) in game.map.textures:
+                            self.blit_texture(game.map.textures[(saved_x,saved_y)])
+                        else:
+                            self.blit_default(saved_x, saved_y)
+                        saved_entity = None
+                        pygame.draw.lines(DISPLAYSURF, COLOR_WHITE, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
+            pygame.display.flip()
         return
 
     def add_asset(self):
@@ -434,8 +472,7 @@ class GameView:
                 if not game.map.fogOfWar[rw][cl]:
                     left, top = self.tile_location((rw, cl))
                     left, top = self.offset_blit(left, top)
-                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
-                    
+                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)    
         return
 
     def _images_string(self):
@@ -445,6 +482,15 @@ class GameView:
         for key in IMAGES:
             display_string += key + ", "
         return display_string
+
+    def blit_texture(self, texture):
+        texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
+        return
+
+    def blit_default(self, x, y):
+        DISPLAYSURF.blit(DEFAULT_IMAGE, gameview.offset_blit(y*game.map.tilesize, x*game.map.tilesize))
+        return
 
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
@@ -658,6 +704,7 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "r": {"name": "Roll Die", "function": gameview.roll_die},
               "h": {"name": "Show this help screen", "function": gameview.help_screen}
               }
+DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (game.map.tilesize,game.map.tilesize))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
@@ -673,16 +720,21 @@ def main():
     game.map.fogOfWar[9][16] = False
 
     # create the entire background
-    greyImage = pygame.transform.scale(IMAGES["grey.png"], (game.map.tilesize,game.map.tilesize))
-    fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
+    
     for rw in range(game.map.height):
         for cl in range(game.map.width):
-            DISPLAYSURF.blit(greyImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
+            gameview.blit_default(rw,cl)
             
     # put all the textures on the map
     for key, texture in game.map.textures.items():
-        texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
-        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
+        gameview.blit_texture(texture)
+
+    fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
+    if not GM_STATUS:
+        for rw in range(game.map.height):
+            for cl in range(game.map.width):
+                if not game.map.fogOfWar[rw][c]:
+                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
 
     # put all the entities on the map
     # for entity in game.entities:
@@ -729,11 +781,10 @@ def main():
                         # remove old image and replace with generic block, then cover with texture if there are any       
                         for i in range(0,my_entity.size.get_width()):
                             for j in range(0,my_entity.size.get_height()):
-                                DISPLAYSURF.blit(greyImage, gameview.offset_blit((my_entity.y+i)*game.map.tilesize, (my_entity.x+j)*game.map.tilesize))
                                 if (my_entity.x+j, my_entity.y+i) in game.map.textures:
-                                    texture = game.map.textures[(my_entity.x+j, my_entity.y+i)]
-                                    texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
-                                    DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
+                                    gameview.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
+                                else:
+                                    gameview.blit_default((my_entity.x+j), (my_entity.y+i))
                         # blit entity to it
                         my_entity.x = x
                         my_entity.y = y
