@@ -11,6 +11,8 @@ BUFFERSIZE = 512
 
 outgoing = []
 remove = []
+overall_clients = []
+client_dict = {}
 
 class Minion:
   def __init__(self, ownerid):
@@ -61,21 +63,24 @@ class MainServer(asyncore.dispatcher):
     conn, addr = self.accept()
     print ('Connection address:' + addr[0] + " " + str(addr[1]))
     outgoing.append(conn)
-    client_id = 
-    playerid = random.randint(1000, 1000000)
-    playerminion = Minion(playerid)
-    minionmap[playerid] = playerminion
-    conn.send(pickle.dumps(['id update', playerid]))
+    overall_clients.append(conn)
+    client_dict[conn] = len(overall_clients)
+    client_id = len(overall_clients)
+    # playerid = random.randint(1000, 1000000)
+    conn.send(pickle.dumps(['register', client_id]))
+    # playerminion = Minion(playerid)
+    # minionmap[playerid] = playerminion
+    # conn.send(pickle.dumps(['id update', playerid]))
     SecondaryServer(conn)
 
 class SecondaryServer(asyncore.dispatcher_with_send):
   def handle_read(self):
     recievedData = self.recv(BUFFERSIZE)
     if recievedData:
-      print("received data: {}".format(recievedData))
-
+      print("received data: {}".format(pickle.loads(recievedData)))
+      reconstructed = pickle.loads(recievedData)
       for i in outgoing:
-        update = ['from server', 15, 20]
+        update = ['from server', client_dict[i], reconstructed[1]]
 
     
         try:
