@@ -6,6 +6,11 @@ from pygame.locals import *
 from random import randrange
 import os
 import pygame_textinput
+import threading
+import time
+import select
+import socket
+import pickle
 from client import Client
 import ptext
 sys.path.append('rule_interpreter/')
@@ -34,7 +39,8 @@ FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
-
+BUFFERSIZE = 2048
+client_id = Non = ""
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
@@ -48,6 +54,43 @@ pygame.display.set_caption('RPGenerator')
 clock = pygame.time.Clock()
 dt = 1 / FPS
 
+# Asynchronous communication setup
+serverAddr = '127.0.0.1'
+if len(sys.argv) == 2:
+    serverAddr = sys.argv[1]
+s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+s.connect((serverAddr, 4321))
+
+# -----------------------------------------------------------------------------
+# ASYNCHRONOUS COMMUNICATION FUNCTIONS
+def async_send():
+    global client_id
+    while True:
+    # ge = ['position update', playerid, cc.x, cc.y]
+        ge = ['chat', "client {} is in view {}".format(client_id)]
+        s.send(pickle.dumps(ge))
+        time.sleep(2)
+
+def async_receive():
+    while True:
+        ins, outs, ex = select.select([s], [], [], 0)
+        for inm in ins: 
+            gameEvent = pickle.loads(inm.recv(BUFFERSIZE))
+            print("recieved something via select!\n{}".format(gameEvent))
+            if gameEvent[0] == 'register':
+                client_id = gameEvent[1]
+            if gameEvent[0] == 'id update':
+                print("was id update")
+                # playerid = gameEvent[1]
+                # print(playerid)
+            if gameEvent[0] == 'player locations':
+                print("was player locations")
+                # gameEvent.pop(0)
+                # minions = []
+                # for minion in gameEvent:
+                #     if minion[0] != playerid:
+                #         minions.append(Minion(minion[1], minion[2], minion[0]))
+
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
 def account_login_view():
@@ -55,8 +98,6 @@ def account_login_view():
     Login game function
     
     :return: None
-    """
-
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
     # main_menu as the menu that will check all your input.
@@ -255,7 +296,6 @@ def forgot_password_view():
     email = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/forgot-password.png")
     surface.fill(COLOR_BACKGROUND)
-    
     while True:
         # Clock tick
         clock.tick(60)
@@ -305,7 +345,6 @@ def update_account_view():
     Update account game function
     
     :return: None
-    """
 
     username = pygame_textinput.TextInput()
     oldPassword = pygame_textinput.TextInput()
@@ -379,7 +418,6 @@ def recover_account_view():
     Recover account
 
     :return: None
-    """
 
     username = pygame_textinput.TextInput()
     code = pygame_textinput.TextInput()
@@ -483,8 +521,7 @@ def display_error_message(displayNotMatching, errorTime, surfaceCopy, message):
         return True
     return False
 
-def join_game_view():
-
+def join_game_view(): = "join_game"
     option_menu.disable()
     option_menu.reset(1)
 
@@ -758,6 +795,13 @@ main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
+    # start asynchronous communication threads
+    async_receive_thread = threading.Thread(target=async_receive)
+    async_receive_thread.start()
+
+    async_send_thread = threading.Thread(target=async_send)
+    async_send_thread.start()
+
     while True:
 
         # Tick
