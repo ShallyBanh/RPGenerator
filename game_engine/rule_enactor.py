@@ -48,6 +48,9 @@ class RuleEnactor:
 		self.all_created_entities.append(newEntity)
 		return newEntity
 		
+	def remove_entity(self, entity):
+		self.all_created_entities.remove(entity)
+		
 	def get_entity(self, name):
 		for e in self.all_created_entities:
 			if e.get_name() == name:
