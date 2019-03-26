@@ -161,13 +161,10 @@ class GameView:
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
-                    if selected_image is not None:
-                        x, y = gameview.which_tile(mousepos)
-                        old_texture = 
-                        if old_texture is not None:
-                            game.map.textures.remove(old_texture)
+                    x, y = gameview.which_tile(mousepos)
+                    if selected_image is not None and x != -1 and y != -1:
                         texture = Map.Texture(x,y,1,1,selected_image)
-                        game.map.textures.append(texture)
+                        game.map.textures[(x,y)] = texture
                         texture_image = pygame.transform.scale(IMAGES[selected_image], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
                         if self.which_entity(x,y) is None:
                             DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
@@ -666,7 +663,8 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
 
 def main():
     # create the map and add add textures to it
-    game.map.textures = [Map.Texture(3,3,1,1,"grass.png"),Map.Texture(3,4,1,1,"grass.png")]
+    game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
+    game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
     
     #example fog
     game.map.fogOfWar[8][15] = False
@@ -682,7 +680,7 @@ def main():
             DISPLAYSURF.blit(greyImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
             
     # put all the textures on the map
-    for texture in game.map.textures:
+    for key, texture in game.map.textures.items():
         texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
         DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
 
@@ -732,11 +730,10 @@ def main():
                         for i in range(0,my_entity.size.get_width()):
                             for j in range(0,my_entity.size.get_height()):
                                 DISPLAYSURF.blit(greyImage, gameview.offset_blit((my_entity.y+i)*game.map.tilesize, (my_entity.x+j)*game.map.tilesize))
-                                for texture in game.map.textures:
-                                    if texture.x == (my_entity.x+j) and texture.y == (my_entity.y+i):
-                                        texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
-                                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))  
-                                        break # to speed up the loop checking
+                                if (my_entity.x+j, my_entity.y+i) in game.map.textures:
+                                    texture = game.map.textures[(my_entity.x+j, my_entity.y+i)]
+                                    texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+                                    DISPLAYSURF.blit(texture_image, gameview.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
                         # blit entity to it
                         my_entity.x = x
                         my_entity.y = y
