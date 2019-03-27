@@ -22,7 +22,8 @@ class RuleEnactor:
 	def __init__(self):
 		self.selected_item = None
 		self.entity_types = []
-		self.all_created_entities = []
+		# key: (x,y), value: entity
+		self.all_created_entities = {}
 		
 		#key: variable name (string), value: variable value
 		self.variables = {}
@@ -45,16 +46,25 @@ class RuleEnactor:
 		newEntity.x = x
 		newEntity.y = y
 		newEntity.set_name(name)
-		self.all_created_entities.append(newEntity)
+		self.all_created_entities[(newEntity.x,newEntity.y)] = newEntity
 		return newEntity
 		
+	def move_entity(self, entity, new_xy_tuple):
+		del self.all_created_entities[(entity.x, entity.y)]
+		entity.x = new_xy_tuple[0]
+		entity.y = new_xy_tuple[1]
+		self.all_created_entities[new_xy_tuple] = entity
+		return entity
+		
 	def remove_entity(self, entity):
-		self.all_created_entities.remove(entity)
+		x = entity.x
+		y = entity.y
+		del self.all_created_entities[(x,y)]
 		
 	def get_entity(self, name):
-		for e in self.all_created_entities:
-			if e.get_name() == name:
-				return e
+		for key in self.all_created_entities:
+			if self.all_created_entities[key].get_name() == name:
+				return self.all_created_entities[key]
 		
 	def parse_validator(self, validator):
 		self.relationships = validator.get_relationships()
@@ -208,8 +218,8 @@ class RuleEnactor:
 			conditional = conditional_and_action[0].strip()
 			action = conditional_and_action[1].strip()
 			
-			for entity in self.all_created_entities:
-				self.current_entity_in_loop = entity
+			for key in self.all_created_entities:
+				self.current_entity_in_loop = self.all_created_entities[key]
 				tf = self._evaluate_line(conditional)
 				if tf:
 					self._evaluate_line(action)
@@ -458,24 +468,28 @@ class RuleEnactor:
 			
 		if entity_to_move == item_to_move_from:
 			return
-			
+		
+		entity_x = entity_to_move.x
+		entity_y = entity_to_move.y
+		
 		x_dist = entity_to_move.x - item_to_move_from.x
 		y_dist = entity_to_move.y - item_to_move_from.y
 		# move horizontally 
 		if abs(x_dist) >= abs(y_dist):
 			if x_dist < 0:
 				#entity to move is to the left, so move more left
-				entity_to_move.x -= distance_to_move
+				entity_x -= distance_to_move
 			else:
 				# otherwise go right
-				entity_to_move.x += distance_to_move
+				entity_x += distance_to_move
 		else:
 			#move vertically
 			if y_dist < 0:
-				entity_to_move.y -= distance_to_move
+				entity_y -= distance_to_move
 			else:
 				# otherwise go right
-				entity_to_move.y += distance_to_move
+				entity_y += distance_to_move
+		self.move_entity(entity_to_move, (entity_x, entity_y))
 		
 	def _handle_movetowards(self, written_rule):
 		# handle moving targets away from a given point or entity
@@ -502,27 +516,31 @@ class RuleEnactor:
 		if entity_to_move == item_to_move_from:
 			return
 			
+		entity_x = entity_to_move.x
+		entity_y = entity_to_move.y
+			
 		x_dist = entity_to_move.x - item_to_move_from.x
 		y_dist = entity_to_move.y - item_to_move_from.y
 		# move horizontally 
 		if abs(x_dist) >= abs(y_dist):
 			if abs(x_dist) < distance_to_move:
-					distance_to_move = abs(x_dist)
+					distance_to_move = abs(x_dist) - 1
 			if x_dist < 0:
 				#entity to move is to the left, so move more left
-				entity_to_move.x += distance_to_move
+				entity_x += distance_to_move
 			else:
 				# otherwise go right
-				entity_to_move.x -= distance_to_move
+				entity_x -= distance_to_move
 		else:
 			#move vertically
 			if abs(y_dist) < distance_to_move:
-					distance_to_move = abs(y_dist)
+					distance_to_move = abs(y_dist) - 1
 			if y_dist < 0:
-				entity_to_move.y += distance_to_move
+				entity_y += distance_to_move
 			else:
 				# otherwise go right
-				entity_to_move.y -= distance_to_move
+				entity_y -= distance_to_move
+		self.move_entity(entity_to_move, (entity_x, entity_y))
 		
 	def _handle_plus(self, written_rule):
 		words = written_rule.split('+')

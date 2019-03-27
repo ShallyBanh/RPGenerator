@@ -37,7 +37,7 @@ class TestRuleInterpreter(unittest.TestCase):
 	
 	def test_add_new_entity(self):
 		amt = len(self.enactor.all_created_entities)
-		self.enactor.add_new_entity("entity", "newGuy", 0, 0)
+		self.enactor.add_new_entity("entity", "newGuy", 99, 99)
 		self.assertTrue(amt < len(self.enactor.all_created_entities))
 	
 	def test_target(self):
@@ -134,8 +134,9 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").get_attribute_value(), 30)
 		
 	def test_moveaway(self):
-		self.target.x = 0
-		self.target.y = 5
+		# self.target.x = 0
+		# self.target.y = 5
+		self.enactor.move_entity(self.target, (0,5))
 		self.rule += "move target 3 away from self\n"
 		self.rule += "move self 3 away from target\n"
 		action = rule_enactor.Action(self.action_name, self.rule)
@@ -162,17 +163,20 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.y, -3)
 		
 	def test_movetowards(self):
-		self.target.x = 0
-		self.target.y = 5
+		# self.target.x = 0
+		# self.target.y = 5
+		self.enactor.move_entity(self.target, (0,5))
 		self.rule += "move target 3 towards self\n"
 		self.rule += "move self 3 towards target\n"
+		print(self.enactor.all_created_entities.keys())
 		action = rule_enactor.Action(self.action_name, self.rule)
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
-		# since they"re both moving 3 towards each other, they will meet at 2 rather than pass each other
+		print(self.enactor.all_created_entities.keys())
+		# since they"re both moving 3 towards each other, they stop short rather than pass each other
 		self.assertEqual(self.target.x, 0)
 		self.assertEqual(self.target.y, 2)
 		self.assertEqual(self.actor.x, 0)
-		self.assertEqual(self.actor.y, 2)
+		self.assertEqual(self.actor.y, 1)
 		
 		entity1 = self.enactor.add_new_entity("entity","test1",15,0)
 		self.enactor.add_new_entity(entity1)
@@ -182,14 +186,14 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(entity1.x, 10)
 		self.assertEqual(entity1.y, 0)
 		self.assertEqual(self.actor.x, 10)
-		self.assertEqual(self.actor.y, 2)
+		self.assertEqual(self.actor.y, 1)
 		
 		rule = "target point\n move self 3 towards target\n"
 		point = Point(1,1)
 		action = rule_enactor.Action(self.action_name, rule)
 		self.enactor.perform_action_given_target(action, self.actor, point)
 		self.assertEqual(self.actor.x, 7)
-		self.assertEqual(self.actor.y, 2)
+		self.assertEqual(self.actor.y, 1)
 		
 	def tast_plus(self):
 		self.rule += "x = 0\n"
