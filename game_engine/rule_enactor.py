@@ -36,6 +36,9 @@ class RuleEnactor:
 		
 	def add_new_entity(self, entityType, name = "", x = 0, y = 0):
 		#self.all_created_entities.append(entity)
+		if (x,y) in self.all_created_entities.keys():
+			raise Exception("An entity already exists at this location")
+			return None
 		newEntity = None
 		for e in self.entity_types:
 			if e.get_type() == entityType:

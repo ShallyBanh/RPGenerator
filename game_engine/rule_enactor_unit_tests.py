@@ -39,7 +39,22 @@ class TestRuleInterpreter(unittest.TestCase):
 		amt = len(self.enactor.all_created_entities)
 		self.enactor.add_new_entity("entity", "newGuy", 99, 99)
 		self.assertTrue(amt < len(self.enactor.all_created_entities))
-	
+		
+	def test_remove_entity(self):
+		amt = len(self.enactor.all_created_entities)
+		self.enactor.remove_entity(self.actor)
+		self.assertTrue(amt > len(self.enactor.all_created_entities))
+		
+	def test_move_entity(self):
+		self.enactor.move_entity(self.actor, (1, 1))
+		self.assertEqual(self.actor.x, 1)
+		self.assertEqual(self.actor.y, 1)
+		self.assertTrue((1,1) in self.enactor.all_created_entities)
+		self.enactor.move_entity(self.actor, (0, 0))
+		self.assertEqual(self.actor.x, 0)
+		self.assertEqual(self.actor.y, 0)
+		self.assertTrue((0,0) in self.enactor.all_created_entities)
+		
 	def test_target(self):
 		rule = "target guy\n"
 		action = rule_enactor.Action(self.action_name, rule)
@@ -168,10 +183,8 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.move_entity(self.target, (0,5))
 		self.rule += "move target 3 towards self\n"
 		self.rule += "move self 3 towards target\n"
-		print(self.enactor.all_created_entities.keys())
 		action = rule_enactor.Action(self.action_name, self.rule)
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
-		print(self.enactor.all_created_entities.keys())
 		# since they"re both moving 3 towards each other, they stop short rather than pass each other
 		self.assertEqual(self.target.x, 0)
 		self.assertEqual(self.target.y, 2)
