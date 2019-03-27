@@ -133,6 +133,14 @@ class Client():
         data = json.loads(response.text)
         return data
 
+    def load_game_history(self, username):
+        print("[client] [load_game_history] attempting to load game history from user with username {}".format(username))        
+        payload = {'username': username}
+        header_content = {'Content-type': 'application/json'} 
+        response = requests.post("{}/load_game_history".format(self.URL), headers=header_content, params=payload)
+        data = json.loads(response.text)
+        return data
+
     def create_game(self):
         """ WARNING: for test purposes only, @TODO remove """
         game = Game()

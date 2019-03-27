@@ -201,5 +201,20 @@ def update_ruleset():
     print("[server] [update_ruleset] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
+
+@app.route("/load_game_history", methods=['POST'])
+def load_game_history():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [load_game_history] got username = {}".format(username))
+    response = server.account_manager.load_game_history(username)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [load_game_history] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)

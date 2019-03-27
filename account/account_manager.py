@@ -161,7 +161,7 @@ class AccountManager:
             return -1
 
     def load_existing_rulesets(self, username):
-        """Fetches all exisiting rulesets"""
+        """Fetches all existing rulesets"""
         self.database.query("SELECT rulename, rules FROM Ruleset WHERE username = ?", (username, ))
         rows = self.database.cur.fetchall()
         return rows
@@ -183,4 +183,10 @@ class AccountManager:
         """Updates an existing ruleset"""
         self.database.query("UPDATE Ruleset SET rules = ? WHERE rulename = ? and username = ?;", (jsonBlob, rulesetName, username, ))
         return 0
+
+    def load_game_history(self, username):
+        """Fetches game history"""
+        self.database.query("SELECT game_id, role FROM GameHistory WHERE username = ?", (username, ))
+        rows = self.database.cur.fetchall()
+        return rows
     
