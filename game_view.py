@@ -803,10 +803,18 @@ def main():
                         else:    
                             loc_x, loc_y = gameview.tile_location((my_entity.size.get_width()+my_entity.x,my_entity.size.get_height()+my_entity.y))
                         size, location = gameview.make_popup(loc_x, loc_y, my_entity)
+                    else: 
+                        print(my_entity)
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS:
+                    if my_entity is not None:
+                        # wipe what is currently on the screen before continuing
+                        gameview.remove_previous_popup()
+                        my_entity = None
+                        action_requested = ""
+                        pygame.display.flip()
                     print(GM_HOTKEYS[event.unicode]["name"])
                     # execute functionality
                     GM_HOTKEYS[event.unicode]["function"]()
