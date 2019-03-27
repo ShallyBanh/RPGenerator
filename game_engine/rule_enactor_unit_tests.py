@@ -45,6 +45,10 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.remove_entity(self.actor)
 		self.assertTrue(amt > len(self.enactor.all_created_entities))
 		
+	def test_modify_attribute(self):
+		self.enactor.modify_attribute(self.actor, "hp", 1)
+		self.assertEqual(self.actor.get_attribute("HP").get_attribute_value(), 1)
+		
 	def test_move_entity(self):
 		self.enactor.move_entity(self.actor, (1, 1))
 		self.assertEqual(self.actor.x, 1)

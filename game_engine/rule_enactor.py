@@ -64,6 +64,9 @@ class RuleEnactor:
 		y = entity.y
 		del self.all_created_entities[(x,y)]
 		
+	def modify_attribute(self, entity, attributeName, attributeValue):
+		entity.get_attribute(attributeName).set_attribute_value(attributeValue)
+		
 	def get_entity(self, name):
 		for key in self.all_created_entities:
 			if self.all_created_entities[key].get_name() == name:
