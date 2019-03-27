@@ -33,9 +33,17 @@ class GameView:
             return x,y
         return -1,-1
 
-    def check_entity_fit(self,width, height, x, y, entity):
+    def check_entity_fit(self, width, height, x, y, entity):
+        # in the case of moving where entity already is
+        if (x, y) in ruleenactor.all_created_entities:
+            if ruleenactor.all_created_entities[(x, y)] == entity: # is it itself
+                return True
+            else: # another entity is there
+                return False
+
         if (y + width) > game.map.width or (x + height) > game.map.height:
             return False
+
         for i in range(0,width):
             for j in range(0,height):
                 en = self.which_entity(x+j, y+i)
@@ -99,8 +107,8 @@ class GameView:
 
         return images
 
-    def which_entity(self,x, y):
-        for e in ruleenactor.all_created_entities:
+    def which_entity(self, x, y):
+        for key, e in ruleenactor.all_created_entities.items():
             if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
@@ -249,9 +257,12 @@ class GameView:
                     x, y = gameview.which_tile(mousepos)
                     if len(selected_type)>0 and x != -1 and y != -1 and self.which_entity(x,y) is None:
                         entity = ruleenactor.add_new_entity(selected_type, selected_name, x, y)
-                        entity.set_image_filename(selected_image_filename)
-                        texture_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
-                        DISPLAYSURF.blit(texture_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+                        if gameview.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
+                            entity.set_image_filename(selected_image_filename)
+                            texture_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+                            DISPLAYSURF.blit(texture_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+                        else:
+                            ruleenactor.remove_entity(entity)
                         selected_name = ""
                         selected_type = ""
                         selected_image_filename = ""
@@ -787,9 +798,9 @@ def main():
                                     gameview.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
                                 else:
                                     gameview.blit_default((my_entity.x+j), (my_entity.y+i))
+
+                        my_entity = ruleenactor.move_entity(my_entity, (x,y))
                         # blit entity to it
-                        my_entity.x = x
-                        my_entity.y = y
                         my_entity_image = pygame.transform.scale(IMAGES[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, gameview.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                     # wipe signals
