@@ -147,7 +147,7 @@ class GameView:
         self.clear_GM_info()
         self.display_message(display_string)
 
-        input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
+        chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -179,17 +179,17 @@ class GameView:
                             self.help_screen()
                             return
                     elif event.key == K_RETURN:
-                        text = input_box.handle_event(event)
+                        text = chat_input_box.handle_event(event)
                         text = text.rstrip()
                         if text in IMAGES:
                             self.clear_GM_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
                             selected_image = text
-                text = input_box.handle_event(event)
+                text = chat_input_box.handle_event(event)
             if blit_input:
-                input_box.wipe()
-                input_box.draw()
+                chat_input_box.wipe()
+                chat_input_box.draw()
             pygame.display.flip()            
 
         return
@@ -353,7 +353,7 @@ class GameView:
         if not os.path.exists("/tmp"):
             os.makedirs('/tmp')
 
-        input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
+        chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -370,7 +370,7 @@ class GameView:
                         self.help_screen()
                         return
                     elif event.key == K_RETURN:
-                        text = input_box.handle_event(event)
+                        text = chat_input_box.handle_event(event)
                         text = text.rstrip()
                         if os.path.isfile(text):
                             if text.split(".")[1] not in ["png", "jpg", "jpeg"]:
@@ -386,9 +386,9 @@ class GameView:
                         else: 
                             self.clear_GM_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
-                text = input_box.handle_event(event)
-            input_box.wipe()
-            input_box.draw()
+                text = chat_input_box.handle_event(event)
+            chat_input_box.wipe()
+            chat_input_box.draw()
             pygame.display.flip()  
 
         return
@@ -507,7 +507,7 @@ class InputBox:
 
     def handle_event(self, event, transcript=""):
         if event.type == MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
+            # If the user clicked on the chat_input_box rect.
             if self.rect.collidepoint(event.pos):
                 # Toggle the active variable.
                 self.active = not self.active
@@ -562,7 +562,7 @@ class Transcript:
 
     def handle_event(self, event):
         if event.type == MOUSEBUTTONDOWN:
-            # If the user clicked on the input_box rect.
+            # If the user clicked on the chat_input_box rect.
             if self.rect.collidepoint(event.pos):
                 # Toggle the active variable.
                 self.active = not self.active
@@ -624,7 +624,7 @@ class Transcript:
                 self.adjust_transcript_view()
 
     def next_line(self):
-        self.transcript_in_view += transcript.split("\n")[-2] + "\n"
+        self.transcript_in_view += self.transcript.split("\n")[-2] + "\n"
 
     def adjust_transcript_view(self):
         tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
@@ -689,11 +689,12 @@ pygame.init()
 # GENERAL COLORS AND ITEMS
 FONTTYPE = pygame.font.Font(None, 32)
 DISPLAYSURF = pygame.display.set_mode((1300,750))
-COLOR_INACTIVE = pygame.Color('lightskyblue3')
-COLOR_ACTIVE = pygame.Color('dodgerblue2')
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
+COLOR_INACTIVE = pygame.Color('lightskyblue3')
+# COLOR_ACTIVE = pygame.Color('dodgerblue2')
+COLOR_ACTIVE = COLOR_RED
 GM_STATUS = True
 GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "t": {"name": "Add Texture", "function": gameview.add_texture},
@@ -746,8 +747,8 @@ def main():
         gameview.help_screen()
 
     my_entity = None
-    input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
-    history = Transcript(MAPOFFSET[0]+game.map.width*game.map.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-input_box.rect.y), DISPLAYSURF)
+    chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
+    history = Transcript(MAPOFFSET[0]+game.map.width*game.map.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-chat_input_box.rect.y), DISPLAYSURF)
     # transcript = ""
     action_requested = ""
 
@@ -808,7 +809,7 @@ def main():
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     RUNNING = False
-                elif GM_STATUS and event.unicode in GM_HOTKEYS:
+                elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
                     if my_entity is not None:
                         # wipe what is currently on the screen before continuing
                         gameview.remove_previous_popup()
@@ -819,15 +820,15 @@ def main():
                     # execute functionality
                     GM_HOTKEYS[event.unicode]["function"]()
             # input box handling + transcript update
-            transcript = input_box.handle_event(event, history.transcript)
+            transcript = chat_input_box.handle_event(event, history.transcript)
             history.handle_event(event)
             history.update(transcript)
-            # transcript = input_box.handle_event(event, transcript)
+            # transcript = chat_input_box.handle_event(event, transcript)
 
         # chat commands
-        input_box.wipe()
+        chat_input_box.wipe()
         history.wipe()
-        input_box.draw()
+        chat_input_box.draw()
         history.draw()
 
         if GM_STATUS:
