@@ -90,9 +90,6 @@ class Entity:
         if action.get_action_name() in self.get_actions():
             print("Error, action name already exists")
             return
-        # if action.get_action_name() == "location":
-            # print("error cannot name action location")
-            # return 
 
         self._actions.append(action)
 

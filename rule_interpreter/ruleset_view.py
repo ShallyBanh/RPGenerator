@@ -8,11 +8,12 @@ import pygame
 import ptext
 import pygame_textinput
 from ruleset_creation_edit_view import RulesetCreationEditView
-import pickle
+import jsonpickle
 sys.path.append('/account/')
 from account.database import Database
 from account.account_manager import AccountManager
 from client import Client
+
 
 class RulesetView:
     def __init__(self, username, client):
@@ -35,9 +36,7 @@ class RulesetView:
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
         pygame.init()
-        print(self._username)
-        # self._rulesetList = self._client.load_existing_rulesets(self._username)
-        print(self._rulesetList)
+        self._rulesetList = self._client.load_existing_rulesets(self._username)
 
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
@@ -67,7 +66,7 @@ class RulesetView:
                         validator = RulesetCreationEditView( self._username, self._client).main("")
                         if validator is not None:
                             return validator
-                        # self._rulesetList = self._client.load_existing_rulesets(self._username)
+                        self._rulesetList = self._client.load_existing_rulesets(self._username)
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                     for editIdx in range(len(self._rulesetPositionList)):
@@ -75,15 +74,14 @@ class RulesetView:
                         y1 = int(self._rulesetPositionList[editIdx][1])
                         if x in range(x1, x1 + 200) and y in range(y1, y1+60):
                             rule = self._rulesetList[editIdx][1]
-                            deserializedRule = pickle.loads(rule)
+                            deserializedValidator = jsonpickle.decode(rule)
                             Validator().clear_entities()
-                            Validator().set_entities(deserializedRule.get_entities())
-                            Validator().set_relationships(deserializedRule.get_relationships())
-                            validator = RulesetCreationEditView().main(self._rulesetList[editIdx][0])
+                            Validator().set_entities(deserializedValidator.get_entities())
+                            Validator().set_relationships(deserializedValidator.get_relationships())
+                            validator = RulesetCreationEditView(self._username, self._client).main(self._rulesetList[editIdx][0])
                             if validator is not None:
                                 return validator
-                            # self._rulesetList = self._client.load_existing_rulesets(self._username)
-                            # currentEntityName = entities[moreIdx]
+                            self._rulesetList = self._client.load_existing_rulesets(self._username)
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):
                 screen.fill(pygame.Color("#553300"), rect)
