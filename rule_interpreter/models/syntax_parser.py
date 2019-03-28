@@ -10,7 +10,8 @@ class SyntaxParser(object):
         self._validConnectives = ["equals", "greater than", "less than", "greater or equal to", "less than or equal to", 
                                 ">", ">=", "<", "<=", '+=', "-=" "not equal to", "not equal", "=", "==", "!=", "within", "has", "contains"]
         self._specialConnectives = ["by", "to", "towards", "away", "from"]
-        self._actionCommands = ["move", "decrease", "increase", "reduce", "add"]
+        self._actionCommands = ["move", "decrease", "increase", "reduce", "add", "multiply", "divide", "set"]
+        self._arithmeticConnectives = ['*', '/', '+', '-']
         self._cannotFindSubstring = -1
         self._entityTarget = ""
         self._regexForDice = "[0-9]*d[0-9]+"
@@ -202,6 +203,7 @@ class SyntaxParser(object):
         generic <a> <connective> <b> we follow something of the form <actioncommand> <target> <byorto> <value>.
             Ex. Reduce goblin.hp by 2
             Ex. Reduce goblin.hp to 3
+            Ex. Set x to 4
     
         Parameters:
             actionStatement: action statement
@@ -226,6 +228,19 @@ class SyntaxParser(object):
                 return False
             
             return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[len(actions)-1].strip(), targetName)
+
+        elif actions[0].strip() == "set":
+            if actions[1].strip().isdigit() == True:
+                return False
+    
+            if actions[2].strip() != "to":
+                return False
+
+            entityNames = [entity.get_name() for entity in Validator().get_entities()]
+            if actions[3].strip() not in self._variables_list and actions[3].strip() not in entityNames and actions[3].strip() != "target":
+                self._variables_list.append(actions[3].strip())
+
+            return self.validate_object(actions[3].strip(), targetName)
         
         else:
             if actions[2].strip() not in self._specialConnectives:
@@ -314,8 +329,10 @@ class SyntaxParser(object):
         # this is where the conditions will be located i,e >, <, => !=
         regularConnectiveIndicies = self.get_regular_connectives(content)
         andOrConnectiveIndicies = self.get_and_or_connectives(content)
+        arithmeticConnectiveIndicies = self.get_arithmetic_connective(content)
         currentConnectiveIndex = 0
         if self.validate_connective_order(andOrConnectiveIndicies, regularConnectiveIndicies) == False:
+            print("invalid connective order")
             return False
         
         for i in range(len(regularConnectiveIndicies)):
@@ -341,15 +358,34 @@ class SyntaxParser(object):
                 if regularConnectiveIndicies[i][1] == "=":
                     if leftHandSide.isdigit() == False:
                         self._variables_list.append(leftHandSide)
-
-                if self.validate_object(leftHandSide, target) == False or self.validate_object(rightHandSide, target, isStatus) == False:
-                    # print("lhs validate")
-                    # print(leftHandSide)
-                    # print(self.validate_object(leftHandSide, target))
-                    # print("rhs validate")
-                    # print(rightHandSide)
-                    # print(self.validate_object(rightHandSide, target))
-                    return False
+                
+                if len(arithmeticConnectiveIndicies) != 0:
+                    for arithmeticSymbol in self._arithmeticConnectives:
+                        if rightHandSide.find(arithmeticSymbol) != self._cannotFindSubstring:
+                            arithmeticSymbolSplitter = rightHandSide.find(arithmeticSymbol)
+                            rhs = rightHandSide[:arithmeticSymbolSplitter].strip()
+                            lhs = rightHandSide[arithmeticSymbolSplitter + 1:].strip()
+                            # print("rhs")
+                            # print(rhs)
+                            # print("rhs validate")
+                            # print(self.validate_object(rhs, target))
+                            # print("lhs")
+                            # print(lhs)
+                            # print("lhs validate")
+                            # print(self.validate_object(lhs, target))
+                            if self.validate_object(leftHandSide, target) == False or self.validate_object(lhs, target) == False or self.validate_object(rhs, target) == False:
+                                return False
+                else:        
+                    if self.validate_object(leftHandSide, target) == False or self.validate_object(rightHandSide, target, isStatus) == False:
+                        # print("lhs validate. lhs is:")
+                        # print(leftHandSide)
+                        # print("lhs validate. result is:")
+                        # print(self.validate_object(leftHandSide, target))
+                        # print("rhs validate. rhs is:")
+                        # print(rightHandSide)
+                        # print("rhs validate. result is:")
+                        # print(self.validate_object(rightHandSide, target))
+                        return False
             
             if i < len(regularConnectiveIndicies) - 1: 
                 currentConnectiveIndex = andOrConnectiveIndicies[i] + 3
@@ -629,6 +665,41 @@ class SyntaxParser(object):
 
         andOrConnectivesIndicies.sort()
         return andOrConnectivesIndicies
+    
+    def get_arithmetic_connective(self, content):
+        """
+        Gets all arithmetic connectives:
+            i.e +, -, *, /
+
+        Returns:
+            tuple(int, string) 
+                - int -> the index of where the connective is found in the content
+                - string -> the connective that we found
+        """
+        connectiveIndicies = []
+        currentConnectiveIndex = 0
+
+        for connective in self._arithmeticConnectives:
+            if content.find(connective) != self._cannotFindSubstring:
+                currentConnectiveIndex = content.find(connective, currentConnectiveIndex) + 1
+                connectiveIndicies.append((currentConnectiveIndex -1, connective))
+                while content.find(connective,currentConnectiveIndex) != -1:
+                    currentConnectiveIndex = content.find(connective, currentConnectiveIndex) + 1
+                    connectiveIndicies.append((currentConnectiveIndex -1, connective))
+                
+                # we need to check if the connective is += or just + since it will match to both + and += and if it is += we need to remove it
+                if len(connectiveIndicies) != 0:
+                    correctIndicies = connectiveIndicies
+                    for c in connectiveIndicies:
+                        symbolAfterConnective = content[c[0]+1]
+                        if symbolAfterConnective == "=":
+                            correctIndicies.remove(c)
+                    connectiveIndicies = correctIndicies
+
+            currentConnectiveIndex = 0
+
+        connectiveIndicies.sort()
+        return connectiveIndicies
             
     #the heart of the file
     def is_valid_rule(self, content):

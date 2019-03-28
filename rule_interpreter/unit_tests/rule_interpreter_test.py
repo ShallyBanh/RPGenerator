@@ -1,7 +1,7 @@
 import unittest
 import os
 import sys
-sys.path.append('../rule_interpreter_models')
+sys.path.append('../models')
 from validator import Validator
 from entity import Entity
 from action import Action
@@ -13,12 +13,13 @@ from syntax_parser import SyntaxParser
 class TestValidator(unittest.TestCase):
     def setUp(self):
         self.parser = SyntaxParser()
-        goblin = Entity("goblin", "steve", 1)
-        testAttribute = Attribute("hp", 1, 1)
+        goblin = Entity("steve", "goblin", 1, 1, "no", "no")
+        testAttribute = Attribute("hp", 1)
         goblin.add_attribute(testAttribute)
         testAction = Action("Attack", 1)
-        goblin.set_actions([testAction])
+        goblin.add_action(testAction)
         goblin.add_status("Dodge")
+        Validator().add_entity(goblin)
 
     def test_target_entity_false(self):
         self.assertFalse(self.parser.is_valid_rule("""target goblin:\n if goblin.hp > 2 then 2"""))
@@ -49,6 +50,60 @@ class TestValidator(unittest.TestCase):
     
     def test_push_action(self):
         self.assertTrue(self.parser.is_valid_rule("target goblin:\n move target 1 away from self"))
+
+    def test_increase_action_by(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n increase goblin.HP by 5"))
+
+    def test_increase_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n increase goblin.HP to 5"))
+
+    def test_reduce_action_by(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n reduce goblin.HP by 5"))
+
+    def test_reduce_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n reduce goblin.HP to 5"))
+
+    def test_decrease_action_by(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n decrease goblin.HP by 5"))
+
+    def test_decrease_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n decrease goblin.HP to 5"))
+
+    def test_set_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n set goblin.HP to 5"))
+
+    def test_set_variable_using_set_keyword(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n set x to 5"))
+    
+    def test_set_attribute_variable_using_set_keyword(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n set goblin.hp to 5"))
+    
+    def test_set_action_by(self):
+        self.assertFalse(self.parser.is_valid_rule("target goblin:\n set goblin.HP by 5"))
+
+    def test_multiply_action_by(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n multiply goblin.HP by 5"))
+
+    def test_multiply_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n multiply goblin.HP to 5"))
+
+    def test_divide_action_by(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n divide goblin.HP by 5"))
+
+    def test_divide_action_to(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n divide goblin.HP to 5"))
+    
+    def test_arithmetic_multiply(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n goblin.HP = 5 * 5"))
+    
+    def test_arithmetic_add(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n goblin.HP = 5 + 5"))
+    
+    def test_arithmetic_subtract(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n goblin.HP = 5 - 5"))
+
+    def test_arithmetic_divide(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n goblin.HP = 5/5"))
     
     def test_explosion_action(self):
         self.assertTrue(self.parser.is_valid_rule("target point:\n If entity within(3) of point then move entity 1 away from target"))
@@ -68,16 +123,12 @@ if __name__ == '__main__':
 
     # parser = SyntaxParser()
 
-    # print("Shally's dank test suite for the parser:\n")
-    # print("adding entity goblin..")
-    # goblin = Entity("goblin", "steve", 1)
-    # print("adding atrributes for goblin: hp..")
-    # testAttribute = Attribute("hp", 1, 1)
+    # goblin = Entity("steve", "goblin", 1, 1, "no", "no")
+    # testAttribute = Attribute("hp", 1)
     # goblin.add_attribute(testAttribute)
-    # print("adding actions for goblin: Attack..")
     # testAction = Action("Attack", 1)
     # goblin.add_action(testAction)
-    # print("adding status for goblin: Dodge..")
     # goblin.add_status("Dodge")
+    # Validator().add_entity(goblin)
 
-    # print(parser.is_valid_rule("""target point:\n If entity within(3) of point then move entity 1 away from target"""))
+    # print(parser.is_valid_rule("""target goblin:\n goblin.HP = 5 * 5"""))
