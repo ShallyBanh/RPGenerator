@@ -332,7 +332,6 @@ class SyntaxParser(object):
         arithmeticConnectiveIndicies = self.get_arithmetic_connective(content)
         currentConnectiveIndex = 0
         if self.validate_connective_order(andOrConnectiveIndicies, regularConnectiveIndicies) == False:
-            print("invalid connective order")
             return False
         
         for i in range(len(regularConnectiveIndicies)):
