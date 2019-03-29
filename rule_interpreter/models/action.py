@@ -28,3 +28,6 @@ class Action:
 
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
+        
+    def __str__(self):
+        return "Name: {}\n".format(self.get_action_name())

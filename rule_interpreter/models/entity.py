@@ -45,12 +45,12 @@ class Entity:
 
     def get_actions(self):
         return self._actions
-		
-	def get_action_names(self):
-		names = []
-		for attribute in self._attributes:
-			names.append(attribute.get_attribute_name())
-		return names
+        
+    def get_action_names(self):
+        names = []
+        for action in self._actions:
+            names.append(action.get_action_name())
+        return names
 
     def set_actions(self, actions):
         self._actions = actions
