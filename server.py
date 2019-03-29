@@ -216,5 +216,17 @@ def load_game_history():
     print("[server] [load_game_history] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
+
+@app.route("/create_game", methods=['POST'])
+def create_game():
+    gameBlob = request.args.get("gameBlob")
+    if gameBlob is None:
+        return Response(status=400)
+    print("[server] [create_game] got gameBlob = {}".format(gameBlob))
+    response = server.account_manager.create_game(gameBlob)
+
+    print("[server] [create_game] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)

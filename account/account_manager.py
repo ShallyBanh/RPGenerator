@@ -189,4 +189,8 @@ class AccountManager:
         self.database.query("SELECT game_id, role FROM GameHistory WHERE username = ?", (username, ))
         rows = self.database.cur.fetchall()
         return rows
-    
+
+    def create_game(self, gameBlob):
+        """Creates a game in the database"""
+        self.database.query("insert into Game (game) values (?)", (gameBlob, ))
+        return 0
