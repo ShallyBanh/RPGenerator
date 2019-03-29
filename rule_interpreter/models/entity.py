@@ -72,16 +72,9 @@ class Entity:
         self._attributes = attributes
     
     def add_attribute(self, attribute):
-        if self.get_attributes == []:
-            self._attributes.append(attribute)
-            return 
-
-        if attribute.get_attribute_name() in self.get_attributes():
-            print("Error, attribute name already exists")
-            return
-        if attribute.get_attribute_name() == "location":
-            print("error cannot name attribute location")
-            return 
+        for a in self._attributes:
+            if a.get_attribute_name() == attribute.get_attribute_name():
+                raise Exception("An attribute with the name \"" + attribute.get_attribute_name() + "\" already exists.")
 
         self._attributes.append(attribute)
     
