@@ -92,6 +92,11 @@ def async_command_loop():
             async_message = [command[0], " ".join(command[1:])]
             if command[0] == 'start_game':
                 async_message = [command[0], [command[1], command[2]]]
+            elif command[0] == 'leave_game':
+                print("trying to leave game")
+                async_message[1] = client_id
+            elif command[0] == 'chat':
+                async_message = [command[0], [client_id, " ".join(command[1:])]]
                 # async_transcript += "{} has left the game".format(client.user.get_username) + "\n"
             async_send(async_message)
             
@@ -130,7 +135,7 @@ def async_receive():
                 print("client_id is now {}".format(client_id))
                 # inm.send(pickle.dumps(['register_username', client.user.get_username]))
             elif message_type == 'id update':
-                    print("was id update")
+                print("was id update")
             elif message_type == 'start_game_accept':
                 print("game successfully started, update your game object and loop")
             elif message_type == 'start_game_reject':
@@ -149,6 +154,22 @@ def async_receive():
             elif message_type == 'join_reject':
                 # get the game
                 print("join request rejected")
+            elif message_type == 'removed':
+                print("you have been removed @TODO")
+            elif message_type == 'update_game':
+                print("updating game")
+            elif message_type == 'action_reject':
+                print("action rejected, restore previous/apply sent version")
+            elif message_type == 'chat':
+                async_transcript += message_content + "\n"
+                print("chat message received! transcript is now:")
+                # playerid = message_content
+                # print(playerid)
+            # elif message_type
+            elif message_type == 'voice':
+                print("got a voice message!\t{}".format(message_content))
+            if message_type == 'player locations':
+                print("was player locations")
                 # async_message.pop(0)
                 # minions = []
                 # for minion in async_message:
