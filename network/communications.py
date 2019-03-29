@@ -101,7 +101,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
             print("received data: {}".format(reconstructed))
             print("splitting reconstructed")
             command_type = reconstructed[0]
-            command_body = reconstructed[1][0]
+            command_body = reconstructed[1]
             print("split reconstructed")
             # if reconstructed[0] == 'register_client':
                 # client
@@ -134,12 +134,13 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("failed to start game")
             elif command_type == "join_game":
                 print("forwarding join request")
-                if command_body.isdigit() and int(command_body) in rooms and self != rooms[int(command_body)][0]:
-                    request = ['join_request', [client_dict[self.conn], int(command_body)]]
+                room = command_body[0]
+                if room.isdigit() and int(room) in rooms and self != rooms[int(room)][0]:
+                    request = ['join_request', [client_dict[self.conn], int(room)]]
                     # @TODO try except
                     # build target/message then do at end?
                     print("sending the forwarded request")
-                    rooms[int(command_body)][0].send(pickle.dumps(request))
+                    rooms[int(room)][0].send(pickle.dumps(request))
                     print("sent the forwarded request")
                 else:
                     print("join request was invalid")
