@@ -309,50 +309,70 @@ class GameView:
         return
 
     def edit_entity(self):
-        # self.clear_GM_info()
-        # self.display_message("_Edit Entity_")
+        self.clear_GM_info()
+        buf, tpos = self.display_message("_Edit Entity_")
 
-        # RUNNING = True
-        # while RUNNING:    
-        #     for event in pygame.event.get():
-        #         if event.type == QUIT:
-        #             pygame.quit()
-        #             sys.exit()
-        #         elif event.type == MOUSEBUTTONDOWN:
-        #             mousepos = pygame.mouse.get_pos()
-        #             mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
-        #             print(mousepos)
-        #             if my_entity is not None:
-        #                 self.remove_selection()
-        #                 if mousepos[0] in range(location[0],location[0]+size[0]) and mousepos[1] in range(location[1],location[1]+size[1]):
-        #                     rowsize = size[1]/(len(my_entity.get_actions())+1)
-        #                     option_selected = math.floor((mousepos[1]-location[1])/rowsize)
-        #                     if option_selected == 0:
-        #                         action_requested = "Move"
-        #                     else:
-        #                         action_requested = my_entity.get_actions()[option_selected-1]
-        #                         my_entity = None
-        #                     print(action_requested)
-        #                 else:
-        #                     my_entity = None
-        #             else:
-        #                 x, y = gameview.which_tile(mousepos)
-        #                 my_entity = gameview.which_entity(x, y)
-        #                 if my_entity is not None:
-        #                     self.draw_entity_box(x,y)
-        #                     attribute_names = []
-        #                     for attr in my_entity.attributes:
-        #                         attribute_names.append(attr.get_attribute_name())
-        #                     display_string = "Attribute Options: " + ", ".join(attribute_names)
+        surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, 300, 32, DISPLAYSURF)
+        input_value = InputBox(self._x_coordinate(surf_value, tpos_value), tpos_value[1]-5, 300, 32, DISPLAYSURF)
 
-        #                 else: 
-        #                     print(my_entity)
-        #         elif event.type == KEYDOWN:   
-        #             if event.key == K_ESCAPE:
-        #                 self.clear_GM_info()
-        #                 self.help_screen()
-        #                 return
-        
+        RUNNING = True
+        saved_entity = None
+        attributes = {}
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == MOUSEBUTTONDOWN:
+                    if saved_entity:
+                        continue
+                    mousepos = pygame.mouse.get_pos()
+                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                    x, y = gameview.which_tile(mousepos)
+                    if x != -1 and y != -1:
+                        my_entity = gameview.which_entity(x, y)
+                        if my_entity is not None:
+                            if saved_entity:
+                                self.draw_entity_box(saved_entity.x,saved_entity.y, COLOR_WHITE)    
+                            # draw rectangle surrounding the actual box
+                            saved_entity = my_entity
+                            self.draw_entity_box(x,y)
+                            self.clear_GM_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
+                            attributes = {}
+                            for attr in my_entity.get_attributes():
+                                attributes[attr.get_attribute_name()] = attr.get_attribute_value()
+                            display_string = "Attribute Option Name: " + ", ".join(attributes.keys())
+                            surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.clear_GM_info()
+                        self.help_screen()
+                        return
+                    elif event.key == K_RETURN:
+                        # if there is an entity and its attribute given exists
+                        if saved_entity is not None and input_name.text in attributes:
+                            # if digit is a digit, or boolean remains boolean
+                            if (isdigit(attributes[input_name.text]) and isdigit(input_value.text)):
+                                ruleenactor.modify_attribute(saved_entity, input_name.text, int(input_value.text))
+                            elif (isinstance(attributes[input_name.text], (bool)) and input_value.text in ["True","False"]): 
+                                ruleenactor.modify_attribute(saved_entity, input_name.text, bool(input_value.text))
+                            elif isinstance(attributes[input_name.text], (str)):
+                                ruleenactor.modify_attribute(saved_entity, input_name.text, input_value.text)
+                        input_name.text = ""
+                        input_value.text = ""
+                        saved_entity = None
+                        # wipe the attr info
+                        self.clear_GM_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
+                input_name.handle_event(event)
+                input_value.handle_event(event)
+            input_name.wipe()
+            input_name.draw()
+            input_value.wipe()
+            input_value.draw()
+            pygame.display.flip()
+
         return
 
 
@@ -496,9 +516,12 @@ class GameView:
             pygame.display.flip()
         return
 
-    def clear_GM_info(self):
+    def clear_GM_info(self, x=None, y=None):
         # clear screen 
-        myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
+        if x is None or y is None:
+            x = MAPOFFSET[0]
+            y = game.map.tilesize*game.map.height
+        myrect = pygame.Rect(x, y, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-y)
         pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
         return
 
@@ -516,11 +539,10 @@ class GameView:
         return txt_surface, tpos
 
     def update_fog(self):
-        fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
         for rw in range(game.map.height):
             for cl in range(game.map.width):
                 if not game.map.fogOfWar[rw][cl]:
-                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
+                    DISPLAYSURF.blit(FOG_IMAGE, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
         return
 
     def update_fog_GM(self):
@@ -761,6 +783,7 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "h": {"name": "Show this help screen", "function": gameview.help_screen}
               }
 DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (game.map.tilesize,game.map.tilesize))
+FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
