@@ -116,7 +116,21 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("self.conn: {}".format(self.conn))
                 client_dict[rev_client_dict[client_id]][1] = username
                 print("registered username")
-            
+            elif command_type == "start_game":
+                # @TODO connect to database
+                client = int(command_body[0])
+                game_id = int(command_body[1])
+                print("client {} requesting to start game {}".format(client, game_id))
+                if game_id not in rooms:
+                # if command_body.isdigit() and int(command_body) not in rooms:
+                    # make sure belongs to that user
+                    print("game {} started".format(command_body))
+                    game = Game()
+                    game.uniqueID = game_id
+                    rooms[game_id] = [self, Game(), [client]]
+                    print("rooms is now {}".format(rooms))
+                else:
+                    print("failed to start game")
         else: self.close()
     def send_to_GM(self, message, room):
         pass
