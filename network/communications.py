@@ -70,6 +70,7 @@ class ConnectionBuilderServer(asyncore.dispatcher):
             self.listen(10)
         else:
             DataReadServer()
+
     def handle_accept(self):
         conn, addr = self.accept()
         print ('Connection address:' + addr[0] + " " + str(addr[1]))
@@ -100,7 +101,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
             print("received data: {}".format(reconstructed))
             print("splitting reconstructed")
             command_type = reconstructed[0]
-            command_body = reconstructed[1]
+            command_body = reconstructed[1][0]
             print("split reconstructed")
             # if reconstructed[0] == 'register_client':
                 # client
@@ -251,8 +252,9 @@ class DataReadServer(asyncore.dispatcher_with_send):
             rev_client_dict[client].send(pickle.dumps(['chat', message]))
 
 
-ConnectionBuilderServer(4321)
-# ConnectionBuilderServer(4322, protocol_type=socket.SOCK_DGRAM)
+def main():
+    ConnectionBuilderServer(4321)
+    # ConnectionBuilderServer(4322, protocol_type=socket.SOCK_DGRAM)
 
 
-asyncore.loop()
+    asyncore.loop()

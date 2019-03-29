@@ -3,12 +3,14 @@ import sys
 import time
 from flask import Flask, request, jsonify, Response
 import status
+import threading
 
 from account.account_manager import AccountManager
 import configparser
 from configurator import Configurator
 import network.email_sender
 from cryptography.fernet import Fernet
+import network.communications as communication 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -217,4 +219,6 @@ def load_game_history():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
     
+async_receive_thread = threading.Thread(target=communication.main)
+async_receive_thread.start()
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)
