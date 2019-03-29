@@ -254,7 +254,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
 
 
 def main():
-    ConnectionBuilderServer(4321)
+    ConnectionBuilderServer(5000)
     # ConnectionBuilderServer(4322, protocol_type=socket.SOCK_DGRAM)
 
 
