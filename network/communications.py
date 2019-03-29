@@ -160,7 +160,89 @@ class DataReadServer(asyncore.dispatcher_with_send):
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(pickle.dumps(['join_reject', command_body]))
+            elif command_type == 'leave_game':
+                print("player trying to leave game @TODO append to transcript")
+                client_id = int(command_body)
+                print("client_id is {}".format(client_id))
+                client = client_dict[rev_client_dict[client_id]]
+                print("client is {}".format(client))
+                room = client[2]
+                print("room is {}".format(room))
+                self.remove_player(client_id, rooms[room])
+            elif command_type == 'remove_player':
+                client_id = int(command_body)
+                client = client_dict[rev_client_dict[client_id]]        
+                room = client[2]
+                self.remove_player(client_id, room)
+                # print("removing client_id from game @TODO append to transcript")
+                # print("finding client from command_body {}".format(client_id))
+                # print("client_dict: {}".format(client_dict))
+                # print("rev_client_dict: {}".format(rev_client_dict))
+                # client = client_dict[rev_client_dict[client_id]]
+                # print("client is {}, finding room".format(client))
+                # room = client[2]
+                # print("room is {}".format(room))
+                # client[2] = None
+                # print("removing client from room")
+                # # @TODO try/check if exists
+                # rooms[room][2].remove(client_id)
+                # print("done leaving game")
+                # rev_client_dict[client_id].send(pickle.dumps(['removed', '']))
+            elif command_type == 'end_game':
+                print("@TODO end game, remove players")
+                # requester = command_body[0]
+                client_id = command_body[0]
+                room = command_body[1]
+                if rooms[room][0] == self:
+                    room_member_copy = rooms[room][2]
+                    for player in room_member_copy:
+                        self.remove_player(player, rooms[room])
+                    self.remove_player(client_id, rooms[room])
+
+            elif command_type == 'chat':
+                # for client in room
+                print("@TODO append to transcript then send out")
+                client_id = command_body[0]
+                print("{} ({})".format(client_id, type(client_id)))
+                message = command_body[1]
+                print("message: {}".format(message))
+                room = client_dict[rev_client_dict[client_id]][2]
+                print("room {}".format(room))
+                self.broadcast(message, room)
+
+            # chat, start_game, join_game, accept_join_request, reject_join_request, action, voice
+            # send_to_GM, broadcast
+            #logic for i in outgoing:
+            #logic     update = ['from server', client_dict[i], reconstructed[1]]
+
+        
+            #logic     try:
+            #logic         i.send(pickle.dumps(update))
+            #logic     except Exception:
+            #logic         remove.append(i)
+            #logic         continue
+        
+            #logic print ('sent update data')
+
+            #logic for r in remove:
+            #logic     outgoing.remove(r)
+
+        #     i.send(pickle.dumps(update))
+        #     updateWorld(recievedData)
         else: self.close()
+    def remove_player(self, client_id, room):
+        print("removing player from game @TODO append to transcript")
+        client = client_dict[rev_client_dict[client_id]]
+        room[2].remove(client_id)
+        client[2] = None
+        # room = client[2]
+        # print("room is {}".format(room))
+        # client[2] = None
+        # print("removing client from room")
+        # # @TODO try/check if exists
+        # rooms[room][2].remove(player)
+        # print("done leaving game")
+        rev_client_dict[client_id].send(pickle.dumps(['removed', '']))
     def send_to_GM(self, message, room):
         pass
     def broadcast(self, message, room):
