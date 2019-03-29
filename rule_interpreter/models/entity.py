@@ -52,6 +52,9 @@ class Entity:
             names.append(action.get_action_name())
         return names
 
+    def get_actions_string(self):
+        return ", ".join(self.get_action_names())
+
     def set_actions(self, actions):
         self._actions = actions
         
@@ -129,6 +132,6 @@ class Entity:
         return "name: {}\ntype:{}\nwidth: {}\nheight: {}\nisTemplate: {}\ninheritedFrom: {}".format(self.get_name(), self.get_type(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), self.get_is_template(), self.get_is_inherited_from())
             
     def __str__(self):
-        return "Entity:\nName: {}\nwidth: {}\nheight: {}\ny: {}\nx: {}\nactions: {}\nattributes:\n{}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.x), str(self.y), str(self.get_actions()), self.get_attributes_string())
+        return "Entity:\nName: {}\nwidth: {}\nheight: {}\ny: {}\nx: {}\nactions: {}\nattributes:\n{}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.x), str(self.y), self.get_actions_string(), self.get_attributes_string())
 
 

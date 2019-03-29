@@ -38,7 +38,7 @@ class Attribute:
         return self._attributeValue 
         
     def get_attribute_type(self):
-        return _self._attributeType
+        return self._attributeType
 
     def set_attribute_value(self, attributeValue):
         self._attributeValue = attributeValue

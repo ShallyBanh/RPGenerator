@@ -13,6 +13,7 @@ from game_engine.rule_enactor import RuleEnactor
 from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
+from rule_interpreter.models.action import Action
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -54,12 +55,13 @@ class GameView:
     def tile_location(self,size):
         return size[1]*game.map.tilesize, size[0]*game.map.tilesize
 
+    # TODO ADD PROPER ACTION DISPLAY AND RETURN
     def make_popup(self,x, y, entity):
         global OLDSURF
 
         # draw drop down
         options = ["Move"] # mandatory option to have
-        options += entity.get_actions()
+        options += entity.get_action_names()
         textSurf = []
         width = 0
         height = 0
@@ -75,7 +77,7 @@ class GameView:
         for i in range(len(textSurf)):
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
-        self.draw_entity_box(entity.x, entity.y)
+        self.draw_entity_box(entity.x, entity.y, width = entity.size.get_width(), height = entity.size.get_height())
         
         # entity information to display on the left
         ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
@@ -110,10 +112,10 @@ class GameView:
                 return e
         return None
 
-    def draw_entity_box(self, x, y, color = (255, 0, 0)):    
+    def draw_entity_box(self, x, y, color = (255, 0, 0), width = 1, height = 1):    
         left, top = self.tile_location((x, y))
         left, top = self.offset_blit(left, top)
-        pygame.draw.lines(DISPLAYSURF, color, True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
+        pygame.draw.lines(DISPLAYSURF, color, True, [(left, top), (left+game.map.tilesize*width, top), (left+game.map.tilesize*width, top+game.map.tilesize*height), (left, top+game.map.tilesize*height)], 3)
         return 
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
@@ -326,25 +328,25 @@ class GameView:
                     pygame.quit()
                     sys.exit()
                 elif event.type == MOUSEBUTTONDOWN:
-                    if saved_entity:
-                        continue
-                    mousepos = pygame.mouse.get_pos()
-                    mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
-                    x, y = gameview.which_tile(mousepos)
-                    if x != -1 and y != -1:
-                        my_entity = gameview.which_entity(x, y)
-                        if my_entity is not None:
-                            if saved_entity:
-                                self.draw_entity_box(saved_entity.x,saved_entity.y, COLOR_WHITE)    
-                            # draw rectangle surrounding the actual box
-                            saved_entity = my_entity
-                            self.draw_entity_box(x,y)
-                            self.clear_GM_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
-                            attributes = {}
-                            for attr in my_entity.get_attributes():
-                                attributes[attr.get_attribute_name()] = attr.get_attribute_value()
-                            display_string = "Attribute Option Name: " + ", ".join(attributes.keys())
-                            surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                    if saved_entity is None:
+                        mousepos = pygame.mouse.get_pos()
+                        mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+                        print(mousepos)
+                        x, y = gameview.which_tile(mousepos)
+                        if x != -1 and y != -1:
+                            my_entity = gameview.which_entity(x, y)
+                            if my_entity is not None:
+                                if saved_entity:
+                                    self.draw_entity_box(saved_entity.x,saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())    
+                                # draw rectangle surrounding the actual box
+                                saved_entity = my_entity
+                                self.draw_entity_box(x,y, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
+                                self.clear_GM_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
+                                attributes = []
+                                for attr in my_entity.get_attributes():
+                                    attributes.append(attr.get_attribute_name())
+                                display_string = "Attribute Option Name: " + ", ".join(attributes)
+                                surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_GM_info()
@@ -352,19 +354,28 @@ class GameView:
                         return
                     elif event.key == K_RETURN:
                         # if there is an entity and its attribute given exists
-                        if saved_entity is not None and input_name.text in attributes:
-                            # if digit is a digit, or boolean remains boolean
-                            if (isdigit(attributes[input_name.text]) and isdigit(input_value.text)):
-                                ruleenactor.modify_attribute(saved_entity, input_name.text, int(input_value.text))
-                            elif (isinstance(attributes[input_name.text], (bool)) and input_value.text in ["True","False"]): 
-                                ruleenactor.modify_attribute(saved_entity, input_name.text, bool(input_value.text))
-                            elif isinstance(attributes[input_name.text], (str)):
-                                ruleenactor.modify_attribute(saved_entity, input_name.text, input_value.text)
+                        modifying_attr = input_name.text.strip()
+                        if saved_entity is not None and modifying_attr in attributes:
+                            new_value = input_value.text.strip()
+                            type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
+                            if type_of_attr == bool:
+                                if new_value.lower() == "true":
+                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, True)
+                                elif new_value.lower() == "false":
+                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, False)
+                            elif type_of_attr == float:
+                                try:
+                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, float(new_value))
+                                except Exception as e:
+                                    pass
+                            elif type_of_attr == str:
+                                ruleenactor.modify_attribute(saved_entity, modifying_attr, new_value)
                         input_name.text = ""
                         input_value.text = ""
-                        saved_entity = None
                         # wipe the attr info
                         self.clear_GM_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
+                        self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
+                        saved_entity = None
                 input_name.handle_event(event)
                 input_value.handle_event(event)
             input_name.wipe()
@@ -395,7 +406,7 @@ class GameView:
                     if x != -1 and y != -1:
                         my_entity = gameview.which_entity(x, y)
                         if saved_entity is not None:
-                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                             saved_entity = None
                         if my_entity is not None:
                             # draw rectangle surrounding the actual box
@@ -404,7 +415,7 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         if saved_entity is not None:
-                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                             saved_entity = None
                         else:
                             self.clear_GM_info()
@@ -417,7 +428,7 @@ class GameView:
                                 self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
                             else:
                                 self.blit_default(saved_entity.x, saved_entity.y)
-                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                             saved_entity = None
             pygame.display.flip()
         return
@@ -749,16 +760,23 @@ game.map = Map(tilesize = 50, height = 10, width = 18)
 
 # Rule Validation
 ruleenactor = RuleEnactor()
-_validator = _Validator()
+validator = _Validator()
 isTemplate = False
-hp_time = Attribute("HP", 10)    
-ac_time = Attribute("AC", 15)    
+hp_time = Attribute("HP", "10")    
+ac_time = Attribute("AC", 11)    
 template = Entity("", "entity", 1, 1, isTemplate, None)
 template.add_attribute(hp_time)
 template.add_attribute(ac_time)
-_validator.add_entity(template)
-
-ruleenactor.parse_validator(_validator) # sets up relationships and entity types
+        
+attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+attack_action = Action("Attack", attack_rule)
+fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+fireball_action = Action("Fireball", fireball_rule)
+template.add_action(attack_action)
+template.add_action(fireball_action)
+        
+validator.add_entity(template)
+ruleenactor.parse_validator(validator)
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
