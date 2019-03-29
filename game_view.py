@@ -58,7 +58,7 @@ class GameView:
     # TODO ADD PROPER ACTION DISPLAY AND RETURN
     def make_popup(self,x, y, entity):
         global OLDSURF
-        
+
         # draw drop down
         options = ["Move"] # mandatory option to have
         options += entity.get_action_names()
@@ -97,7 +97,7 @@ class GameView:
             if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
                 images[p] = pygame.image.load("images/textures/"+p)
 
-        if os.path.exists("/tmp"):
+        if os.path.exists("./tmp/"):
             direc = os.getcwd() + "/tmp/"
             pictures = [i for i in os.listdir(direc)]
             for p in pictures:
@@ -437,8 +437,8 @@ class GameView:
         self.clear_GM_info()
         general_message = "_Add Asset Mode_\nEnter in the path to an image.\nPress ESC to exit this mode."
         self.display_message(general_message)
-        if not os.path.exists("/tmp"):
-            os.makedirs('/tmp')
+        if not os.path.exists("./tmp/"):
+            os.makedirs('./tmp')
 
         chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
@@ -460,7 +460,7 @@ class GameView:
                         text = chat_input_box.handle_event(event)
                         text = text.rstrip()
                         if os.path.isfile(text):
-                            if text.split(".")[1] not in ["png", "jpg", "jpeg"]:
+                            if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_GM_info()
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
