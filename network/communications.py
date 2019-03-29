@@ -131,6 +131,35 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("rooms is now {}".format(rooms))
                 else:
                     print("failed to start game")
+            elif command_type == "join_game":
+                print("forwarding join request")
+                if command_body.isdigit() and int(command_body) in rooms and self != rooms[int(command_body)][0]:
+                    request = ['join_request', [client_dict[self.conn], int(command_body)]]
+                    # @TODO try except
+                    # build target/message then do at end?
+                    print("sending the forwarded request")
+                    rooms[int(command_body)][0].send(pickle.dumps(request))
+                    print("sent the forwarded request")
+                else:
+                    print("join request was invalid")
+                    self.send(pickle.dumps(['join_invalid']))
+            elif command_type == 'accept_join':
+                print("join request was accepted")
+                # do something with the room
+                room = command_body[1]
+                client = command_body[0][0]
+                print("{} ({})".format(client, type(client)))
+                print("command body is {}".format(command_body))
+                print("appending client {} to room {}".format(client, room))
+                print("rooms: {}".format(rooms))
+                print("rooms[{}]: {}".format(room, rooms[room]))
+                rooms[room][2].append(client_dict[rev_client_dict[client]][0])
+                client_dict[rev_client_dict[client]][2] = room
+                print("rooms[{}]: {}".format(room, rooms[room]))               
+                rev_client_dict[client].send(pickle.dumps(['join_accept', rooms[room][1]]))
+            elif command_type == 'reject_join':
+                print("join request was rejected")
+                rev_client_dict[command_body[0][0]].send(pickle.dumps(['join_reject', command_body]))
         else: self.close()
     def send_to_GM(self, message, room):
         pass

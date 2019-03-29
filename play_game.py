@@ -131,10 +131,24 @@ def async_receive():
                 # inm.send(pickle.dumps(['register_username', client.user.get_username]))
             elif message_type == 'id update':
                     print("was id update")
-                elif message_type == 'start_game_accept':
-                    print("game successfully started, update your game object and loop")
-                elif message_type == 'start_game_reject':
-                    print("failed to start game")
+            elif message_type == 'start_game_accept':
+                print("game successfully started, update your game object and loop")
+            elif message_type == 'start_game_reject':
+                print("failed to start game")
+            elif message_type == "join_request":
+                answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                if answer.lower() in ["y", "yes"]:
+                    async_send(['accept_join', message_content])
+                else:
+                    async_send(['reject_join', message_content])
+            elif message_type == 'join_accept':
+                print("join request accepted!")
+                print("@TODO update game object")
+            elif message_type == 'join_invalid':
+                print("there is no active game with that id")
+            elif message_type == 'join_reject':
+                # get the game
+                print("join request rejected")
                 # async_message.pop(0)
                 # minions = []
                 # for minion in async_message:
