@@ -75,11 +75,8 @@ class GameView:
         for i in range(len(textSurf)):
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
-        # draw rectangle surrounding the actual box
-        left, top = self.tile_location((entity.x, entity.y))
-        left, top = self.offset_blit(left, top)
-        pygame.draw.lines(DISPLAYSURF, (255,0,0), True, [(left, top), (left+entity.size.get_width()*game.map.tilesize, top), (left+entity.size.get_width()*game.map.tilesize, top+entity.size.get_height()*game.map.tilesize), (left, top+entity.size.get_height()*game.map.tilesize)], 3)
-
+        self.draw_entity_box(entity.x, entity.y)
+        
         # entity information to display on the left
         ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
 
@@ -113,6 +110,12 @@ class GameView:
                 return e
         return None
 
+    def draw_entity_box(self, x, y, color = (255, 0, 0)):    
+        left, top = self.tile_location((x, y))
+        left, top = self.offset_blit(left, top)
+        pygame.draw.lines(DISPLAYSURF, color, True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
+        return 
+
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
 
     def toggle_fog(self):
@@ -130,14 +133,13 @@ class GameView:
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                     x, y = gameview.which_tile(mousepos)
                     # draw rectangle surrounding the actual box
-                    left, top = self.tile_location((x, y))
-                    left, top = self.offset_blit(left, top)
                     if game.map.fogOfWar[x][y]:
                         game.map.fogOfWar[x][y] = False
-                        pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
+                        color = (0,0,255)
                     else: 
                         game.map.fogOfWar[x][y] = True
-                        pygame.draw.lines(DISPLAYSURF, (255,255,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)
+                        color = (255,255,255)
+                    self.draw_entity_box(x,y,color)
                     # test if fog of war works in the right location
                     # self.update_fog()
                 elif event.type == KEYDOWN:   
@@ -307,16 +309,60 @@ class GameView:
         return
 
     def edit_entity(self):
-        self.clear_GM_info()
-        self.display_message("Edit Entity _ACTIVE_")
+        # self.clear_GM_info()
+        # self.display_message("_Edit Entity_")
+
+        # RUNNING = True
+        # while RUNNING:    
+        #     for event in pygame.event.get():
+        #         if event.type == QUIT:
+        #             pygame.quit()
+        #             sys.exit()
+        #         elif event.type == MOUSEBUTTONDOWN:
+        #             mousepos = pygame.mouse.get_pos()
+        #             mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
+        #             print(mousepos)
+        #             if my_entity is not None:
+        #                 self.remove_selection()
+        #                 if mousepos[0] in range(location[0],location[0]+size[0]) and mousepos[1] in range(location[1],location[1]+size[1]):
+        #                     rowsize = size[1]/(len(my_entity.get_actions())+1)
+        #                     option_selected = math.floor((mousepos[1]-location[1])/rowsize)
+        #                     if option_selected == 0:
+        #                         action_requested = "Move"
+        #                     else:
+        #                         action_requested = my_entity.get_actions()[option_selected-1]
+        #                         my_entity = None
+        #                     print(action_requested)
+        #                 else:
+        #                     my_entity = None
+        #             else:
+        #                 x, y = gameview.which_tile(mousepos)
+        #                 my_entity = gameview.which_entity(x, y)
+        #                 if my_entity is not None:
+        #                     self.draw_entity_box(x,y)
+        #                     attribute_names = []
+        #                     for attr in my_entity.attributes:
+        #                         attribute_names.append(attr.get_attribute_name())
+        #                     display_string = "Attribute Options: " + ", ".join(attribute_names)
+
+        #                 else: 
+        #                     print(my_entity)
+        #         elif event.type == KEYDOWN:   
+        #             if event.key == K_ESCAPE:
+        #                 self.clear_GM_info()
+        #                 self.help_screen()
+        #                 return
+        
         return
+
 
     def delete_entity(self):
         self.clear_GM_info()
-        self.display_message("_Delete Entity_\nTo delete an entity please select a tile.\nOnce it is selected RED, press ENTER as a confirmation you wish to delete it.")
+        self.display_message("_Delete Entity_\nTo delete an entity please select a tile.\nOnce it is selected RED, press ENTER as a confirmation you wish to delete it.\nOtherwise, press ESC or another spot on the map to deselect it.")
         # pick which one from the map and delete it
 
         RUNNING = True
+        saved_entity = None
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -328,19 +374,18 @@ class GameView:
                     x, y = gameview.which_tile(mousepos)
                     if x != -1 and y != -1:
                         my_entity = gameview.which_entity(x, y)
+                        if saved_entity is not None:
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
+                            saved_entity = None
                         if my_entity is not None:
                             # draw rectangle surrounding the actual box
-                            left, top = self.tile_location((x, y))
-                            saved_left, saved_top = self.offset_blit(left, top)
-                            saved_x = x
-                            saved_y = y
                             saved_entity = my_entity
-                            pygame.draw.lines(DISPLAYSURF, COLOR_RED, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
+                            self.draw_entity_box(x,y)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         if saved_entity is not None:
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
                             saved_entity = None
-                            pygame.draw.lines(DISPLAYSURF, COLOR_WHITE, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
                         else:
                             self.clear_GM_info()
                             self.help_screen()
@@ -348,12 +393,12 @@ class GameView:
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
                             ruleenactor.remove_entity(saved_entity)
-                            if (saved_x,saved_y) in game.map.textures:
-                                self.blit_texture(game.map.textures[(saved_x,saved_y)])
+                            if (saved_entity.x,saved_entity.y) in game.map.textures:
+                                self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
                             else:
-                                self.blit_default(saved_x, saved_y)
+                                self.blit_default(saved_entity.x, saved_entity.y)
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE)
                             saved_entity = None
-                            pygame.draw.lines(DISPLAYSURF, COLOR_WHITE, True, [(saved_left, saved_top), (saved_left+game.map.tilesize, saved_top), (saved_left+game.map.tilesize, saved_top+game.map.tilesize), (saved_left, saved_top+game.map.tilesize)], 3)
             pygame.display.flip()
         return
 
@@ -482,9 +527,7 @@ class GameView:
         for rw in range(game.map.height):
             for cl in range(game.map.width):
                 if not game.map.fogOfWar[rw][cl]:
-                    left, top = self.tile_location((rw, cl))
-                    left, top = self.offset_blit(left, top)
-                    pygame.draw.lines(DISPLAYSURF, (0,0,255), True, [(left, top), (left+game.map.tilesize, top), (left+game.map.tilesize, top+game.map.tilesize), (left, top+game.map.tilesize)], 3)    
+                    self.draw_entity_box(rw, cl, (0,0,255))
         return
 
     def _images_string(self):
@@ -815,8 +858,6 @@ def main():
                         else:    
                             loc_x, loc_y = gameview.tile_location((my_entity.size.get_width()+my_entity.x,my_entity.size.get_height()+my_entity.y))
                         size, location = gameview.make_popup(loc_x, loc_y, my_entity)
-                    else: 
-                        print(my_entity)
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     RUNNING = False
