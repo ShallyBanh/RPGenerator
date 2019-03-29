@@ -57,9 +57,9 @@ clock = pygame.time.Clock()
 dt = 1 / FPS
 
 # Asynchronous communication setup
-general_async_port = 4321
-voice_async_port = 4322
-serverAddr = '127.0.0.1'
+general_async_port = 5000
+voice_async_port = 9495
+serverAddr = '204.209.76.191'
 if len(sys.argv) == 2:
     serverAddr = sys.argv[1]
 general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
