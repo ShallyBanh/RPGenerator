@@ -18,7 +18,7 @@ sys.path.append('rule_interpreter/models')
 from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
-
+from game_engine.game import Game
 
 
 # Import pygameMenu
@@ -40,13 +40,15 @@ MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 2048
-client_id = Non = ""
+client_id = None
+current_game = None
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
 client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 currentUsername = ""
+async_transcript = ""
 
 # Create pygame screen and objects
 surface = pygame.display.set_mode(WINDOW_SIZE)
@@ -55,39 +57,82 @@ clock = pygame.time.Clock()
 dt = 1 / FPS
 
 # Asynchronous communication setup
+general_async_port = 4321
+voice_async_port = 4322
 serverAddr = '127.0.0.1'
 if len(sys.argv) == 2:
     serverAddr = sys.argv[1]
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.connect((serverAddr, 4321))
+general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+general_async_connection.connect((serverAddr, general_async_port))
+
+# voice_async_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# voice_async_connection.bind((serverAddr, voice_async_port))
 
 # -----------------------------------------------------------------------------
 # ASYNCHRONOUS COMMUNICATION FUNCTIONS
-def async_send():
+def async_send(async_message):
     global client_id
+    global voice_async_port
+    global serverAddr
+    print("going to send async message {}".format(async_message))
+    general_async_connection.send(pickle.dumps(async_message))
+    print("sent async message")
+    # register_command = ['register_client']
+
+def async_command_loop():
+    global client_id
+    global async_transcript
     while True:
     # ge = ['position update', playerid, cc.x, cc.y]
-        ge = ['chat', "client {} is in view {}".format(client_id)]
-        s.send(pickle.dumps(ge))
-        time.sleep(2)
+        command = input("async command > ")
+        if command:
+            command = command.split()
+            # print("the client id is {}".format(client_id))
+            # async_message = ['chat', "client {} sending".format(client_id)]
+            async_message = [command[0], " ".join(command[1:])]
+            if command[0] == 'start_game':
+                async_message = [command[0], [command[1], command[2]]]
+                # async_transcript += "{} has left the game".format(client.user.get_username) + "\n"
+            async_send(async_message)
+            
+            # async_voice = ['voice', "this should be voice data from client {}".format(client_id)]
+            # print("-trying to send voice data-")
+            # voice_async_connection.sendto(pickle.dumps(async_voice), (serverAddr, voice_async_port))
+            # time.sleep(2)
 
 def async_receive():
+    global async_transcript
+    global client_id
+    global current_game    
     while True:
-        ins, outs, ex = select.select([s], [], [], 0)
+        ins, outs, ex = select.select([general_async_connection], [], [], 0)
+        # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
         for inm in ins: 
-            gameEvent = pickle.loads(inm.recv(BUFFERSIZE))
-            print("recieved something via select!\n{}".format(gameEvent))
-            if gameEvent[0] == 'register':
-                client_id = gameEvent[1]
-            if gameEvent[0] == 'id update':
-                print("was id update")
-                # playerid = gameEvent[1]
-                # print(playerid)
-            if gameEvent[0] == 'player locations':
-                print("was player locations")
-                # gameEvent.pop(0)
+            # how do you know which one was chosen? if equal probably
+            print("selected was: {}".format(inm))
+            if inm == general_async_connection:
+                print("equal to general connection")
+                async_message = pickle.loads(inm.recv(BUFFERSIZE))
+                print("the async message is {}".format(async_message))
+                message_type = async_message[0]
+                message_content = async_message[1]
+            # elif inm == voice_async_connection:
+            #     print("equal to voice connection")
+            #     async_message = pickle.loads(inm.recvfrom(BUFFERSIZE))
+            else:
+                print("connection equality check did not work")
+                continue
+            
+            print("recieved something via select!")
+            if message_type == 'assign_id':
+                print("assigning client_id")
+                client_id = message_content
+                print("client_id is now {}".format(client_id))
+                # inm.send(pickle.dumps(['register_username', client.user.get_username]))
+        
+                # async_message.pop(0)
                 # minions = []
-                # for minion in gameEvent:
+                # for minion in async_message:
                 #     if minion[0] != playerid:
                 #         minions.append(Minion(minion[1], minion[2], minion[0]))
 
@@ -98,6 +143,8 @@ def account_login_view():
     Login game function
     
     :return: None
+    """
+    
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
     # main_menu as the menu that will check all your input.
@@ -155,7 +202,9 @@ def account_login_view():
                         break
                     success = login(username = username.get_text(), password = password.get_text())
                     if success == 0:
+                        global client_id
                         currentUsername = username.get_text()
+                        async_send(['register_username', [client_id, currentUsername]])
                         option_menu.enable()
                         option_menu.mainloop(playevents)
                         return
@@ -345,6 +394,7 @@ def update_account_view():
     Update account game function
     
     :return: None
+    """
 
     username = pygame_textinput.TextInput()
     oldPassword = pygame_textinput.TextInput()
@@ -418,6 +468,7 @@ def recover_account_view():
     Recover account
 
     :return: None
+    """
 
     username = pygame_textinput.TextInput()
     code = pygame_textinput.TextInput()
@@ -521,7 +572,8 @@ def display_error_message(displayNotMatching, errorTime, surfaceCopy, message):
         return True
     return False
 
-def join_game_view(): = "join_game"
+def join_game_view():
+
     option_menu.disable()
     option_menu.reset(1)
 
@@ -799,7 +851,7 @@ if __name__ == "__main__":
     async_receive_thread = threading.Thread(target=async_receive)
     async_receive_thread.start()
 
-    async_send_thread = threading.Thread(target=async_send)
+    async_send_thread = threading.Thread(target=async_command_loop)
     async_send_thread.start()
 
     while True:
