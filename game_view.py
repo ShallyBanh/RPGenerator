@@ -58,7 +58,7 @@ class GameView:
     # TODO ADD PROPER ACTION DISPLAY AND RETURN
     def make_popup(self,x, y, entity):
         global OLDSURF
-
+        
         # draw drop down
         options = ["Move"] # mandatory option to have
         options += entity.get_action_names()
@@ -66,6 +66,8 @@ class GameView:
         width = 0
         height = 0
         OLDSURF = DISPLAYSURF.copy()
+
+        self.draw_entity_box(entity.x, entity.y, width = entity.size.get_width(), height = entity.size.get_height())
          # newsize = img1.get_width()+4, img1.get_height()+4
         for i in options:
             textSurf.append(FONTTYPE.render(i, 1, (255, 255, 255)))
@@ -77,8 +79,6 @@ class GameView:
         for i in range(len(textSurf)):
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
-        self.draw_entity_box(entity.x, entity.y, width = entity.size.get_width(), height = entity.size.get_height())
-        
         # entity information to display on the left
         ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
 
@@ -312,7 +312,7 @@ class GameView:
 
     def edit_entity(self):
         self.clear_GM_info()
-        buf, tpos = self.display_message("_Edit Entity_")
+        buf, tpos = self.display_message("Edit Entity")
 
         surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
         surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
@@ -848,7 +848,9 @@ def main():
     action_requested = ""
 
     RUNNING = True
-    while RUNNING:    
+    while RUNNING:   
+        if GM_STATUS:
+            gameview.update_fog_GM() 
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -923,9 +925,6 @@ def main():
         history.wipe()
         chat_input_box.draw()
         history.draw()
-
-        if GM_STATUS:
-            gameview.update_fog_GM()
 
         pygame.display.flip()
 
