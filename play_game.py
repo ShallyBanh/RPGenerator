@@ -98,8 +98,7 @@ def async_command_loop():
             elif command[0] == 'chat':
                 async_message = [command[0], [client_id, " ".join(command[1:])]]
                 # async_transcript += "{} has left the game".format(client.user.get_username) + "\n"
-            async_send(async_message)
-            
+            async_send(async_message) 
             # async_voice = ['voice', "this should be voice data from client {}".format(client_id)]
             # print("-trying to send voice data-")
             # voice_async_connection.sendto(pickle.dumps(async_voice), (serverAddr, voice_async_port))
@@ -763,6 +762,7 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
+    async_send(['join_game', [room_number]])
     print(room_number)
     return
 
@@ -786,7 +786,6 @@ def main_background():
     :return: None
     """
     surface.fill(COLOR_BACKGROUND)
-
 
 # -----------------------------------------------------------------------------
 # PLAY MENU
@@ -889,10 +888,14 @@ main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 if __name__ == "__main__":
     # start asynchronous communication threads
     async_receive_thread = threading.Thread(target=async_receive)
+    async_receive_thread.daemon = True
     async_receive_thread.start()
 
     async_send_thread = threading.Thread(target=async_command_loop)
+    async_send_thread.daemon = True
     async_send_thread.start()
+
+
 
     while True:
 
@@ -905,7 +908,7 @@ if __name__ == "__main__":
             if event.type == QUIT:
                 exit()
 
-        # Main menu
+        # Main menuw
         main_menu.mainloop(events)
 
         # Flip surface
