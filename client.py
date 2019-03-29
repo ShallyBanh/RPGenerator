@@ -67,9 +67,13 @@ class Client():
         payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
         response = requests.post("{}/create_ruleset".format(self.URL), params=payload)
         print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
-        # @TODO why does this one end up a different type even though the code is exactly the same
-        # if type(response) == requests.models.Response:
-        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+    
+    def update_ruleset(self, username, rulesetName, jsonBlob):
+        print("[client] [update_ruleset] attempting to update a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
+        payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
+        response = requests.post("{}/update_ruleset".format(self.URL), params=payload)
+        print("[client] [update_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
         return 0 if (response.status_code == 200) else -1
     
     def change_credentials(self, username, old_password, new_password): #,email):
@@ -124,17 +128,18 @@ class Client():
     def load_existing_rulesets(self, username):
         print("[client] [load_existing_rulesets] attempting to load rulesets from user with username {}".format(username))        
         payload = {'username': username}
-        response = requests.post("{}/load_existing_rulesets".format(self.URL), params=payload)
+        header_content = {'Content-type': 'application/json'} 
+        response = requests.post("{}/load_existing_rulesets".format(self.URL), headers=header_content, params=payload)
         data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        print("[client] [load_existing_rulesets] response was {}/{}/{}".format(response, response.status_code, response.text))       
-        # @TODO why does this one end up a different type even though the code is exactly the same
-        # if type(response) == requests.models.Response:
-        #     response = str(response.text)
-        print(response)
-        print(response.content)
-        exit()
-        return response.content
+        return data
+
+    def load_game_history(self, username):
+        print("[client] [load_game_history] attempting to load game history from user with username {}".format(username))        
+        payload = {'username': username}
+        header_content = {'Content-type': 'application/json'} 
+        response = requests.post("{}/load_game_history".format(self.URL), headers=header_content, params=payload)
+        data = json.loads(response.text)
+        return data
 
     def create_game(self):
         """ WARNING: for test purposes only, @TODO remove """
