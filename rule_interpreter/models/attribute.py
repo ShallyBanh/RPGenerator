@@ -1,4 +1,3 @@
-import numbers
 class Attribute:
     """
     Attribute Class
@@ -6,14 +5,21 @@ class Attribute:
 
     def __init__(self, attributeName, attributeValue):
         self._attributeName = attributeName.lower()
-        if isinstance(attributeValue, str):
-            self._attributeType = "string"
-        elif isinstance(attributeValue, bool):
-            self._attributeType = "boolean"
-        elif isinstance(attributeValue, numbers.Real):
-            self._attributeType = "number"
-        self._attributeValue = attributeValue
-    
+		attributeValue = attributeValue.strip()
+        if attributeValue.lower() == "true":
+            self._attributeValue = True
+            self._attributeType = bool
+        elif attributeValue.lower() == "false":
+            self._attributeValue = False
+            self._attributeType = bool
+        else:
+            try:
+                self._attributeValue = float(attributeValue)
+                self._attributeType = float
+            except:
+                self._attributeValue = attributeValue
+                self._attributeType = str
+ 
     def get_attribute_name(self):
         return self._attributeName
 
@@ -22,6 +28,9 @@ class Attribute:
 
     def get_attribute_value(self):
         return self._attributeValue 
+        
+    def get_attribute_type(self):
+        return _self._attributeType
 
     def set_attribute_value(self, attributeValue):
         self._attributeValue = attributeValue

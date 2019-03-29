@@ -48,6 +48,9 @@ class Entity:
 
     def set_actions(self, actions):
         self._actions = actions
+        
+    def add_action(self, action):
+        self._actions.append(action)
 
     def get_attributes(self):
         return self._attributes
@@ -57,7 +60,7 @@ class Entity:
         for i in self.get_attributes():
             disp_str += str(i)
         return disp_str
-		
+        
     def get_attribute(self, attributeName):
         attributeName = attributeName.lower()
         for a in self._attributes:
