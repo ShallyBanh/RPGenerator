@@ -129,7 +129,12 @@ def async_receive():
                 client_id = message_content
                 print("client_id is now {}".format(client_id))
                 # inm.send(pickle.dumps(['register_username', client.user.get_username]))
-        
+            elif message_type == 'id update':
+                    print("was id update")
+                elif message_type == 'start_game_accept':
+                    print("game successfully started, update your game object and loop")
+                elif message_type == 'start_game_reject':
+                    print("failed to start game")
                 # async_message.pop(0)
                 # minions = []
                 # for minion in async_message:
