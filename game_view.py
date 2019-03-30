@@ -223,6 +223,7 @@ class GameView:
                         texture = Map.Texture(x,y,1,1,selected_image)
                         game.map.textures[(x,y)] = texture
                         if self.which_entity(x,y) is None:
+                            self.blit_default(x,y)
                             self.blit_texture(texture)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
@@ -351,7 +352,7 @@ class GameView:
 
     def edit_entity(self):
         self.clear_bottom_info()
-        buf, tpos = self.display_message("Edit Entity")
+        buf, tpos = self.display_message("Edit Entity\nSelect an entity, then enter the name of an attribute and its new value, then press ENTER.\nPress ESC to exit this mode.")
 
         surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -384,10 +385,6 @@ class GameView:
                                     attributes.append(attr.get_attribute_name())
                                 display_string = "Attribute Option Name: " + ", ".join(attributes)
                                 surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
-                    else:
-                        self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
-                        self.clear_bottom_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
-                        saved_entity = None 
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
@@ -543,7 +540,7 @@ class GameView:
         surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         buf = tpos[0] + surf.get_width() + 10
         d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
-        ptext.draw("Max die: 100. Max sides: 120.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+        ptext.draw("Max die: 100. Max sides: 120. Press ESC to exit this mode.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height + surf.get_height() + 10, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
 
         RUNNING = True
@@ -928,6 +925,7 @@ def main(client, new_game):
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                         else:
                             print("TODO SEND THIS ACTION AS A GM FORCED ACTION TO ALL PLAYERS.")
+                        # TODO ENSURE WE REBLIT EVERYTHING FOR EVERYONE!!
                         print(action_requested)
                     else:
                         my_entity = None
@@ -976,6 +974,7 @@ def main(client, new_game):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
+                    # TODO ENSURE THAT WE SEND THIS OUT TO EVERYONE
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
