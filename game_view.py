@@ -768,25 +768,26 @@ game.map = Map(tilesize = 50, height = 10, width = 18)
 # Entities used for testing
 # game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 
-# Rule Validation TEST
 ruleenactor = RuleEnactor()
-validator = _Validator()
-isTemplate = False
-hp_time = Attribute("HP", "10")    
-ac_time = Attribute("AC", 11)    
-template = Entity("", "entity", 1, 1, isTemplate, None)
-template.add_attribute(hp_time)
-template.add_attribute(ac_time)
+# Rule Validation TEST
+# ruleenactor = RuleEnactor()
+# validator = _Validator()
+# isTemplate = False
+# hp_time = Attribute("HP", "10")    
+# ac_time = Attribute("AC", 11)    
+# template = Entity("", "entity", 1, 1, isTemplate, None)
+# template.add_attribute(hp_time)
+# template.add_attribute(ac_time)
         
-attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
-attack_action = Action("Attack", attack_rule)
-fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
-fireball_action = Action("Fireball", fireball_rule)
-template.add_action(attack_action)
-template.add_action(fireball_action)
+# attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+# attack_action = Action("Attack", attack_rule)
+# fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+# fireball_action = Action("Fireball", fireball_rule)
+# template.add_action(attack_action)
+# template.add_action(fireball_action)
         
-validator.add_entity(template)
-ruleenactor.parse_validator(validator)
+# validator.add_entity(template)
+# ruleenactor.parse_validator(validator)
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
@@ -822,7 +823,11 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, gameId, gmOrPlayer):
+def main(client, gameId, gmOrPlayer, validator):
+    global ruleenactor
+    validator = validator
+    ruleenactor.parse_validator(validator)
+
     global GM_STATUS
     if gmOrPlayer == "PLAYER":
         GM_STATUS = False

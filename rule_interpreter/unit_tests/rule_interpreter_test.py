@@ -15,7 +15,9 @@ class TestValidator(unittest.TestCase):
         self.parser = SyntaxParser()
         goblin = Entity("steve", "goblin", 1, 1, "no", "no")
         testAttribute = Attribute("hp", 1)
+        testAttribute2 = Attribute("cool", 2)
         goblin.add_attribute(testAttribute)
+        goblin.add_attribute(testAttribute2)
         testAction = Action("Attack", "target goblin:\n if goblin.hp > 2 then 2")
         goblin.add_action(testAction)
         goblin.add_status("Dodge")
@@ -27,6 +29,9 @@ class TestValidator(unittest.TestCase):
     def test_target_entity_true(self):
         self.assertTrue(self.parser.is_valid_rule("""target goblin:\n if goblin.hp > 2 then goblin.hp = 2"""))
     
+    def test_target_entity_two_entities(self):
+        self.assertTrue(self.parser.is_valid_rule("""target goblin:\n if goblin.hp > 2 then goblin.cool += 2"""))
+
     def test_target_entity_add_status(self):
         self.assertTrue(self.parser.is_valid_rule("""target goblin:\n if goblin.hp > goblin.hp and goblin.hp > 2 then add status \"od\" to goblin"""))
     
