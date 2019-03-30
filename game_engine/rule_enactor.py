@@ -89,7 +89,7 @@ class RuleEnactor:
 	def perform_action(self, action, acting_entity):
 		target = self._determine_target(action.get_target_line())
 		if target is None:
-			self.perform_action_given_target(action, acting_entity, acting_entity)
+			return self.perform_action_given_target(action, acting_entity, acting_entity)
 		else:
 			return target
 	
@@ -105,10 +105,12 @@ class RuleEnactor:
 				interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
 				for line in interrupt_lines:
 					self._evaluate_line(line)
-				return 
+				return "The action \"" + action.get_action_name() + "\" was interrupted by the relationship \"" + self.interrupting_relationship.get_name() + "\" while being performed on \"" + target_entity.get_name() + "\" by \"" + acting_entity.get_name() + "\"."
 		# otherwise perform the action
 		for line in lines:
 			result = self._evaluate_line(line)
+			
+		return "The action \"" + action.get_action_name() + "\" was performed on \"" + target_entity.get_name() + "\" by \"" + acting_entity.get_name() + "\"."
 				
 			
 	def _determine_target(self, target_line):
@@ -745,6 +747,9 @@ class RuleEnactor:
 			if roll_data[0] == '0':
 				return 0
 			else:
+				if int(roll_data[0]) > 100 or int(roll_data[1]) > 120:
+					# apparently, the most number of sides on one dice is 120!
+					return None
 				total = 0
 				for i in range(int(roll_data[0])):
 					total += random.randint(1,int(roll_data[1]))
