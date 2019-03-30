@@ -170,7 +170,6 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.GM_help_screen()
                         return
             pygame.display.flip()
         return
@@ -211,7 +210,6 @@ class GameView:
                             selected_image = None
                         else:
                             self.clear_bottom_info()
-                            self.GM_help_screen()
                             return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
@@ -298,7 +296,6 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         selected_name = input_name.text.rstrip()
@@ -371,7 +368,6 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.GM_help_screen()
                         if saved_entity:
                             self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                         return
@@ -443,7 +439,6 @@ class GameView:
                             saved_entity = None
                         else:
                             self.clear_bottom_info()
-                            self.GM_help_screen()
                             return
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
@@ -478,7 +473,6 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
@@ -537,7 +531,6 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         if len(d_roll.text)>0:
@@ -871,7 +864,7 @@ def main(client):
     if not GM_STATUS:
         for rw in range(game.map.height):
             for cl in range(game.map.width):
-                if not game.map.fogOfWar[rw][c]:
+                if not game.map.fogOfWar[rw][cl]:
                     DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
 
     # put all the entities on the map
@@ -977,9 +970,11 @@ def main(client):
                         pygame.display.flip()
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
+                    gameview.GM_help_screen()
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
+                    gameview.PLAYER_help_screen()
             # input box handling + transcript update
             transcript = chat_input_box.handle_event(event, history.transcript)
             history.handle_event(event)
