@@ -180,8 +180,10 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("failed to start game")
             elif command_type == "join_game":
                 print("forwarding join request")
+                print("command body is {}".format(command_body))
                 room = command_body[0]
-                if room.isdigit() and int(room) in rooms and self != rooms[int(room)][0]:
+                print("checking for room {}".format(room))
+                if room.isdigit() and int(room) in rooms and self.conn != rooms[int(room)][0]:
                     request = ['join_request', [client_dict[self.conn], int(room)]]
                     # @TODO try except
                     # build target/message then do at end?
@@ -190,12 +192,13 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("sent the forwarded request")
                 else:
                     print("join request was invalid")
-                    self.send(double_pickle(['join_invalid']))
+                    self.send(double_pickle(['join_invalid', '']))
             elif command_type == 'accept_join':
                 print("join request was accepted")
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
+                game = command_body[2]
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -204,7 +207,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
                 print("rooms[{}]: {}".format(room, rooms[room]))               
-                rev_client_dict[client].send(double_pickle(['join_accept', rooms[room][1]]))
+                rev_client_dict[client].send(double_pickle(['join_accept', game]))
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(double_pickle(['join_reject', command_body]))
