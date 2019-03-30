@@ -747,6 +747,9 @@ class RuleEnactor:
 			if roll_data[0] == '0':
 				return 0
 			else:
+				if int(roll_data[0]) > 100 or int(roll_data[1]) > 120:
+					# apparently, the most number of sides on one dice is 120!
+					return None
 				total = 0
 				for i in range(int(roll_data[0])):
 					total += random.randint(1,int(roll_data[1]))
