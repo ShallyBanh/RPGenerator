@@ -13,6 +13,7 @@ from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
+from rule_interpreter.models.point import Point
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -229,19 +230,15 @@ class GameView:
             input_type = None
             input_image_filename = None
         
-        types = []
-        for entity_type in ruleenactor.entity_types:
-            types.append(entity_type.get_type())
-        
-        display_string = "Type Options: " + ", ".join(types) + "\nImage Options: "
+        display_string = "Type Options: " + ", ".join(TYPES_OF_ENTITIES) + "\nImage Options: "
         display_string += self._images_string()
         ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_image, tpos_image)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE,  width = game.map.width*game.map.tilesize)
         
-        return types, input_name, input_type, input_image_filename
+        return input_name, input_type, input_image_filename
 
     def create_new_entity(self):
         
-        types, input_name, input_type, input_image_filename = self._create_entity_help(False)
+        input_name, input_type, input_image_filename = self._create_entity_help(False)
         
         RUNNING = True
         selected_name = ""
@@ -285,7 +282,7 @@ class GameView:
                         selected_image_filename = input_image_filename.text.rstrip()
                         if selected_image_filename not in IMAGES:
                             selected_image_filename = "default-image.png"
-                        if selected_type in types:
+                        if selected_type in TYPES_OF_ENTITIES:
                             blit_input = False
                             self.clear_GM_info()
                             self.display_message("Please select tile you would like to place this " + selected_name)
@@ -903,6 +900,11 @@ def main(client):
     # transcript = ""
     action_requested = ""
 
+    global TYPES_OF_ENTITIES
+    TYPES_OF_ENTITIES = []
+    for entity_type in ruleenactor.entity_types:
+        types_of_entities.append(entity_type.get_type())
+
     RUNNING = True
     while RUNNING:   
         if GM_STATUS:
@@ -924,7 +926,19 @@ def main(client):
                             action_requested = "Move"
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
+                            result = ruleenactor.perform_action(action_requested, my_entity)
+                            if result == "point":
+                                point = gameview.action_sequence(result)
+                                # point = Point(x,y)
+                                result = ruleenactor.perform_action_given_target(action_requested, my_entity, point)
+                            elif result in TYPES_OF_ENTITIES:
+                                # select an entity OF THAT SAME TYPE 
+                                targeted_entity = gameview.action_sequence(result)
+                                result = ruleenactor.perform_action_given_target(action_requested, my_entity, targeted_entity)
                             my_entity = None
+                            print(result)
+                        if not GM_STATUS:
+                            print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER")
                         print(action_requested)
                     else:
                         my_entity = None
