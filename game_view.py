@@ -1,6 +1,7 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui
+import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess
 from pygame.locals import *
 from game_engine.map import Map
+from client import Client
 from shutil import copyfile
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
@@ -51,7 +52,6 @@ class GameView:
     def tile_location(self,size):
         return size[1]*game.map.tilesize, size[0]*game.map.tilesize
 
-    # TODO ADD PROPER ACTION DISPLAY AND RETURN
     def make_popup(self,x, y, entity):
         global OLDSURF
 
@@ -507,10 +507,12 @@ class GameView:
                         self.help_screen()
                         return
                     elif event.key == K_RETURN:
-                        if len(number_of.text)>0 and len(d_roll.text)>0:
+                        if len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
                             result = ruleenactor.roll_dice(d_string)
+                            if result is None:
+                                result = "ERROR: IMPROPER ENTRY"
                             surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
                             number_of.text = ""
                             d_roll.text = ""
@@ -576,10 +578,12 @@ class GameView:
         DISPLAYSURF.blit(DEFAULT_IMAGE, gameview.offset_blit(y*game.map.tilesize, x*game.map.tilesize))
         return
 
+# TODO FOR REVIEW TO ENSURE THAT CHAT WITH OTHER USERS CAN WORK + REUSE INPUT BOX FOR OTHER
+# NEEDS
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
 
-    def __init__(self, x, y, w, h, screen, text=''):
+    def __init__(self, x, y, w, h, screen, text='', client = None):
         self.color = COLOR_INACTIVE
         self.text = text
         self.txt_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = w)
@@ -587,6 +591,7 @@ class InputBox:
         self.rect = pygame.Rect(x, y, w, self.height)
         self.active = False
         self.screen = screen
+        self.client = client
 
     def handle_event(self, event, transcript=""):
         if event.type == MOUSEBUTTONDOWN:
@@ -603,6 +608,8 @@ class InputBox:
                 if event.key == K_RETURN:
                     # append to the transcript view
                     if len(self.text) > 0:
+                        if self.client is not None:
+                            transcript += self.client.user.get_username() + ": "
                         transcript += str(self.text) + "\n"
                         self.text = ""
                         self.remove_old_block()
@@ -754,7 +761,7 @@ game.map = Map(tilesize = 50, height = 10, width = 18)
 # Entities used for testing
 # game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 
-# Rule Validation
+# Rule Validation TEST
 ruleenactor = RuleEnactor()
 validator = _Validator()
 isTemplate = False
@@ -778,7 +785,12 @@ pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
 # GENERAL COLORS AND ITEMS
 RESOLUTION_SCALING = 1600
-FONTSIZE = 30
+if platform.system() == "Darwin":
+    res = subprocess.check_output(["system_profiler","SPDisplaysDataType"])
+    res_val = str(res).split("Resolution")[1].split("\\n")[0].split("x")[1].split()[0]
+    FONTSIZE = int(30*int(res_val)/RESOLUTION_SCALING)
+elif platform.system() == "Windows":
+    FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
 FONTTYPE = pygame.font.Font(None, FONTSIZE)
 DISPLAYSURF = pygame.display.set_mode((1300,750))
 COLOR_BLACK = (0, 0, 0)
@@ -803,48 +815,45 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main():
-    global FONTSIZE
-    global FONTTYPE
-
+def main(client):
     # FIX RESOLUTION 
-    surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
-    resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
-    resolution.text = str(pyautogui.size()[1])
+    # surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    # resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
+    # resolution.text = str(pyautogui.size()[1])
 
-    RUNNING = True
-    while RUNNING:
-        for event in pygame.event.get():
-            if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == KEYDOWN:   
-                if event.key == K_RETURN:
-                    # HANDLE SHIT HERE
-                    if len(resolution.text)>0:
-                        try:
-                            FONTSIZE = int(30*int(resolution.text)/RESOLUTION_SCALING)
-                        except:
-                            FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
-                        RUNNING = False
-                        if FONTSIZE < 10:
-                            FONTSIZE = 10
-                        FONTTYPE = pygame.font.Font(None, FONTSIZE)
-                    else:
-                        FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
-                        if FONTSIZE < 10:
-                            FONTSIZE = 10
-                        FONTTYPE = pygame.font.Font(None, FONTSIZE)
-                        RUNNING = False
-            resolution.handle_event(event)
-        # input commands
-        resolution.wipe()
-        resolution.draw()
+    # RUNNING = True
+    # while RUNNING:
+    #     for event in pygame.event.get():
+    #         if event.type == QUIT:
+    #             pygame.quit()
+    #             sys.exit()
+    #         elif event.type == KEYDOWN:   
+    #             if event.key == K_RETURN:
+    #                 # HANDLE SHIT HERE
+    #                 if len(resolution.text)>0:
+    #                     try:
+    #                         FONTSIZE = int(30*int(resolution.text)/RESOLUTION_SCALING)
+    #                     except:
+    #                         FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     RUNNING = False
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                 else:
+    #                     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                     RUNNING = False
+    #         resolution.handle_event(event)
+    #     # input commands
+    #     resolution.wipe()
+    #     resolution.draw()
 
-        pygame.display.flip()
+    #     pygame.display.flip()
 
-    # START TO DISPLAY MAP
-    DISPLAYSURF.fill(COLOR_BLACK)
+    # # START TO DISPLAY MAP
+    # DISPLAYSURF.fill(COLOR_BLACK)
 
     # create the map and add add textures to it
     game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
@@ -882,7 +891,7 @@ def main():
         gameview.help_screen()
 
     my_entity = None
-    chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
+    chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF, client = client)
     history = Transcript(MAPOFFSET[0]+game.map.width*game.map.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-chat_input_box.rect.y), DISPLAYSURF)
     # transcript = ""
     action_requested = ""
@@ -970,4 +979,5 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    client = Client()
+    main(client)

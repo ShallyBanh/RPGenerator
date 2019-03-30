@@ -541,6 +541,7 @@ def join_game_view():
 
     return
 
+# TODO CREATE NEW GAME VIEW
 def create_new_game_view():
     option_menu.disable()
     option_menu.reset(1)
