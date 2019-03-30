@@ -180,16 +180,17 @@ class GameView:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                     x, y = GAMEVIEW.which_tile(mousepos)
-                    # draw rectangle surrounding the actual box
-                    if game.map.fogOfWar[x][y]:
-                        game.map.fogOfWar[x][y] = False
-                        color = (0,0,255)
-                    else: 
-                        game.map.fogOfWar[x][y] = True
-                        color = (255,255,255)
-                    self.draw_entity_box(x,y,color)
-                    # test if fog of war works in the right location
-                    # self.update_fog()
+                    if x != -1 or y != -1:
+                        # draw rectangle surrounding the actual box
+                        if game.map.fogOfWar[x][y]:
+                            game.map.fogOfWar[x][y] = False
+                            color = (0,0,255)
+                        else: 
+                            game.map.fogOfWar[x][y] = True
+                            color = (255,255,255)
+                        self.draw_entity_box(x,y,color)
+                        # test if fog of war works in the right location
+                        # self.update_fog()
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
@@ -204,7 +205,7 @@ class GameView:
         self.clear_bottom_info()
         self.display_message(display_string, "*")
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
+        chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -257,6 +258,9 @@ class GameView:
     def _y_coordinate(self, surf, tpos):
         return tpos[1]+surf.get_height()+10
 
+    def _input_box_width(self, surf):
+        return game.map.tilesize*game.map.width - surf.get_width() - 30
+
     def _create_entity_help(self, reblit, error=""):
         self.clear_bottom_info()
         buf, tpos = self.display_message("_Create New Entity_ ")
@@ -268,9 +272,9 @@ class GameView:
         surf_type, tpos_type = ptext.draw("Type: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         surf_image, tpos_image = ptext.draw("Image: ", (tpos[0], self._y_coordinate(surf_type, tpos_type)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         if not reblit:
-            input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, 300, 32, DISPLAYSURF)
-            input_type = InputBox(self._x_coordinate(surf_type, tpos_type), tpos_type[1]-5, 300, 32, DISPLAYSURF)
-            input_image_filename = InputBox(self._x_coordinate(surf_image, tpos_image), tpos_image[1]-5, 300, 32, DISPLAYSURF)
+            input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, self._input_box_width(surf_name), 32, DISPLAYSURF)
+            input_type = InputBox(self._x_coordinate(surf_type, tpos_type), tpos_type[1]-5, self._input_box_width(surf_type), 32, DISPLAYSURF)
+            input_image_filename = InputBox(self._x_coordinate(surf_image, tpos_image), tpos_image[1]-5, self._input_box_width(surf_image), 32, DISPLAYSURF)
         else:
             input_name = None
             input_type = None
@@ -356,8 +360,8 @@ class GameView:
 
         surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
-        input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, 300, 32, DISPLAYSURF)
-        input_value = InputBox(self._x_coordinate(surf_value, tpos_value), tpos_value[1]-5, 300, 32, DISPLAYSURF)
+        input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, self._input_box_width(surf_name), 32, DISPLAYSURF)
+        input_value = InputBox(self._x_coordinate(surf_value, tpos_value), tpos_value[1]-5, self._input_box_width(surf_value), 32, DISPLAYSURF)
 
         RUNNING = True
         saved_entity = None
@@ -479,7 +483,7 @@ class GameView:
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
+        chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 300, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
