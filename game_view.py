@@ -827,7 +827,7 @@ if platform.system() == "Darwin":
     FONTSIZE = int(30*int(res_val)/RESOLUTION_SCALING)
 elif platform.system() == "Windows":
     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
-FONTTYPE = pygame.font.Font(None, FONTSIZE)
+FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
 DISPLAYSURF = pygame.display.set_mode((1300,750))
 OLDSURF = None
 MAPOFFSET = (200,0)
