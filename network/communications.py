@@ -92,7 +92,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
     #     asyncore.dispatcher_with_send.__init__(self)
     #     self.conn = conn
     #     self.client_id = None
-    conn = None
+    my_id = None
     # use self.client_id to clean it up a bunch
     def handle_read(self):
         recievedData = self.recv(BUFFERSIZE)
@@ -112,8 +112,8 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 username = command_body[1]
                 print("client_dict: {}".format(client_dict))
                 print("self: {}".format(self))
-                print("self.conn: {}".format(self.conn))
                 self.conn = rev_client_dict[client_id]
+                print("self.conn: {}".format(self.conn))                
                 print("self.conn: {}".format(self.conn))
                 client_dict[rev_client_dict[client_id]][1] = username
                 print("registered username")
@@ -130,6 +130,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     game.uniqueID = game_id
                     rooms[game_id] = [self, Game(), [client]]
                     print("rooms is now {}".format(rooms))
+                    client_dict[rev_client_dict[client]][2] = game_id
                 else:
                     print("failed to start game")
             elif command_type == "join_game":
@@ -250,7 +251,13 @@ class DataReadServer(asyncore.dispatcher_with_send):
     def broadcast(self, message, room):
         print("broadcasting")
         for client in rooms[room][2]:
-            rev_client_dict[client].send(pickle.dumps(['chat', message]))
+            print("trying to send to client_id: {}".format(client))            
+            connection = rev_client_dict[client]
+            if connection != self.conn:
+                print("sending to someone else")
+                connection.send(pickle.dumps(['chat', message]))
+            else:
+                print("not sending back to self")
 
 
 def main():
