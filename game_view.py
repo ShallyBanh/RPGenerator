@@ -859,15 +859,6 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
 def main(client, new_game):
     global game
     game = new_game
-    # create the map and add add textures to it
-    game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
-    game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
-    
-    #example fog
-    game.map.fogOfWar[8][15] = False
-    game.map.fogOfWar[8][16] = False
-    game.map.fogOfWar[9][15] = False
-    game.map.fogOfWar[9][16] = False
 
     GAMEVIEW.blit_entire_map()
 
@@ -1002,6 +993,16 @@ if __name__ == "__main__":
     new_game.name = "Test Suite"
     new_game.uniqueID = 1
     new_game.map = Map(tilesize = 50, height = 10, width = 18)
+    
+    # create the map and add add textures to it
+    new_game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
+    new_game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
+    
+    #example fog
+    new_game.map.fogOfWar[8][15] = False
+    new_game.map.fogOfWar[8][16] = False
+    new_game.map.fogOfWar[9][15] = False
+    new_game.map.fogOfWar[9][16] = False
 
     main(client = client, new_game = new_game)
 
