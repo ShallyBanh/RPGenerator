@@ -13,6 +13,7 @@ from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
+import jsonpickle
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -823,10 +824,17 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, gameId, gmOrPlayer, validator):
+def main(client, gameObj, gmOrPlayer, validatorObj = None):
     global ruleenactor
-    validator = validator
-    ruleenactor.parse_validator(validator)
+    global game
+    print("game object")
+    print(gameObj)
+    if validatorObj is not None:
+        ruleenactor.parse_validator(validatorObj)
+        gameObj.set_ruleset_copy(ruleenactor)
+        client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+    else:
+        ruleenactor = gameObj.get_ruleset_copy()
 
     global GM_STATUS
     if gmOrPlayer == "PLAYER":
@@ -869,7 +877,7 @@ def main(client, gameId, gmOrPlayer, validator):
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
-    ptext.draw("GameId: {}".format(gameId), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
 
     # create the map and add add textures to it
     game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")

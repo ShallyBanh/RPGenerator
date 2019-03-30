@@ -19,6 +19,7 @@ from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
+from game_engine.map import Map
 import game_view as gameView
 import jsonpickle
 
@@ -742,7 +743,7 @@ def create_new_game_view():
                         break
                     #to pass to the game_view once that is integrated
                     rulesetObject = [item for item in allRulesets if item[0] == inputList[1]][0][1]
-                    create_room(ruleset_name = inputList[1], ruleset_object = jsonpickle.decode(rulesetObject))
+                    create_room(inputList[0], jsonpickle.decode(rulesetObject), inputList[2], inputList[3])
                     return
                 elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,470):
                     currentlySelectedInputIdx = 3
@@ -836,22 +837,33 @@ def enter_room(room_number):
             print("should be true")
             isGM = True
     if isGM:
-        gameView.main(client, room_number, "GM")
+        gameObj = client.get_game_from_room_number(int(room_number))[0]
+        print(gameObj)
+        gameView.main(client, jsonpickle.decode(gameObj), "GM")
     else: 
-        gameView.main(client, room_number, "PLAYER")
+        gameObj = client.get_game_from_room_number(int(room_number))[0]
+        print(gameObj)
+        gameView.main(client, jsonpickle.decode(gameObj), "PLAYER")
     print(room_number)
     return
 
-def create_room(ruleset_name, ruleset_object):
+def create_room(gameName, ruleset_object, width, height):
     #fake out game name for now until gui is done
     #also TO-DO PASS VALIDATOR OBJECT TO GAME OBJECT
-    #client.create_game(Game(), "testgamename", currentUsername)
-    gameId = client.get_game_id(currentUsername)[0]
+    gameIdTuple = client.get_game_id(currentUsername)
+    if gameIdTuple[0] is None:
+        gameId = 0
+    else:
+        gameId = gameIdTuple[0]
+    
+    print(gameId)
+    game = Game()
+    game.name = gameName
+    game.uniqueID = gameId + 1
+    game.map = Map(tilesize=50, width=int(width), height=int(height))
     pygame.display.set_mode((1300, 750))
-    gameView.main(client, gameId, "GM", ruleset_object)
-    #CALL GAME VIEW HERE TO START THE GAME
-    print(ruleset_name)
-    print(ruleset_object)
+    client.create_game(jsonpickle.encode(game), gameName, currentUsername)
+    gameView.main(client, game, "GM", ruleset_object)
     return
 
 # -----------------------------------------------------------------------------

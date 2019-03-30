@@ -172,6 +172,21 @@ class Client():
         data = json.loads(response.text)
         return data
 
+    def get_game_from_room_number(self, gameId):
+        print("[client] [get_game_from_room_number] attempting to get a game blob from the game id")  
+        payload = {'gameId': gameId}      
+        response = requests.post("{}/get_game_from_room_number".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        return data
+
+    def update_game(self, gameId, gameObj):
+        print("[client] [update_game] attempting to update a game with gameId= {}".format(gameId))        
+        payload = {'gameId': gameId, 'gameObj': gameObj}
+        response = requests.post("{}/update_game".format(self.URL), params=payload)
+        print("[client] [update_game] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        return 0 if (response.status_code == 200) else -1
+    
+
     # def create_game(self):
     #     """ WARNING: for test purposes only, @TODO remove """
     #     game = Game()

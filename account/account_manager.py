@@ -225,14 +225,14 @@ class AccountManager:
         self.database.query("SELECT MAX(id) from Game;", [])
         gameId = self.database.cur.fetchone()
         if gameId[0] is not None:
-            self.database.query("INSERT INTO GameHistory(game_name, role, username, game_id, time) VALUES(?, ?, ?, ?, now());", (gameName, "GM", username, gameId[0],))
+            self.database.query("INSERT INTO GameHistory(game_name, role, username, game_id, time) VALUES(?, ?, ?, ?, datetime('now'));", (gameName, "GM", username, gameId[0],))
         else:
             return -1
         return 0
     
     def get_game_id(self, username):
         """Fetches latest game id"""
-        self.database.query("SELECT MAX(game_id) FROM GameHistory WHERE username = ?", (username, ))
+        self.database.query("SELECT MAX(id) FROM Game;", [])
         row = self.database.cur.fetchone()
         return row
     
@@ -241,3 +241,14 @@ class AccountManager:
         self.database.query("SELECT distinct(game_id), username FROM GameHistory;", [])
         rows = self.database.cur.fetchall()
         return rows
+    
+    def get_game_from_room_number(self, gameId):
+        """Fetches game from gameId"""
+        self.database.query("SELECT game FROM Game where id = ?;", (gameId, ))
+        row = self.database.cur.fetchone()
+        return row
+
+    def update_game(self, gameId, gameObj):
+        """Updates an existing game"""
+        self.database.query("UPDATE Game SET game = ? WHERE id = ?;", (gameObj, int(gameId)))
+        return 0
