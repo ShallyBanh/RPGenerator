@@ -153,11 +153,39 @@ class Client():
 
     def create_game(self, gameBlob, gameName, username):
         """ WARNING: for test purposes only, @TODO remove """
-        print("[client] [create_game] attempting to create a game with gameBlob = {}".format(gameBlob))        
-        payload = {'gameBlob': gameBlob}
+        print("[client] [create_game] attempting to create a game with gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, username))        
+        payload = {'gameBlob': gameBlob, 'gameName': gameName, 'username': username}
         response = requests.post("{}/create_game".format(self.URL), params=payload)
         print("[client] [create_game] response was {}/{}/{}".format(response, response.status_code, response.text))      
         return 0 if (response.status_code == 200) else -1
+    
+    def get_game_id(self, username):
+        print("[client] [get_game_id] attempting to load game history from user with username {}".format(username))        
+        payload = {'username': username}
+        response = requests.post("{}/get_game_id".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        return data
+    
+    def get_list_of_games_and_their_gms(self):
+        print("[client] [get_list_of_games_and_their_gms] attempting to get list of games and their gms")        
+        response = requests.post("{}/get_list_of_games_and_their_gms".format(self.URL), params={})
+        data = json.loads(response.text)
+        return data
+
+    def get_game_from_room_number(self, gameId):
+        print("[client] [get_game_from_room_number] attempting to get a game blob from the game id")  
+        payload = {'gameId': gameId}      
+        response = requests.post("{}/get_game_from_room_number".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        return data
+
+    def update_game(self, gameId, gameObj):
+        print("[client] [update_game] attempting to update a game with gameId= {}".format(gameId))        
+        payload = {'gameId': gameId, 'gameObj': gameObj}
+        response = requests.post("{}/update_game".format(self.URL), params=payload)
+        print("[client] [update_game] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        return 0 if (response.status_code == 200) else -1
+    
 
     # def create_game(self):
     #     """ WARNING: for test purposes only, @TODO remove """

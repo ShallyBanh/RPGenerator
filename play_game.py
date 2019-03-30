@@ -6,6 +6,11 @@ from pygame.locals import *
 from random import randrange
 import os
 import pygame_textinput
+import threading
+import time
+import select
+import socket
+import pickle
 from client import Client
 import ptext
 sys.path.append('rule_interpreter/')
@@ -13,7 +18,10 @@ sys.path.append('rule_interpreter/models')
 from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
-
+from game_engine.game import Game
+from game_engine.map import Map
+import game_view as gameView
+import jsonpickle
 
 
 # Import pygameMenu
@@ -34,6 +42,15 @@ FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
+BUFFERSIZE = 4096
+client_id = None
+current_game = None
+
+# Game Class
+game = Game()
+game.name = "Test Suite"
+game.uniqueID = 1
+game.map = Map(tilesize = 50, height = 10, width = 18)                    
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -41,12 +58,163 @@ pygame.init()
 client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 currentUsername = ""
+async_transcript = ""
 
 # Create pygame screen and objects
 surface = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('RPGenerator')
 clock = pygame.time.Clock()
 dt = 1 / FPS
+
+# Asynchronous communication setup
+general_async_port = 5000
+voice_async_port = 9495
+serverAddr = '0.0.0.0'
+if len(sys.argv) == 2:
+    serverAddr = sys.argv[1]
+general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+general_async_connection.connect((serverAddr, general_async_port))
+
+# voice_async_connection = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+# voice_async_connection.bind((serverAddr, voice_async_port))
+
+# -----------------------------------------------------------------------------
+# ASYNCHRONOUS COMMUNICATION FUNCTIONS
+def receive_bundle(connection, buffersize):
+    data = []
+    while True:
+        packet = connection.recv(buffersize)
+        if len(packet) < buffersize: break
+        data.append(packet)
+    # data_arr = pickle.loads(b"".join(data))
+    # print (data_arr)
+    print ("received the bundle {}".format(data))
+    return b"".join(data)
+
+def double_pickle(data):
+    print("jsonpickling")
+    jsonpickled = jsonpickle.encode(data)
+    print("pickling")
+    pickled = pickle.dumps(jsonpickled)
+    return pickled
+
+def double_unpickle(data):
+    print("unpickling")
+    unpickled = pickle.loads(data)
+    print("jsonunpickling")
+    restored = jsonpickle.decode(unpickled)
+    return restored
+
+def async_send(async_message):
+    global client_id
+    global voice_async_port
+    global serverAddr
+    print("going to send async message {}".format(async_message))
+    general_async_connection.sendall(double_pickle(async_message))
+    print("sent async message")
+    # register_command = ['register_client']
+
+def async_command_loop():
+    global client_id
+    global async_transcript
+    while True:
+    # ge = ['position update', playerid, cc.x, cc.y]
+        command = input("async command > ")
+        if command:
+            command = command.split()
+            # print("the client id is {}".format(client_id))
+            # async_message = ['chat', "client {} sending".format(client_id)]
+            async_message = [command[0], " ".join(command[1:])]
+            if command[0] == 'start_game':
+                game.set_GM(client.user)
+                game.set_uniqueID(command[1])
+                game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
+                async_message = [command[0], [game]]
+            elif command[0] == 'leave_game':
+                print("trying to leave game")
+                async_message[1] = client_id
+            elif command[0] == 'chat':
+                async_transcript += "\n" + client.user.get_username() + ": " + " ".join(command[1:])
+                async_message = [command[0], [client_id, client.user.get_username() + ": " + " ".join(command[1:])]]
+                # async_transcript += "{} has left the game".format(client.user.get_username) + "\n"
+            async_send(async_message) 
+            # async_voice = ['voice', "this should be voice data from client {}".format(client_id)]
+            # print("-trying to send voice data-")
+            # voice_async_connection.sendto(double_pickle(async_voice), (serverAddr, voice_async_port))
+            # time.sleep(2)
+
+def async_receive():
+    global async_transcript
+    global client_id
+    global current_game    
+    while True:
+        ins, outs, ex = select.select([general_async_connection], [], [], 0)
+        # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
+        for inm in ins: 
+            # how do you know which one was chosen? if equal probably
+            print("selected was: {}".format(inm))
+            if inm == general_async_connection:
+                print("equal to general connection")
+                # async_message = double_unpickle(receive_bundle(inm, BUFFERSIZE))
+                async_message = double_unpickle(inm.recv(BUFFERSIZE))
+                print("the async message is {}".format(async_message))
+                message_type = async_message[0]
+                message_content = async_message[1]
+            # elif inm == voice_async_connection:
+            #     print("equal to voice connection")
+            #     async_message = double_unpickle(inm.recvfrom(BUFFERSIZE))
+            else:
+                print("connection equality check did not work")
+                continue
+            
+            print("recieved something via select!")
+            if message_type == 'assign_id':
+                print("assigning client_id")
+                client_id = message_content
+                print("client_id is now {}".format(client_id))
+                # inm.send(double_pickle(['register_username', client.user.get_username]))
+            elif message_type == 'id update':
+                print("was id update")
+            elif message_type == 'start_game_accept':
+                print("game successfully started, update your game object and loop")
+            elif message_type == 'start_game_reject':
+                print("failed to start game")
+            elif message_type == "join_request":
+                answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                if answer.lower() in ["y", "yes"]:
+                    async_send(['accept_join', message_content])
+                else:
+                    async_send(['reject_join', message_content])
+            elif message_type == 'join_accept':
+                print("join request accepted!")
+                print("@TODO update game object")
+                print("game is currently {}".format(game.get_name()))
+            elif message_type == 'join_invalid':
+                print("there is no active game with that id")
+            elif message_type == 'join_reject':
+                # get the game
+                print("join request rejected")
+            elif message_type == 'removed':
+                print("you have been removed @TODO")
+            elif message_type == 'update_game':
+                print("updating game")
+            elif message_type == 'action_reject':
+                print("action rejected, restore previous/apply sent version")
+            elif message_type == 'chat':
+                async_transcript += "\n" + message_content
+                print("chat message received! transcript is now: \n{}".format(async_transcript))
+                # playerid = message_content
+                # print(playerid)
+            # elif message_type
+            elif message_type == 'voice':
+                print("got a voice message!\t{}".format(message_content))
+            if message_type == 'player locations':
+                print("was player locations")
+                # async_message.pop(0)
+                # minions = []
+                # for minion in async_message:
+                #     if minion[0] != playerid:
+                #         minions.append(Minion(minion[1], minion[2], minion[0]))
 
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
@@ -56,7 +224,7 @@ def account_login_view():
     
     :return: None
     """
-
+    
     # Reset main menu and disable
     # You also can set another menu, like a 'pause menu', or just use the same
     # main_menu as the menu that will check all your input.
@@ -114,7 +282,9 @@ def account_login_view():
                         break
                     success = login(username = username.get_text(), password = password.get_text())
                     if success == 0:
+                        global client_id
                         currentUsername = username.get_text()
+                        async_send(['register_username', [client_id, currentUsername]])
                         option_menu.enable()
                         option_menu.mainloop(playevents)
                         return
@@ -255,7 +425,6 @@ def forgot_password_view():
     email = pygame_textinput.TextInput()
     login_view = pygame.image.load("images/menu/forgot-password.png")
     surface.fill(COLOR_BACKGROUND)
-    
     while True:
         # Clock tick
         clock.tick(60)
@@ -550,6 +719,10 @@ def create_new_game_view():
     login_view = pygame.image.load("images/menu/create-new-game.png")
     surface.fill(COLOR_BACKGROUND)
     error_surface = False
+    #game name, ruleset name, width string, height string
+    inputList = ["", "", "", ""]
+    error_str = ""
+    currentlySelectedInputIdx = -1
     
     while True:
         # Clock tick
@@ -566,18 +739,59 @@ def create_new_game_view():
                     option_menu.enable()
                     option_menu.mainloop(playevents)
                     return
+                if e.key == pygame.K_DELETE:
+                    surface.fill(COLOR_BACKGROUND)
+                    surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+                    inputList[currentlySelectedInputIdx] = inputList[currentlySelectedInputIdx] [:len(inputList[currentlySelectedInputIdx])-1]
+            
+                elif e.key == pygame.K_BACKSPACE:
+                    surface.fill(COLOR_BACKGROUND)
+                    surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+                    inputList[currentlySelectedInputIdx] = inputList[currentlySelectedInputIdx] [:len(inputList[currentlySelectedInputIdx])-1]
+
+                else:
+                    # If no special key is pressed, add unicode of key to input_string
+                    inputList[currentlySelectedInputIdx] += e.unicode
             elif e.type == MOUSEBUTTONDOWN:
+                surface.fill(COLOR_BACKGROUND)
+                surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+                error_surface = False
                 mouse_pos = pygame.mouse.get_pos()
                 print(mouse_pos)
-                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,450):
+                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(480,550):
                     # recover ruleset_name
-                    if len(ruleset_name.get_text()) < 1: 
+                    if inputList[0] == "" or inputList[1] == "" or inputList[2] == "" or inputList[3] == "":
+                        error_surface = True
+                        error_str = "All fields need to be filled out"
                         break
-                    # if not ruleset_name.get_text().isdigit(): # CHECK IF EXISTS
-                    #     error_surface = True
-                    #     break
-                    create_room(ruleset_name = ruleset_name.get_text())
+                    if inputList[2].isdigit() == False or inputList[3].isdigit() == False:
+                        error_surface = True
+                        error_str = "Width and Height both need to be numbers"
+                        break
+                    if int(inputList[2]) < 2 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
+                        error_surface = True
+                        error_str = "Min width and height are 2. Max height is 10 and max width is 18"
+                        break
+
+                    allRulesets = client.load_existing_rulesets(currentUsername)
+                    rulesetNames = [ruleset[0] for ruleset in allRulesets]
+                    if inputList[1] not in rulesetNames : # CHECK IF EXISTS
+                        error_surface = True
+                        error_str = "Ruleset does not exist"
+                        break
+                    #to pass to the game_view once that is integrated
+                    rulesetObject = [item for item in allRulesets if item[0] == inputList[1]][0][1]
+                    create_room(inputList[0], jsonpickle.decode(rulesetObject), inputList[2], inputList[3])
                     return
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,470):
+                    currentlySelectedInputIdx = 3
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(320,390):
+                    currentlySelectedInputIdx = 2
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(230,300):
+                    currentlySelectedInputIdx = 1
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(140,210):
+                    currentlySelectedInputIdx = 0
+
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
                     option_menu.mainloop(playevents)
@@ -588,12 +802,23 @@ def create_new_game_view():
         # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if error_surface:
-            ptext.draw("Ruleset name does not exist", (200, 300), sysfontname="arial", color=COLOR_RED, fontsize=35, width = 300)
-            error_surface = False
-        if len(ruleset_name.get_text()) >= 1:
-            surface.blit(ruleset_name.get_surface(), (250,170))  
+            ptext.draw(error_str, (100, 550), sysfontname="arial", color=COLOR_RED, fontsize=35)
+        if inputList[0] == "":
+            surface.blit(MY_FONT.render('Game Name', 1, COLOR_BLACK), (260,160))  
         else:
-            surface.blit(MY_FONT.render('Ruleset', 1, COLOR_BLACK), (250,160))  
+            ptext.draw(inputList[0], (260, 160), sysfontname="arial", color="black", fontsize=35)
+        if inputList[1] == "":
+            surface.blit(MY_FONT.render('Rule Name', 1, COLOR_BLACK), (260,250))  
+        else:
+            ptext.draw(inputList[1], (260, 250), sysfontname="arial", color="black", fontsize=35)
+        if inputList[2] == "":
+            surface.blit(MY_FONT.render('Width', 1, COLOR_BLACK), (260,340))  
+        else:
+            ptext.draw(inputList[2], (260, 340), sysfontname="arial", color="black", fontsize=35)
+        if inputList[3] == "":
+            surface.blit(MY_FONT.render('Height', 1, COLOR_BLACK), (260,420))  
+        else:
+            ptext.draw(inputList[3], (260, 420), sysfontname="arial", color="black", fontsize=35)
 
         pygame.display.flip()
 
@@ -605,8 +830,12 @@ def ruleset_view():
     return
 
 def previous_games_view():
-    GameHistoryView(currentUsername, client).main()
+    values = GameHistoryView(currentUsername, client).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
+    print(values)
+    if values is not None:
+        #values[0] = game room number, values[1] = game status i.e gm or player
+        enter_room(values[0])
     return
 
 # -----------------------------------------------------------------------------
@@ -634,11 +863,45 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
+    #TALK TO THOMAS ABOUT CALL TO-DO
+    #async_send(['join_game', [room_number]])
+    pygame.display.set_mode((1300, 750))
+    listOfGames = client.get_list_of_games_and_their_gms()
+    isGM = False
+    for games in listOfGames:
+        print(games[0])
+        print(games[1])
+        if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
+            print("should be true")
+            isGM = True
+    if isGM:
+        gameObj = client.get_game_from_room_number(int(room_number))[0]
+        print(gameObj)
+        gameView.main(client, jsonpickle.decode(gameObj), "GM")
+    else: 
+        gameObj = client.get_game_from_room_number(int(room_number))[0]
+        print(gameObj)
+        gameView.main(client, jsonpickle.decode(gameObj), "PLAYER")
     print(room_number)
     return
 
-def create_room(ruleset_name):
-    print(ruleset_name)
+def create_room(gameName, ruleset_object, width, height):
+    #fake out game name for now until gui is done
+    #also TO-DO PASS VALIDATOR OBJECT TO GAME OBJECT
+    gameIdTuple = client.get_game_id(currentUsername)
+    if gameIdTuple[0] is None:
+        gameId = 0
+    else:
+        gameId = gameIdTuple[0]
+    
+    print(gameId)
+    game = Game()
+    game.name = gameName
+    game.uniqueID = gameId + 1
+    game.map = Map(tilesize=50, width=int(width), height=int(height))
+    pygame.display.set_mode((1300, 750))
+    client.create_game(jsonpickle.encode(game), gameName, currentUsername)
+    gameView.main(client, game, "GM", ruleset_object)
     return
 
 # -----------------------------------------------------------------------------
@@ -657,7 +920,6 @@ def main_background():
     :return: None
     """
     surface.fill(COLOR_BACKGROUND)
-
 
 # -----------------------------------------------------------------------------
 # PLAY MENU
@@ -758,6 +1020,17 @@ main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
+    # start asynchronous communication threads
+    async_receive_thread = threading.Thread(target=async_receive)
+    async_receive_thread.daemon = True
+    async_receive_thread.start()
+
+    async_send_thread = threading.Thread(target=async_command_loop)
+    async_send_thread.daemon = True
+    async_send_thread.start()
+
+
+
     while True:
 
         # Tick
@@ -769,7 +1042,7 @@ if __name__ == "__main__":
             if event.type == QUIT:
                 exit()
 
-        # Main menu
+        # Main menuw
         main_menu.mainloop(events)
 
         # Flip surface

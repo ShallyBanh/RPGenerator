@@ -16,6 +16,7 @@ class SyntaxParser(object):
         self._entityTarget = ""
         self._regexForDice = "[0-9]*d[0-9]+"
         self._variables_list = []
+        self._validator = Validator()
     
     def is_brackets_balanced(self, expression):
         """
@@ -236,7 +237,7 @@ class SyntaxParser(object):
             if actions[2].strip() != "to":
                 return False
 
-            entityNames = [entity.get_name() for entity in Validator().get_entities()]
+            entityNames = [entity.get_name() for entity in self._validator.get_entities()]
             if actions[3].strip() not in self._variables_list and actions[3].strip() not in entityNames and actions[3].strip() != "target":
                 self._variables_list.append(actions[3].strip())
 
@@ -442,7 +443,7 @@ class SyntaxParser(object):
         if entity == "entity":
             return True
 
-        for ob in Validator().get_entities():
+        for ob in self._validator.get_entities():
             if ob.get_type() == entity or ob.get_name() == entity:
                 return True
         
@@ -501,14 +502,14 @@ class SyntaxParser(object):
         """
         #generic target so look through all entity statuses to find if we have a matching status
         if target == "target":
-            for obj in Validator().get_entities(): 
+            for obj in self._validator.get_entities(): 
                 for stat in obj.get_current_statuses():
                     stat = stat.lower()
                     if stat == status:
                         return True
         else:
             entity = None
-            for ob in Validator().get_entities():
+            for ob in self._validator.get_entities():
                 if ob.get_type() == obj or ob.get_name() == obj:
                     entity = ob
                     break
@@ -532,7 +533,7 @@ class SyntaxParser(object):
         if attr == "statuses":
             return True
 
-        for ob in Validator().get_entities():        
+        for ob in self._validator.get_entities():        
             #try to find the matching attribute
             for attribute in ob.get_attributes():
                 if attribute.get_attribute_name() == attr:
@@ -554,7 +555,7 @@ class SyntaxParser(object):
             if the object is valid
         """
         entity = None
-        for ob in Validator().get_entities():
+        for ob in self._validator.get_entities():
             if ob.get_type() == obj or ob.get_name() == obj:
                 entity = ob
                 break
@@ -562,10 +563,10 @@ class SyntaxParser(object):
         if entity is None:
             #no matching entity
             return False
-        
+
         #try to find the matching attribute
         for attribute in entity.get_attributes():
-            if attribute.get_attribute_name() == attr:
+            if str(attribute.get_attribute_name()) == str(attr):
                 return True
         
         #try to find the matching action
@@ -701,13 +702,14 @@ class SyntaxParser(object):
         return connectiveIndicies
             
     #the heart of the file
-    def is_valid_rule(self, content):
+    def is_valid_rule(self, content, validator = Validator()):
         """
         Checks if a rule entered by the user is a valid rule. 
 
         Returns:
             Bool - true if the rule is true and false otherwise
         """
+        self._validator = validator
         content = content.lower()
         colon = content.find(":")
 

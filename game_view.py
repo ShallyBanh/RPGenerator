@@ -13,6 +13,7 @@ from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
+import jsonpickle
 from rule_interpreter.models.point import Point
 
 # sources for examples:
@@ -790,28 +791,44 @@ class Transcript:
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
 
 # ------------------------------------------------------------------------------------------------------------
-####### Rule Validation TEST #######
-ruleenactor = RuleEnactor()
-validator = _Validator()
-isTemplate = False
-hp_time = Attribute("HP", "10")    
-ac_time = Attribute("AC", 11)    
-template = Entity("", "entity", 1, 1, isTemplate, None)
-template.add_attribute(hp_time)
-template.add_attribute(ac_time)
-        
-attack_rule = "target entity:\nreduce target.HP by 1d8\n"
-attack_action = Action("Attack", attack_rule)
-fireball_rule = "target point:\nif all entity within(3, 3) of target then reduce entity.HP by 6d6\n"
-fireball_action = Action("Fireball", fireball_rule)
-template.add_action(attack_action)
-template.add_action(fireball_action)
-        
-validator.add_entity(template)
-ruleenactor.parse_validator(validator)
+# GLOBAL VAR
+MAPOFFSET = (200,0)
+OLDSURF = None
+gameview = GameView()
 
-entity = ruleenactor.add_new_entity("entity", "Andrew", 3, 7)
-entity.set_image_filename("default-image.png")
+IMAGES = gameview.load_pictures()
+
+# Game Class
+game = Game()
+game.name = "Test Suite"
+game.uniqueID = 1
+game.map = Map(tilesize = 50, height = 10, width = 18)
+# Entities used for testing
+# game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
+
+ruleenactor = RuleEnactor()
+# Rule Validation TEST
+# ruleenactor = RuleEnactor()
+# validator = _Validator()
+# isTemplate = False
+# hp_time = Attribute("HP", "10")    
+# ac_time = Attribute("AC", 11)    
+# template = Entity("", "entity", 1, 1, isTemplate, None)
+# template.add_attribute(hp_time)
+# template.add_attribute(ac_time)
+        
+# attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+# attack_action = Action("Attack", attack_rule)
+# fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+# fireball_action = Action("Fireball", fireball_rule)
+# template.add_action(attack_action)
+# template.add_action(fireball_action)
+        
+# validator.add_entity(template)
+# ruleenactor.parse_validator(validator)
+
+# entity = ruleenactor.add_new_entity("entity", "Andrew", 3, 7)
+# entity.set_image_filename("default-image.png")
 ####### Rule Validation TEST END #######
 
 # GLOBAL VAR
@@ -857,11 +874,93 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, new_game):
+def main(client, gameObj, gmOrPlayer, validatorObj = None):
+    global ruleenactor
     global game
-    game = new_game
 
+    game = gameObj
     GAMEVIEW.blit_entire_map()
+    if validatorObj is not None:
+        ruleenactor.parse_validator(validatorObj)
+        gameObj.set_ruleset_copy(ruleenactor)
+        client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+    else:
+        ruleenactor = gameObj.get_ruleset_copy()
+
+    global GM_STATUS
+    if gmOrPlayer == "PLAYER":
+        GM_STATUS = False
+    # FIX RESOLUTION 
+    # surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    # resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
+    # resolution.text = str(pyautogui.size()[1])
+
+    # RUNNING = True
+    # while RUNNING:
+    #     for event in pygame.event.get():
+    #         if event.type == QUIT:
+    #             pygame.quit()
+    #             sys.exit()
+    #         elif event.type == KEYDOWN:   
+    #             if event.key == K_RETURN:
+    #                 # HANDLE SHIT HERE
+    #                 if len(resolution.text)>0:
+    #                     try:
+    #                         FONTSIZE = int(30*int(resolution.text)/RESOLUTION_SCALING)
+    #                     except:
+    #                         FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     RUNNING = False
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                 else:
+    #                     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                     RUNNING = False
+    #         resolution.handle_event(event)
+    #     # input commands
+    #     resolution.wipe()
+    #     resolution.draw()
+
+    #     pygame.display.flip()
+
+    # # START TO DISPLAY MAP
+    DISPLAYSURF.fill(COLOR_BLACK)
+    ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+
+    # # create the map and add add textures to it
+    # game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
+    # game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
+    
+    # #example fog
+    # game.map.fogOfWar[8][15] = False
+    # game.map.fogOfWar[8][16] = False
+    # game.map.fogOfWar[9][15] = False
+    # game.map.fogOfWar[9][16] = False
+
+    # create the entire background
+    
+    for rw in range(game.map.height):
+        for cl in range(game.map.width):
+            gameview.blit_default(rw,cl)
+            
+    # put all the textures on the map
+    for key, texture in game.map.textures.items():
+        gameview.blit_texture(texture)
+
+    fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
+    if not GM_STATUS:
+        for rw in range(game.map.height):
+            for cl in range(game.map.width):
+                if not game.map.fogOfWar[rw][cl]:
+                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
+
+    # put all the entities on the map
+    # for entity in game.entities:
+    #     entity_image = pygame.transform.scale(IMAGES[entity.name], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+    #     DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
 
     if GM_STATUS:
         GAMEVIEW.GM_help_screen()
@@ -986,26 +1085,26 @@ def main(client, new_game):
         pygame.display.flip()
 
 
-if __name__ == "__main__":
-    client = Client()
+# if __name__ == "__main__":
+#     client = Client()
 
-    # Game Class
-    new_game = Game()
-    new_game.name = "Test Suite"
-    new_game.uniqueID = 1
-    new_game.map = Map(tilesize = 50, height = 10, width = 18)
+#     # Game Class
+#     new_game = Game()
+#     new_game.name = "Test Suite"
+#     new_game.uniqueID = 1
+#     new_game.map = Map(tilesize = 50, height = 10, width = 18)
     
-    # create the map and add add textures to it
-    new_game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
-    new_game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
+#     # create the map and add add textures to it
+#     new_game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
+#     new_game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
     
-    #example fog
-    new_game.map.fogOfWar[8][15] = False
-    new_game.map.fogOfWar[8][16] = False
-    new_game.map.fogOfWar[9][15] = False
-    new_game.map.fogOfWar[9][16] = False
+#     #example fog
+#     new_game.map.fogOfWar[8][15] = False
+#     new_game.map.fogOfWar[8][16] = False
+#     new_game.map.fogOfWar[9][15] = False
+#     new_game.map.fogOfWar[9][16] = False
 
-    main(client = client, new_game = new_game)
+#     main(client = client, new_game = new_game)
 
 
 

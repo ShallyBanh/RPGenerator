@@ -3,12 +3,14 @@ import sys
 import time
 from flask import Flask, request, jsonify, Response
 import status
+import threading
 
 from account.account_manager import AccountManager
 import configparser
 from configurator import Configurator
 import network.email_sender
 from cryptography.fernet import Fernet
+import network.communications as communication 
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
@@ -231,6 +233,46 @@ def load_game_history():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/get_list_of_games_and_their_gms", methods=['POST'])
+def get_list_of_games_and_their_gms():
+    response = server.account_manager.get_list_of_games_and_their_gms()
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_list_of_games_and_their_gms] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/get_game_from_room_number", methods=['POST'])
+def get_game_from_room_number():
+    gameId = request.args.get("gameId")
+    if gameId is None:
+        return Response(status=400)
+    response = server.account_manager.get_game_from_room_number(gameId)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_game_from_room_number] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/get_game_id", methods=['POST'])
+def get_game_id():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [get_game_id] got username = {}".format(username))
+    response = server.account_manager.get_game_id(username)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_game_id] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/create_game", methods=['POST'])
 def create_game():
     gameBlob = request.args.get("gameBlob")
@@ -240,9 +282,24 @@ def create_game():
         return Response(status=400)
     print("[server] [create_game] got gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, userName))
     response = server.account_manager.create_game(gameBlob, gameName, userName)
-
     print("[server] [create_game] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
+
+@app.route("/update_game", methods=['POST'])
+def update_game():
+    gameId = request.args.get("gameId")
+    gameObj = request.args.get("gameObj")
+    if gameId is None or gameObj is None:
+        return Response(status=400)
+    print("[server] [update_game] got gameId, gameObj= {}, {}".format(gameId, gameObj))
+    #start encryption
+    response = server.account_manager.update_game(gameId, gameObj)
+
+    print("[server] [update_game] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
+async_receive_thread = threading.Thread(target=communication.main)
+async_receive_thread.start()
 app.run(host=IP_ADDRESS, port=PORT, debug=False, use_reloader=False)

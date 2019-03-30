@@ -5,7 +5,7 @@ import pickle
 # sys.path.append('../../account')
 # from database import Database
 import ptext
-
+import pyautogui
 
 class GameHistoryView:
     def __init__(self, username, client):
@@ -32,7 +32,7 @@ class GameHistoryView:
 
         buttonrects = [pygame.Rect((50, 150, 1200, 550))]
         textSizes = [(50, 100)]
-        buttonnames = ["Game Name                               Room code           Status"]
+        buttonnames = ["Game Name                           Room code       Status     Timestamp"]
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -45,7 +45,8 @@ class GameHistoryView:
                     self._playing = False
                     exit()
                 elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                    self._playing = False
+                    pyautogui.alert(text='', title='', button='OK')
+                    #self._playing = False
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clickpos = event.pos
                     x, y = clickpos
@@ -56,13 +57,7 @@ class GameHistoryView:
                         x1 = int(self._gameHistoryPositionList[joinIdx][0])
                         y1 = int(self._gameHistoryPositionList[joinIdx][1])
                         if x in range(x1, x1 + 200) and y in range(y1, y1+60):
-                            return
-                            # rule = self._gameHistoryPositionList[joinIdx][1]
-                            # deserializedRule = pickle.loads(rule)
-                            # Validator().clear_entities()
-                            # Validator().set_entities(deserializedRule.get_entities())
-                            # RulesetCreationEditView().main(self._rulesetList[editIdx][0])
-                            # self.load_ruleset()
+                            return self._gameHistoryList[joinIdx][0], self._gameHistoryList[joinIdx][1]
                             # currentEntityName = entities[moreIdx]
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):
@@ -75,15 +70,18 @@ class GameHistoryView:
             gameHistoryRoomCodeStr = ""
             gameHistoryStatusStr = ""
             gameHistoryNameStr = ""
+            gameHistoryTimestampStr = ""
             for gameIdx in range(len(self._gameHistoryList)):
                 gameHistoryRoomCodeStr += str(self._gameHistoryList[gameIdx][0]) + "\n\n"
                 gameHistoryStatusStr += str(self._gameHistoryList[gameIdx][1]) + "\n\n"
                 gameHistoryNameStr += str(self._gameHistoryList[gameIdx][2]) + "\n\n"
-                screen.blit(self._joinButtonImage,(1000, 200 + gameIdx * 50 + gameIdx*0.17*100))
-                self._gameHistoryPositionList.append((1000, 200 + gameIdx * 50 + gameIdx*0.17*100))
+                gameHistoryTimestampStr += str(self._gameHistoryList[gameIdx][3].split(' ')[0]) + "\n\n"
+                screen.blit(self._joinButtonImage,(1050, 200 + gameIdx * 50 + gameIdx*0.17*100))
+                self._gameHistoryPositionList.append((1050, 200 + gameIdx * 50 + gameIdx*0.17*100))
             ptext.draw(gameHistoryNameStr, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(gameHistoryRoomCodeStr, (530, 200), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(gameHistoryStatusStr, (790, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryRoomCodeStr, (500, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryStatusStr, (700, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryTimestampStr, (850, 200), fontname="Boogaloo", color="white", fontsize=30)
             
             screen.blit(*titleargs)
             pygame.display.flip()
