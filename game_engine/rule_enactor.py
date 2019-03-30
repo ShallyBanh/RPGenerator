@@ -732,12 +732,17 @@ class RuleEnactor:
 	
 	def roll_dice(self, dice_string):
 		roll_data = dice_string.split('d')
-		if roll_data[1] == '1' or roll_data[1] == '0':
+		if roll_data[1] == '0':
 			return int(roll_data[1])
 		else:
 			if roll_data[0] == '':
 				return random.randint(1,int(roll_data[1]))
-			elif roll_data[0] == '0':
+			try:
+				int(roll_data[0])
+				int(roll_data[1])
+			except:
+				return None
+			if roll_data[0] == '0':
 				return 0
 			else:
 				total = 0
