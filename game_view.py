@@ -120,6 +120,7 @@ class GameView:
     def action_sequence(self, result):
         self.clear_bottom_info()
         self.display_message("Please select a(n) " + result + " from the map!")
+        pygame.display.flip()
         # pick which one from the map
 
         RUNNING = True
@@ -771,7 +772,7 @@ game.name = "Test Suite"
 game.uniqueID = 1
 game.map = Map(tilesize = 50, height = 10, width = 18)
 
-# Rule Validation TEST
+####### Rule Validation TEST #######
 ruleenactor = RuleEnactor()
 validator = _Validator()
 isTemplate = False
@@ -781,15 +782,19 @@ template = Entity("", "entity", 1, 1, isTemplate, None)
 template.add_attribute(hp_time)
 template.add_attribute(ac_time)
         
-attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+attack_rule = "target entity:\nreduce target.HP by 1d8\n"
 attack_action = Action("Attack", attack_rule)
-fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+fireball_rule = "target point:\nif all entity within(3, 3) of target then reduce entity.HP by 6d6\n"
 fireball_action = Action("Fireball", fireball_rule)
 template.add_action(attack_action)
 template.add_action(fireball_action)
         
 validator.add_entity(template)
 ruleenactor.parse_validator(validator)
+
+entity = ruleenactor.add_new_entity("entity", "Andrew", 3, 7)
+entity.set_image_filename("default-image.png")
+####### Rule Validation TEST END #######
 
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
@@ -853,9 +858,9 @@ def main(client):
                     DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
 
     # put all the entities on the map
-    # for entity in game.entities:
-    #     entity_image = pygame.transform.scale(IMAGES[entity.name], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
-    #     DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+    for location, entity in ruleenactor.all_created_entities.items():
+        entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+        DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
 
     if GM_STATUS:
         gameview.help_screen()
@@ -901,6 +906,8 @@ def main(client):
                                 # select an entity OF THAT SAME TYPE 
                                 targeted_entity = gameview.action_sequence(result)
                                 result = ruleenactor.perform_action_given_target(action_requested, my_entity, targeted_entity)
+                            gameview.clear_bottom_info()
+                            gameview.help_screen()
                             my_entity = None
                             print(result)
                         if not GM_STATUS:
