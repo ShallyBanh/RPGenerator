@@ -141,21 +141,29 @@ class Client():
         data = json.loads(response.text)
         return data
 
-    def create_game(self):
+    def create_game(self, gameBlob, gameName, username):
         """ WARNING: for test purposes only, @TODO remove """
-        game = Game()
-        game.set_players = []
-        print(type(game))
-        payload = {'query': "insert into game (game) values ('some game blob')"}
-        response = requests.post("{}/sql_debug".format(self.URL), params=payload)
-        data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        retval = response
-        payload = {'query': "select max(id) from game"}
-        response = requests.post("{}/sql_debug".format(self.URL), params=payload)
-        data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        return 0 if (retval.status_code == 200) else -1
+        print("[client] [create_game] attempting to create a game with gameBlob = {}".format(gameBlob))        
+        payload = {'gameBlob': gameBlob}
+        response = requests.post("{}/create_game".format(self.URL), params=payload)
+        print("[client] [create_game] response was {}/{}/{}".format(response, response.status_code, response.text))      
+        return 0 if (response.status_code == 200) else -1
+
+    # def create_game(self):
+    #     """ WARNING: for test purposes only, @TODO remove """
+    #     game = Game()
+    #     game.set_players = []
+    #     print(type(game))
+    #     payload = {'query': "insert into game (game) values ('some game blob')"}
+    #     response = requests.post("{}/sql_debug".format(self.URL), params=payload)
+    #     data = json.loads(response.text)
+    #     print("query resulted in: {}".format(data))
+    #     retval = response
+    #     payload = {'query': "select max(id) from game"}
+    #     response = requests.post("{}/sql_debug".format(self.URL), params=payload)
+    #     data = json.loads(response.text)
+    #     print("query resulted in: {}".format(data))
+    #     return 0 if (retval.status_code == 200) else -1
 
     def parse_command(self, command):
         # @TODO argparse/getops would be cleaner but is it worth it
@@ -189,7 +197,7 @@ class Client():
                 query = " ".join(tokens[1:])
                 self.sql_debug(query)
             elif tokens[0] == "create_game":
-                self.create_game()
+                # self.create_game()
                 self.test_game = self.sql_debug("select game, max(id) from game")[0]
                 print("test game is now {}".format(self.test_game))
             else:
