@@ -91,6 +91,7 @@ class GameView:
         images = {}
 
         direc = os.getcwd() + "/images/textures/"
+        print(direc)
         pictures = [i for i in os.listdir(direc)]
         for p in pictures:
             if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
