@@ -19,6 +19,7 @@ from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
+from game_engine.map import Map
 import game_view as gameView
 import jsonpickle
 
@@ -41,9 +42,16 @@ FPS = 60.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
-BUFFERSIZE = 2048
+BUFFERSIZE = 4096
 client_id = None
 current_game = None
+
+# Game Class
+game = Game()
+game.name = "Test Suite"
+game.uniqueID = 1
+game.map = Map(tilesize = 50, height = 10, width = 18)                    
+
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
@@ -72,12 +80,37 @@ general_async_connection.connect((serverAddr, general_async_port))
 
 # -----------------------------------------------------------------------------
 # ASYNCHRONOUS COMMUNICATION FUNCTIONS
+def receive_bundle(connection, buffersize):
+    data = []
+    while True:
+        packet = connection.recv(buffersize)
+        if len(packet) < buffersize: break
+        data.append(packet)
+    # data_arr = pickle.loads(b"".join(data))
+    # print (data_arr)
+    print ("received the bundle {}".format(data))
+    return b"".join(data)
+
+def double_pickle(data):
+    print("jsonpickling")
+    jsonpickled = jsonpickle.encode(data)
+    print("pickling")
+    pickled = pickle.dumps(jsonpickled)
+    return pickled
+
+def double_unpickle(data):
+    print("unpickling")
+    unpickled = pickle.loads(data)
+    print("jsonunpickling")
+    restored = jsonpickle.decode(unpickled)
+    return restored
+
 def async_send(async_message):
     global client_id
     global voice_async_port
     global serverAddr
     print("going to send async message {}".format(async_message))
-    general_async_connection.send(pickle.dumps(async_message))
+    general_async_connection.sendall(double_pickle(async_message))
     print("sent async message")
     # register_command = ['register_client']
 
@@ -93,17 +126,21 @@ def async_command_loop():
             # async_message = ['chat', "client {} sending".format(client_id)]
             async_message = [command[0], " ".join(command[1:])]
             if command[0] == 'start_game':
-                async_message = [command[0], [command[1], command[2]]]
+                game.set_GM(client.user)
+                game.set_uniqueID(command[1])
+                game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
+                async_message = [command[0], [game]]
             elif command[0] == 'leave_game':
                 print("trying to leave game")
                 async_message[1] = client_id
             elif command[0] == 'chat':
-                async_message = [command[0], [client_id, " ".join(command[1:])]]
+                async_transcript += "\n" + client.user.get_username() + ": " + " ".join(command[1:])
+                async_message = [command[0], [client_id, client.user.get_username() + ": " + " ".join(command[1:])]]
                 # async_transcript += "{} has left the game".format(client.user.get_username) + "\n"
             async_send(async_message) 
             # async_voice = ['voice', "this should be voice data from client {}".format(client_id)]
             # print("-trying to send voice data-")
-            # voice_async_connection.sendto(pickle.dumps(async_voice), (serverAddr, voice_async_port))
+            # voice_async_connection.sendto(double_pickle(async_voice), (serverAddr, voice_async_port))
             # time.sleep(2)
 
 def async_receive():
@@ -118,13 +155,14 @@ def async_receive():
             print("selected was: {}".format(inm))
             if inm == general_async_connection:
                 print("equal to general connection")
-                async_message = pickle.loads(inm.recv(BUFFERSIZE))
+                # async_message = double_unpickle(receive_bundle(inm, BUFFERSIZE))
+                async_message = double_unpickle(inm.recv(BUFFERSIZE))
                 print("the async message is {}".format(async_message))
                 message_type = async_message[0]
                 message_content = async_message[1]
             # elif inm == voice_async_connection:
             #     print("equal to voice connection")
-            #     async_message = pickle.loads(inm.recvfrom(BUFFERSIZE))
+            #     async_message = double_unpickle(inm.recvfrom(BUFFERSIZE))
             else:
                 print("connection equality check did not work")
                 continue
@@ -134,7 +172,7 @@ def async_receive():
                 print("assigning client_id")
                 client_id = message_content
                 print("client_id is now {}".format(client_id))
-                # inm.send(pickle.dumps(['register_username', client.user.get_username]))
+                # inm.send(double_pickle(['register_username', client.user.get_username]))
             elif message_type == 'id update':
                 print("was id update")
             elif message_type == 'start_game_accept':
@@ -150,6 +188,7 @@ def async_receive():
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 print("@TODO update game object")
+                print("game is currently {}".format(game.get_name()))
             elif message_type == 'join_invalid':
                 print("there is no active game with that id")
             elif message_type == 'join_reject':
@@ -162,8 +201,8 @@ def async_receive():
             elif message_type == 'action_reject':
                 print("action rejected, restore previous/apply sent version")
             elif message_type == 'chat':
-                async_transcript += message_content + "\n"
-                print("chat message received! transcript is now:")
+                async_transcript += "\n" + message_content
+                print("chat message received! transcript is now: \n{}".format(async_transcript))
                 # playerid = message_content
                 # print(playerid)
             # elif message_type
