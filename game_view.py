@@ -170,7 +170,7 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.help_screen()
+                        self.GM_help_screen()
                         return
             pygame.display.flip()
         return
@@ -211,7 +211,7 @@ class GameView:
                             selected_image = None
                         else:
                             self.clear_bottom_info()
-                            self.help_screen()
+                            self.GM_help_screen()
                             return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
@@ -298,7 +298,7 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.help_screen()
+                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         selected_name = input_name.text.rstrip()
@@ -355,8 +355,6 @@ class GameView:
                         if x != -1 and y != -1:
                             my_entity = gameview.which_entity(x, y)
                             if my_entity is not None:
-                                if saved_entity:
-                                    self.draw_entity_box(saved_entity.x,saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())    
                                 # draw rectangle surrounding the actual box
                                 saved_entity = my_entity
                                 self.draw_entity_box(x,y, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
@@ -366,35 +364,42 @@ class GameView:
                                     attributes.append(attr.get_attribute_name())
                                 display_string = "Attribute Option Name: " + ", ".join(attributes)
                                 surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+                    else:
+                        self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
+                        self.clear_bottom_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
+                        saved_entity = None 
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.help_screen()
+                        self.GM_help_screen()
+                        if saved_entity:
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                         return
                     elif event.key == K_RETURN:
                         # if there is an entity and its attribute given exists
                         modifying_attr = input_name.text.strip()
-                        if saved_entity is not None and modifying_attr in attributes:
-                            new_value = input_value.text.strip()
-                            type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
-                            if type_of_attr == bool:
-                                if new_value.lower() == "true":
-                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, True)
-                                elif new_value.lower() == "false":
-                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, False)
-                            elif type_of_attr == float:
-                                try:
-                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, float(new_value))
-                                except Exception as e:
-                                    pass
-                            elif type_of_attr == str:
-                                ruleenactor.modify_attribute(saved_entity, modifying_attr, new_value)
+                        if saved_entity is not None:
+                            if modifying_attr in attributes:
+                                new_value = input_value.text.strip()
+                                type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
+                                if type_of_attr == bool:
+                                    if new_value.lower() == "true":
+                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, True)
+                                    elif new_value.lower() == "false":
+                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, False)
+                                elif type_of_attr == float:
+                                    try:
+                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, float(new_value))
+                                    except Exception as e:
+                                        pass
+                                elif type_of_attr == str:
+                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, new_value)
+                            self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
+                        saved_entity = None
                         input_name.text = ""
                         input_value.text = ""
                         # wipe the attr info
                         self.clear_bottom_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
-                        self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
-                        saved_entity = None
                 input_name.handle_event(event)
                 input_value.handle_event(event)
             input_name.wipe()
@@ -438,7 +443,7 @@ class GameView:
                             saved_entity = None
                         else:
                             self.clear_bottom_info()
-                            self.help_screen()
+                            self.GM_help_screen()
                             return
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
@@ -473,7 +478,7 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.help_screen()
+                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
@@ -532,7 +537,7 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
-                        self.help_screen()
+                        self.GM_help_screen()
                         return
                     elif event.key == K_RETURN:
                         if len(d_roll.text)>0:
@@ -562,11 +567,20 @@ class GameView:
         pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
         return
 
-    def help_screen(self):
+    def GM_help_screen(self):
         self.clear_bottom_info()
         # blit hotkey information
         info = "_GM HOTKEYS:_\n"
         for key, pair in GM_HOTKEYS.items():
+            info += key + ": " + pair["name"] + "\n"
+        self.display_message(info)
+        return
+
+    def PLAYER_help_screen(self):
+        self.clear_bottom_info()
+        # blit hotkey information
+        info = "_PLAYER HOTKEYS:_\n"
+        for key, pair in PLAYER_HOTKEYS.items():
             info += key + ": " + pair["name"] + "\n"
         self.display_message(info)
         return
@@ -823,8 +837,11 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": gameview.toggle_fog},
               "d": {"name": "Delete Entity", "function": gameview.delete_entity},
               "p": {"name": "Remove Player", "function": gameview.remove_player},
               "r": {"name": "Roll Die", "function": gameview.roll_die},
-              "h": {"name": "Show this help screen", "function": gameview.help_screen}
+              "h": {"name": "Show this help screen", "function": gameview.GM_help_screen}
               }
+PLAYER_HOTKEYS = {"r": {"name": "Roll Die", "function": gameview.roll_die},
+                  "h": {"name": "Show this help screen", "function": gameview.PLAYER_help_screen}
+                 }
 DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (game.map.tilesize,game.map.tilesize))
 FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
 
@@ -863,7 +880,9 @@ def main(client):
         DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
 
     if GM_STATUS:
-        gameview.help_screen()
+        gameview.GM_help_screen()
+    else:
+        gameview.PLAYER_help_screen()
 
     my_entity = None
     chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF, client = client)
@@ -907,7 +926,7 @@ def main(client):
                                 targeted_entity = gameview.action_sequence(result)
                                 result = ruleenactor.perform_action_given_target(action_requested, my_entity, targeted_entity)
                             gameview.clear_bottom_info()
-                            gameview.help_screen()
+                            gameview.GM_help_screen()
                             my_entity = None
                             print(result)
                         if not GM_STATUS:
@@ -957,8 +976,10 @@ def main(client):
                         action_requested = ""
                         pygame.display.flip()
                     print(GM_HOTKEYS[event.unicode]["name"])
-                    # execute functionality
                     GM_HOTKEYS[event.unicode]["function"]()
+                elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
+                    print(PLAYER_HOTKEYS[event.unicode]["name"])
+                    PLAYER_HOTKEYS[event.unicode]["function"]()
             # input box handling + transcript update
             transcript = chat_input_box.handle_event(event, history.transcript)
             history.handle_event(event)
