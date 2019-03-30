@@ -378,7 +378,7 @@ class GameView:
                             if my_entity is not None:
                                 # draw rectangle surrounding the actual box
                                 saved_entity = my_entity
-                                self.draw_entity_box(x,y, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
+                                self.draw_entity_box(saved_entity.x,saved_entity.y, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                                 self.clear_bottom_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
                                 attributes = []
                                 for attr in my_entity.get_attributes():
