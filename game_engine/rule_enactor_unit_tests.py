@@ -448,13 +448,22 @@ class TestRuleInterpreter(unittest.TestCase):
 		template.add_attribute(hp_time)
 		template.add_attribute(ac_time)
 		
+		template2 = Entity("", "BigEntity", 3, 3, self.isTemplate, None)
+		template2.add_attribute(hp_time)
+		template2.add_attribute(ac_time)
+		
 		attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
 		attack_action = Action("Attack", attack_rule)
 		fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
 		fireball_action = Action("Fireball", fireball_rule)
 		template.add_action(fireball_action)
+		template.add_action(attack_action)
+		
+		template2.add_action(fireball_action)
+		template2.add_action(attack_action)
 		
 		validator.add_entity(template)
+		validator.add_entity(template2)
 		enactor.parse_validator(validator)
 		
 		
