@@ -186,7 +186,17 @@ class AccountManager:
 
     def load_game_history(self, username):
         """Fetches game history"""
-        self.database.query("SELECT game_id, role FROM GameHistory WHERE username = ?", (username, ))
+        self.database.query("SELECT game_id, role, game_name FROM GameHistory WHERE username = ?", (username, ))
         rows = self.database.cur.fetchall()
         return rows
-    
+
+    def create_game(self, gameBlob, gameName, username):
+        """Creates a game in the database"""
+        self.database.query("insert into Game (game) values (?)", (gameBlob, ))
+        self.database.query("SELECT MAX(id) from Game;", [])
+        gameId = self.database.cur.fetchone()
+        if gameId[0] is not None:
+            self.database.query("INSERT INTO GameHistory(game_name, role, username, game_id) VALUES(?, ?, ?, ?);", (gameName, "GM", username, gameId[0],))
+        else:
+            return -1
+        return 0

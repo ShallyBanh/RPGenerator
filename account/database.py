@@ -76,6 +76,7 @@ class Database:
             '''
                 create table if not exists GameHistory(
                     id integer,
+                    game_name text,
                     role text,
                     username text,
                     game_id integer,

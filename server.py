@@ -218,6 +218,20 @@ def load_game_history():
     print("[server] [load_game_history] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
+
+@app.route("/create_game", methods=['POST'])
+def create_game():
+    gameBlob = request.args.get("gameBlob")
+    gameName = request.args.get("gameName")
+    userName = request.args.get("username")
+    if gameBlob is None or gameName is None or userName is None:
+        return Response(status=400)
+    print("[server] [create_game] got gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, userName))
+    response = server.account_manager.create_game(gameBlob, gameName, userName)
+
+    print("[server] [create_game] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
     
 async_receive_thread = threading.Thread(target=communication.main)
 async_receive_thread.start()

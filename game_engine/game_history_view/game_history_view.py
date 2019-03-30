@@ -32,7 +32,7 @@ class GameHistoryView:
 
         buttonrects = [pygame.Rect((50, 150, 1200, 550))]
         textSizes = [(50, 100)]
-        buttonnames = ["Room code                           Status                          "]
+        buttonnames = ["Game Name                               Room code           Status"]
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -74,13 +74,16 @@ class GameHistoryView:
             
             gameHistoryRoomCodeStr = ""
             gameHistoryStatusStr = ""
+            gameHistoryNameStr = ""
             for gameIdx in range(len(self._gameHistoryList)):
                 gameHistoryRoomCodeStr += str(self._gameHistoryList[gameIdx][0]) + "\n\n"
                 gameHistoryStatusStr += str(self._gameHistoryList[gameIdx][1]) + "\n\n"
+                gameHistoryNameStr += str(self._gameHistoryList[gameIdx][2]) + "\n\n"
                 screen.blit(self._joinButtonImage,(1000, 200 + gameIdx * 50 + gameIdx*0.17*100))
                 self._gameHistoryPositionList.append((1000, 200 + gameIdx * 50 + gameIdx*0.17*100))
-            ptext.draw(gameHistoryRoomCodeStr, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(gameHistoryStatusStr, (470, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryNameStr, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryRoomCodeStr, (530, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryStatusStr, (790, 200), fontname="Boogaloo", color="white", fontsize=30)
             
             screen.blit(*titleargs)
             pygame.display.flip()
