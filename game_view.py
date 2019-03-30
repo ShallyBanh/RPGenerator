@@ -1,10 +1,7 @@
-import pygame, sys, random
+import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess
 from pygame.locals import *
 from game_engine.map import Map
-import os
-import math
-import re
-import ptext
+from client import Client
 from shutil import copyfile
 import base64
 import PIL.Image
@@ -57,7 +54,6 @@ class GameView:
     def tile_location(self,size):
         return size[1]*game.map.tilesize, size[0]*game.map.tilesize
 
-    # TODO ADD PROPER ACTION DISPLAY AND RETURN
     def make_popup(self,x, y, entity):
         global OLDSURF
 
@@ -68,6 +64,8 @@ class GameView:
         width = 0
         height = 0
         OLDSURF = DISPLAYSURF.copy()
+
+        self.draw_entity_box(entity.x, entity.y, width = entity.size.get_width(), height = entity.size.get_height())
          # newsize = img1.get_width()+4, img1.get_height()+4
         for i in options:
             textSurf.append(FONTTYPE.render(i, 1, (255, 255, 255)))
@@ -79,10 +77,8 @@ class GameView:
         for i in range(len(textSurf)):
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
-        self.draw_entity_box(entity.x, entity.y, width = entity.size.get_width(), height = entity.size.get_height())
-        
         # entity information to display on the left
-        ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = 200)
+        ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
         return (popupSurf.get_width(), popupSurf.get_height()), (x,y)
 
@@ -99,7 +95,7 @@ class GameView:
             if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
                 images[p] = pygame.image.load("images/textures/"+p)
 
-        if os.path.exists("/tmp"):
+        if os.path.exists("./tmp/"):
             direc = os.getcwd() + "/tmp/"
             pictures = [i for i in os.listdir(direc)]
             for p in pictures:
@@ -219,11 +215,11 @@ class GameView:
         buf, tpos = self.display_message("Create New Entity")
 
         if len(error)>0:
-            ptext.draw(error, (tpos[0] + buf.get_width() + 10, tpos[1]), sysfontname="arial", color=COLOR_RED, fontsize=30)
+            ptext.draw(error, (tpos[0] + buf.get_width() + 10, tpos[1]), sysfontname="arial", color=COLOR_RED, fontsize=FONTSIZE)
 
-        surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
-        surf_type, tpos_type = ptext.draw("Type: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
-        surf_image, tpos_image = ptext.draw("Image: ", (tpos[0], self._y_coordinate(surf_type, tpos_type)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+        surf_type, tpos_type = ptext.draw("Type: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+        surf_image, tpos_image = ptext.draw("Image: ", (tpos[0], self._y_coordinate(surf_type, tpos_type)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         if not reblit:
             input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, 300, 32, DISPLAYSURF)
             input_type = InputBox(self._x_coordinate(surf_type, tpos_type), tpos_type[1]-5, 300, 32, DISPLAYSURF)
@@ -239,7 +235,7 @@ class GameView:
         
         display_string = "Type Options: " + ", ".join(types) + "\nImage Options: "
         display_string += self._images_string()
-        ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_image, tpos_image)), sysfontname="arial", color=COLOR_WHITE, fontsize=30,  width = game.map.width*game.map.tilesize)
+        ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_image, tpos_image)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE,  width = game.map.width*game.map.tilesize)
         
         return types, input_name, input_type, input_image_filename
 
@@ -314,10 +310,10 @@ class GameView:
 
     def edit_entity(self):
         self.clear_GM_info()
-        buf, tpos = self.display_message("_Edit Entity_")
+        buf, tpos = self.display_message("Edit Entity")
 
-        surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
-        surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+        surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         input_name = InputBox(self._x_coordinate(surf_name, tpos_name), tpos_name[1]-5, 300, 32, DISPLAYSURF)
         input_value = InputBox(self._x_coordinate(surf_value, tpos_value), tpos_value[1]-5, 300, 32, DISPLAYSURF)
 
@@ -348,7 +344,7 @@ class GameView:
                                 for attr in my_entity.get_attributes():
                                     attributes.append(attr.get_attribute_name())
                                 display_string = "Attribute Option Name: " + ", ".join(attributes)
-                                surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                                surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_GM_info()
@@ -439,8 +435,8 @@ class GameView:
         self.clear_GM_info()
         general_message = "_Add Asset Mode_\nEnter in the path to an image.\nPress ESC to exit this mode."
         self.display_message(general_message)
-        if not os.path.exists("/tmp"):
-            os.makedirs('/tmp')
+        if not os.path.exists("./tmp/"):
+            os.makedirs('./tmp')
 
         chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
@@ -462,7 +458,7 @@ class GameView:
                         text = chat_input_box.handle_event(event)
                         text = text.rstrip()
                         if os.path.isfile(text):
-                            if text.split(".")[1] not in ["png", "jpg", "jpeg"]:
+                            if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_GM_info()
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
@@ -498,7 +494,7 @@ class GameView:
 
         buf = MAPOFFSET[0] + surf.get_width() + 10
         number_of = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
-        surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+        surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         buf = tpos[0] + surf.get_width() + 10
         d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
 
@@ -518,11 +514,13 @@ class GameView:
                         self.help_screen()
                         return
                     elif event.key == K_RETURN:
-                        if len(number_of.text)>0 and len(d_roll.text)>0:
+                        if len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
                             result = ruleenactor.roll_dice(d_string)
-                            surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30)
+                            if result is None:
+                                result = "ERROR: IMPROPER ENTRY"
+                            surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
                             number_of.text = ""
                             d_roll.text = ""
                 number_of.handle_event(event)
@@ -553,7 +551,7 @@ class GameView:
         return
 
     def display_message(self, message):
-        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = game.map.width*game.map.tilesize, underlinetag="_")
+        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = game.map.width*game.map.tilesize, underlinetag="_")
         return txt_surface, tpos
 
     def update_fog(self):
@@ -587,17 +585,20 @@ class GameView:
         DISPLAYSURF.blit(DEFAULT_IMAGE, gameview.offset_blit(y*game.map.tilesize, x*game.map.tilesize))
         return
 
+# TODO FOR REVIEW TO ENSURE THAT CHAT WITH OTHER USERS CAN WORK + REUSE INPUT BOX FOR OTHER
+# NEEDS
 class InputBox:
     # https://stackoverflow.com/questions/46390231/how-to-create-a-text-input-box-with-pygame
 
-    def __init__(self, x, y, w, h, screen, text=''):
+    def __init__(self, x, y, w, h, screen, text='', client = None):
         self.color = COLOR_INACTIVE
         self.text = text
-        self.txt_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = w)
+        self.txt_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = w)
         self.height = self.txt_surface.get_height() + 5
         self.rect = pygame.Rect(x, y, w, self.height)
         self.active = False
         self.screen = screen
+        self.client = client
 
     def handle_event(self, event, transcript=""):
         if event.type == MOUSEBUTTONDOWN:
@@ -614,12 +615,14 @@ class InputBox:
                 if event.key == K_RETURN:
                     # append to the transcript view
                     if len(self.text) > 0:
+                        if self.client is not None:
+                            transcript += self.client.user.get_username() + ": "
                         transcript += str(self.text) + "\n"
                         self.text = ""
                         self.remove_old_block()
                 elif event.key == K_BACKSPACE:
                     self.text = self.text[:-1]
-                    tmp_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+                    tmp_surface = ptext.getsurf(self.text, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
                     if tmp_surface.get_height() < (self.rect.h-5):
                         self.remove_old_block()
                 else:
@@ -634,7 +637,7 @@ class InputBox:
 
     def draw(self):
         # Blit the text.
-        self.txt_surface, tpos = ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        self.txt_surface, tpos = ptext.draw(self.text, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
         self.rect.h = self.txt_surface.get_height() + 5
         # Blit the rect.
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
@@ -679,7 +682,7 @@ class Transcript:
             
     def draw(self):
         # Blit the text.
-        self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        self.txt_surface, tpos = ptext.draw(self.transcript_in_view, (self.rect.x+5, self.rect.y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
         # Blit the rect.
         pygame.draw.rect(self.screen, self.color, self.rect, 2)
 
@@ -721,7 +724,7 @@ class Transcript:
         self.transcript_in_view += self.transcript.split("\n")[-2] + "\n"
 
     def adjust_transcript_view(self):
-        tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+        tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
         if len(self.transcript_in_view) < len(self.transcript):
         # if not down:
             while (tmp_surface.get_height() < self.rect.h):
@@ -729,10 +732,10 @@ class Transcript:
                 beforehand = self.transcript.split(self.transcript_in_view,1)[0]
                 first_line = beforehand.split("\n")[-2]
                 self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
-                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
         while (tmp_surface.get_height() > self.rect.h):
             self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
-            tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=30, width = self.rect.w)
+            tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
 
 # utilized for testing of actions drop down menu
 # class Entity:
@@ -765,7 +768,7 @@ game.map = Map(tilesize = 50, height = 10, width = 18)
 # Entities used for testing
 # game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
 
-# Rule Validation
+# Rule Validation TEST
 ruleenactor = RuleEnactor()
 validator = _Validator()
 isTemplate = False
@@ -788,7 +791,14 @@ ruleenactor.parse_validator(validator)
 pygame.init()
 # FONTTYPE = pygame.font.SysFont('arial', 25)
 # GENERAL COLORS AND ITEMS
-FONTTYPE = pygame.font.Font(None, 32)
+RESOLUTION_SCALING = 1600
+if platform.system() == "Darwin":
+    res = subprocess.check_output(["system_profiler","SPDisplaysDataType"])
+    res_val = str(res).split("Resolution")[1].split("\\n")[0].split("x")[1].split()[0]
+    FONTSIZE = int(30*int(res_val)/RESOLUTION_SCALING)
+elif platform.system() == "Windows":
+    FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+FONTTYPE = pygame.font.Font(None, FONTSIZE)
 DISPLAYSURF = pygame.display.set_mode((1300,750))
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
@@ -812,7 +822,46 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main():
+def main(client):
+    # FIX RESOLUTION 
+    # surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    # resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
+    # resolution.text = str(pyautogui.size()[1])
+
+    # RUNNING = True
+    # while RUNNING:
+    #     for event in pygame.event.get():
+    #         if event.type == QUIT:
+    #             pygame.quit()
+    #             sys.exit()
+    #         elif event.type == KEYDOWN:   
+    #             if event.key == K_RETURN:
+    #                 # HANDLE SHIT HERE
+    #                 if len(resolution.text)>0:
+    #                     try:
+    #                         FONTSIZE = int(30*int(resolution.text)/RESOLUTION_SCALING)
+    #                     except:
+    #                         FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     RUNNING = False
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                 else:
+    #                     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
+    #                     if FONTSIZE < 10:
+    #                         FONTSIZE = 10
+    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
+    #                     RUNNING = False
+    #         resolution.handle_event(event)
+    #     # input commands
+    #     resolution.wipe()
+    #     resolution.draw()
+
+    #     pygame.display.flip()
+
+    # # START TO DISPLAY MAP
+    # DISPLAYSURF.fill(COLOR_BLACK)
+
     # create the map and add add textures to it
     game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
     game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
@@ -849,13 +898,15 @@ def main():
         gameview.help_screen()
 
     my_entity = None
-    chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF)
+    chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF, client = client)
     history = Transcript(MAPOFFSET[0]+game.map.width*game.map.tilesize, MAPOFFSET[1], 200, DISPLAYSURF.get_height()-(DISPLAYSURF.get_height()-chat_input_box.rect.y), DISPLAYSURF)
     # transcript = ""
     action_requested = ""
 
     RUNNING = True
-    while RUNNING:    
+    while RUNNING:   
+        if GM_STATUS:
+            gameview.update_fog_GM() 
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -931,11 +982,9 @@ def main():
         chat_input_box.draw()
         history.draw()
 
-        if GM_STATUS:
-            gameview.update_fog_GM()
-
         pygame.display.flip()
 
 
 if __name__ == "__main__":
-    main()
+    client = Client()
+    main(client)
