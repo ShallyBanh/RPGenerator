@@ -92,6 +92,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
     #     asyncore.dispatcher_with_send.__init__(self)
     #     self.conn = conn
     #     self.client_id = None
+    conn = None
     my_id = None
     # use self.client_id to clean it up a bunch
     def handle_read(self):
@@ -109,6 +110,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
             if command_type == 'register_username':
                 print("registering username")
                 client_id = command_body[0]
+                self.my_id = client_id
                 username = command_body[1]
                 print("client_dict: {}".format(client_dict))
                 print("self: {}".format(self))
@@ -166,12 +168,15 @@ class DataReadServer(asyncore.dispatcher_with_send):
             elif command_type == 'leave_game':
                 print("player trying to leave game @TODO append to transcript")
                 client_id = int(command_body)
-                print("client_id is {}".format(client_id))
-                client = client_dict[rev_client_dict[client_id]]
-                print("client is {}".format(client))
-                room = client[2]
-                print("room is {}".format(room))
-                self.remove_player(client_id, rooms[room])
+                if client_id = self.my_id:
+                    print("client_id is {}".format(client_id))
+                    client = client_dict[rev_client_dict[client_id]]
+                    print("client is {}".format(client))
+                    room = client[2]
+                    print("room is {}".format(room))
+                    self.remove_player(client_id, rooms[room])
+                else:
+                    print("received leave command for wrong id")
             elif command_type == 'remove_player':
                 client_id = int(command_body)
                 client = client_dict[rev_client_dict[client_id]]        
