@@ -19,6 +19,7 @@ from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
+import game_view as gameView
 
 
 # Import pygameMenu
@@ -646,7 +647,7 @@ def join_game_view():
                     if not room_number.get_text().isdigit():
                         error_surface = True
                         break
-                    enter_room(room_number = room_number.get_text())
+                    enter_room(room_number = room_number.get_text(), gmOrPlayer ="PLAYER")
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
@@ -709,6 +710,7 @@ def create_new_game_view():
                         break
                     #to pass to the game_view once that is integrated
                     rulesetObject = [item for item in allRulesets if item[0] == ruleset_name.get_text()][0][1]
+                    print(rulesetObject)
                     create_room(ruleset_name = ruleset_name.get_text(), ruleset_object = rulesetObject)
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
@@ -737,8 +739,12 @@ def ruleset_view():
     return
 
 def previous_games_view():
-    GameHistoryView(currentUsername, client).main()
+    values = GameHistoryView(currentUsername, client).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
+    print(values)
+    if values is not None:
+        #values[0] = game room number, values[1] = game status i.e gm or player
+        enter_room(values[0], values[1])
     return
 
 # -----------------------------------------------------------------------------
@@ -765,16 +771,23 @@ def recover_account_credentials(username, code, password):
     client.recover_account(username, code, password, password)
     return
 
-def enter_room(room_number):
-    async_send(['join_game', [room_number]])
+def enter_room(room_number, gmOrPlayer):
+    #TALK TO THOMAS ABOUT CALL TO-DO
+    #async_send(['join_game', [room_number]])
+    pygame.display.set_mode((1300, 750))
+    #print(client.get_list_of_games_and_their_gms())
+    exit()
+    gameView.main(client, room_number, gmOrPlayer)
     print(room_number)
     return
 
 def create_room(ruleset_name, ruleset_object):
     #fake out game name for now until gui is done
     #also TO-DO PASS VALIDATOR OBJECT TO GAME OBJECT
-    client.create_game(Game(), "testgamename", currentUsername)
-
+    #client.create_game(Game(), "testgamename", currentUsername)
+    gameId = client.get_game_id(currentUsername)[0]
+    pygame.display.set_mode((1300, 750))
+    gameView.main(client, gameId, "GM")
     #CALL GAME VIEW HERE TO START THE GAME
     print(ruleset_name)
     print(ruleset_object)

@@ -822,7 +822,9 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client):
+def main(client, gameId, gmOrPlayer):
+    if gmOrPlayer == "PLAYER":
+        GM_STATUS = False
     # FIX RESOLUTION 
     # surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
     # resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
@@ -860,7 +862,8 @@ def main(client):
     #     pygame.display.flip()
 
     # # START TO DISPLAY MAP
-    # DISPLAYSURF.fill(COLOR_BLACK)
+    DISPLAYSURF.fill(COLOR_BLACK)
+    ptext.draw("GameId: {}".format(gameId), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
 
     # create the map and add add textures to it
     game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
@@ -886,7 +889,7 @@ def main(client):
     if not GM_STATUS:
         for rw in range(game.map.height):
             for cl in range(game.map.width):
-                if not game.map.fogOfWar[rw][c]:
+                if not game.map.fogOfWar[rw][cl]:
                     DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
 
     # put all the entities on the map
@@ -985,6 +988,6 @@ def main(client):
         pygame.display.flip()
 
 
-if __name__ == "__main__":
-    client = Client()
-    main(client)
+# if __name__ == "__main__":
+#     client = Client()
+#     main(client)

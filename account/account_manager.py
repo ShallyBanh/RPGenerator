@@ -229,3 +229,15 @@ class AccountManager:
         else:
             return -1
         return 0
+    
+    def get_game_id(self, username):
+        """Fetches latest game id"""
+        self.database.query("SELECT MAX(game_id) FROM GameHistory WHERE username = ?", (username, ))
+        row = self.database.cur.fetchone()
+        return row
+    
+    def get_list_of_games_and_their_gms(self):
+        """Fetches list of games and their gms"""
+        self.database.query("SELECT game_id, username FROM GameHistory;")
+        rows = self.database.cur.fetchall()
+        return rows

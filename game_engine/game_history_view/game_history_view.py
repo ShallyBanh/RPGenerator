@@ -57,13 +57,7 @@ class GameHistoryView:
                         x1 = int(self._gameHistoryPositionList[joinIdx][0])
                         y1 = int(self._gameHistoryPositionList[joinIdx][1])
                         if x in range(x1, x1 + 200) and y in range(y1, y1+60):
-                            return
-                            # rule = self._gameHistoryPositionList[joinIdx][1]
-                            # deserializedRule = pickle.loads(rule)
-                            # Validator().clear_entities()
-                            # Validator().set_entities(deserializedRule.get_entities())
-                            # RulesetCreationEditView().main(self._rulesetList[editIdx][0])
-                            # self.load_ruleset()
+                            return self._gameHistoryList[joinIdx][0], self._gameHistoryList[joinIdx][1]
                             # currentEntityName = entities[moreIdx]
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):

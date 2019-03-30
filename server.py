@@ -233,6 +233,32 @@ def load_game_history():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/get_list_of_games_and_their_gms", methods=['POST'])
+def get_list_of_games_and_their_gms():
+    response = server.account_manager.get_list_of_games_and_their_gms()
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_list_of_games_and_their_gms] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/get_game_id", methods=['POST'])
+def get_game_id():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [get_game_id] got username = {}".format(username))
+    response = server.account_manager.get_game_id(username)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_game_id] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/create_game", methods=['POST'])
 def create_game():
     gameBlob = request.args.get("gameBlob")
@@ -242,7 +268,6 @@ def create_game():
         return Response(status=400)
     print("[server] [create_game] got gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, userName))
     response = server.account_manager.create_game(gameBlob, gameName, userName)
-
     print("[server] [create_game] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
