@@ -15,6 +15,7 @@ app.config['SECRET_KEY'] = 'secret!'
 IP_ADDRESS = "0.0.0.0"
 PORT = 5493
 testkey = ""
+
 class Server:
     """A User account.
 
@@ -49,6 +50,8 @@ elif len(sys.argv) > 1:
     server = Server()
 else:
     server = Server()
+
+testkey.encode('utf8')
 
 @app.route("/login", methods=['POST'])
 def login():
@@ -168,24 +171,16 @@ def load_existing_rulesets():
     if username is None:
         return Response(status=400)
     print("[server] [load_existing_rulesets] got username = {}".format(username))
-    #start encrpytion
-    print("before encription")
     response = server.account_manager.load_existing_rulesets(username)
-    print("herer")
-    print(response)
-    print(jsonify(response))
-    return jsonify(response)
     if response is not None:
-        print("inside")
-        responses = jsonify(response)
-        print(responses)
         decryptedResponse = []
+        #start decryption
         f = Fernet(testkey)
-        for rulename, rulecontent in responses:
-            decryptedResponse.append((rulename, f.decrypt(rulecontent)))
-        return decryptedResponse
+        for rulename, rulecontent in response:
+            decryptedResponse.append((rulename, f.decrypt(rulecontent).decode("utf")))
+        return jsonify(decryptedResponse)
 
-    print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    print("[server] [load_existing_rulesets] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
@@ -197,12 +192,56 @@ def create_ruleset():
     if username is None or rulesetName is None or jsonBlob is None:
         return Response(status=400)
     print("[server] [create_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
-    #start encrpytion
+    #start encryption
     f = Fernet(testkey)
-    token = f.encrypt(bytes(jsonBlob, 'utf-8'))
-    response = server.account_manager.create_ruleset(username, rulesetName, token)
+    response = server.account_manager.create_ruleset(username, rulesetName, f.encrypt(jsonBlob.encode('utf-8')))
 
     print("[server] [create_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/update_ruleset", methods=['POST'])
+def update_ruleset():
+    username = request.args.get("username")
+    rulesetName = request.args.get("rulesetName")
+    jsonBlob = request.args.get("jsonBlob")
+    if username is None or rulesetName is None or jsonBlob is None:
+        return Response(status=400)
+    print("[server] [update_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
+    #start encryption
+    f = Fernet(testkey)
+    response = server.account_manager.update_ruleset(username, rulesetName, f.encrypt(jsonBlob.encode('utf-8')))
+
+    print("[server] [update_ruleset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/load_game_history", methods=['POST'])
+def load_game_history():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [load_game_history] got username = {}".format(username))
+    response = server.account_manager.load_game_history(username)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [load_game_history] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/create_game", methods=['POST'])
+def create_game():
+    gameBlob = request.args.get("gameBlob")
+    gameName = request.args.get("gameName")
+    userName = request.args.get("username")
+    if gameBlob is None or gameName is None or userName is None:
+        return Response(status=400)
+    print("[server] [create_game] got gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, userName))
+    response = server.account_manager.create_game(gameBlob, gameName, userName)
+
+    print("[server] [create_game] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
     

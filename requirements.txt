@@ -4,3 +4,4 @@ Flask>=0.12
 pygame>=1.9.4
 pygame-menu>=1.96.1
 pyautogui>=0.9.42
+jsonpickle>=1.0

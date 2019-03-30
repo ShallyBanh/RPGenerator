@@ -68,7 +68,7 @@ def account_login_view():
     login_view = pygame.image.load("images/menu/login-copy.png")
     surface.fill(COLOR_BACKGROUND)
     global currentUsername
-    
+
 
     selected = "username"
     
@@ -605,9 +605,8 @@ def ruleset_view():
     return
 
 def previous_games_view():
-    GameHistoryView().main()
+    GameHistoryView(currentUsername, client).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
-    print("Previous Games View - TODO FOR SHALLY")
     return
 
 # -----------------------------------------------------------------------------

@@ -67,9 +67,13 @@ class Client():
         payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
         response = requests.post("{}/create_ruleset".format(self.URL), params=payload)
         print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
-        # @TODO why does this one end up a different type even though the code is exactly the same
-        # if type(response) == requests.models.Response:
-        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+    
+    def update_ruleset(self, username, rulesetName, jsonBlob):
+        print("[client] [update_ruleset] attempting to update a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
+        payload = {'username': username, 'rulesetName': rulesetName, 'jsonBlob': jsonBlob}
+        response = requests.post("{}/update_ruleset".format(self.URL), params=payload)
+        print("[client] [update_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
         return 0 if (response.status_code == 200) else -1
     
     def change_credentials(self, username, old_password, new_password): #,email):
@@ -134,33 +138,42 @@ class Client():
     def load_existing_rulesets(self, username):
         print("[client] [load_existing_rulesets] attempting to load rulesets from user with username {}".format(username))        
         payload = {'username': username}
-        response = requests.post("{}/load_existing_rulesets".format(self.URL), params=payload)
+        header_content = {'Content-type': 'application/json'} 
+        response = requests.post("{}/load_existing_rulesets".format(self.URL), headers=header_content, params=payload)
         data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        print("[client] [load_existing_rulesets] response was {}/{}/{}".format(response, response.status_code, response.text))       
-        # @TODO why does this one end up a different type even though the code is exactly the same
-        # if type(response) == requests.models.Response:
-        #     response = str(response.text)
-        print(response)
-        print(response.content)
-        exit()
-        return response.content
+        return data
 
-    def create_game(self):
+    def load_game_history(self, username):
+        print("[client] [load_game_history] attempting to load game history from user with username {}".format(username))        
+        payload = {'username': username}
+        header_content = {'Content-type': 'application/json'} 
+        response = requests.post("{}/load_game_history".format(self.URL), headers=header_content, params=payload)
+        data = json.loads(response.text)
+        return data
+
+    def create_game(self, gameBlob, gameName, username):
         """ WARNING: for test purposes only, @TODO remove """
-        game = Game()
-        game.set_players = []
-        print(type(game))
-        payload = {'query': "insert into game (game) values ('some game blob')"}
-        response = requests.post("{}/sql_debug".format(self.URL), params=payload)
-        data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        retval = response
-        payload = {'query': "select max(id) from game"}
-        response = requests.post("{}/sql_debug".format(self.URL), params=payload)
-        data = json.loads(response.text)
-        print("query resulted in: {}".format(data))
-        return 0 if (retval.status_code == 200) else -1
+        print("[client] [create_game] attempting to create a game with gameBlob = {}".format(gameBlob))        
+        payload = {'gameBlob': gameBlob}
+        response = requests.post("{}/create_game".format(self.URL), params=payload)
+        print("[client] [create_game] response was {}/{}/{}".format(response, response.status_code, response.text))      
+        return 0 if (response.status_code == 200) else -1
+
+    # def create_game(self):
+    #     """ WARNING: for test purposes only, @TODO remove """
+    #     game = Game()
+    #     game.set_players = []
+    #     print(type(game))
+    #     payload = {'query': "insert into game (game) values ('some game blob')"}
+    #     response = requests.post("{}/sql_debug".format(self.URL), params=payload)
+    #     data = json.loads(response.text)
+    #     print("query resulted in: {}".format(data))
+    #     retval = response
+    #     payload = {'query': "select max(id) from game"}
+    #     response = requests.post("{}/sql_debug".format(self.URL), params=payload)
+    #     data = json.loads(response.text)
+    #     print("query resulted in: {}".format(data))
+    #     return 0 if (retval.status_code == 200) else -1
 
     def parse_command(self, command):
         # @TODO argparse/getops would be cleaner but is it worth it
@@ -194,7 +207,7 @@ class Client():
                 query = " ".join(tokens[1:])
                 self.sql_debug(query)
             elif tokens[0] == "create_game":
-                self.create_game()
+                # self.create_game()
                 self.test_game = self.sql_debug("select game, max(id) from game")[0]
                 print("test game is now {}".format(self.test_game))
             else:

@@ -54,8 +54,9 @@ To run the game locally, spin up one instance of the server and one of the clien
 
 **Server:**
 ```
-python3 server.py
+python3 server.py _keytoEncryptDatabase_
 ```
+_keytoEncryptDatabase_ is the user's key to use to encrypt and decrypt their rulesets
 **Client:**
 ```
 python3 play_game.py

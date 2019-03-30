@@ -8,13 +8,14 @@ from models.validator import Validator
 from models.action import Action
 from models.attribute import Attribute
 from models.entity import Entity
+from models.relationship import Relationship
 import pygame
 import ptext
 import pygame_textinput
 from entity_creation_view import EntityCreationView
 from action_attribute_view import AttributeActionCreationView
 from relationship_creation_view import RelationshipCreationView
-import pickle
+import jsonpickle
 
 class RulesetCreationEditView:
     def __init__(self, username, client):
@@ -38,10 +39,6 @@ class RulesetCreationEditView:
         self._invalidSubmission = False
         self._client = client
         self._username = username
-
-    def update_database(self, database, user, rulesetName, jsonBlob):
-        self._database.cur.execute("UPDATE Ruleset SET rules = ? WHERE rulename = ?;", (jsonBlob, rulesetName, ))
-        self._database.conn.commit()
 
     def main(self, rulesetName):
         if rulesetName == "":
@@ -142,14 +139,14 @@ class RulesetCreationEditView:
                         self._relationship_view = True
                     #save button
                     if x in range(1100, 1300) and y in range(10, 60):
-                        picklestring = pickle.dumps(Validator())
+                        serializedValidator = jsonpickle.encode(Validator())
                         if self._newRuleset == False:
-                            self.update_database(database, "shally", self._rulesetName, picklestring)
+                            self._client.update_ruleset(self._username, self._rulesetName, serializedValidator)
                         else:
                             if self._rulesetName == "":
                                 self._invalidSubmission = True
                             else:
-                                self._client.create_ruleset(self._username, self._rulesetName, picklestring)
+                                self._client.create_ruleset(self._username, self._rulesetName, serializedValidator)
                                 self._newRuleset = False
                                 if len(buttonrects) > 1:
                                     buttonrects.pop()
