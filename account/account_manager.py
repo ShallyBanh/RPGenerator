@@ -1,12 +1,9 @@
 """This module contains the User class."""
-import sys
-import os
-sys.path.append('../')
+import sys, os, smtplib, ssl, time, hashlib
+sys.path.append('../network')
 from .database import Database
-import smtplib, ssl
-import time
-import hashlib
 from network.email_sender import EmailSender
+print("do the imports work")
 # from User import User
 
 # @TODO how do we want to do interfaces
@@ -27,7 +24,7 @@ class AccountManager:
         self.database = Database(database_file)
         self.active_recoveries = {}
         self.recovery_timeout = 10800 # 3 hours (60s/min * 60min/h * 3h)
-        self.emailer = EmailSender()
+        # self.emailer = EmailSender()
     
     def reset_database(self):
         if os.path.exists(self.database.database_file):
@@ -184,6 +181,38 @@ class AccountManager:
         self.database.query("UPDATE Ruleset SET rules = ? WHERE rulename = ? and username = ?;", (jsonBlob, rulesetName, username, ))
         return 0
 
+    def add_asset(self, username, asset_name, jsonBlob):
+        """Inserts an asse"""
+        hashname = self.generate_hash(asset_name, username)
+        self.database.query("insert into assets values(?, ?, ?, ?);", (hashname, asset_name, username, jsonBlob ))
+        return 0
+
+    def update_asset(self, username, asset_name, jsonBlob):
+        """Updates an existing asset"""
+        hashname = self.generate_hash(asset_name, username)
+        self.database.query("update assets image = ? where hashname = ?;", (jsonBlob, hashname))
+        return 0
+
+    def get_asset(self, username, asset_name):
+        """Get an asset"""
+        hashname = self.generate_hash(asset_name, username)
+        self.database.query("select image from assets where hashname = ? ;", (hashname,))
+        row = self.database.cur.fetchone()
+        return row
+
+    def get_assets(self, username):
+        """Get all assets for a user"""
+        self.database.query("select name, blob from assets where username = ?;", (username,))
+        rows = self.database.cur.fetchall()
+        return rows
+
+    
+    # hashname text,
+    #                 name text,
+    #                 username text,
+    #                 image blob,
+    #                 primary key (hashname),
+    #                 foreign key (username) references users(username)
     def load_game_history(self, username):
         """Fetches game history"""
         self.database.query("SELECT game_id, role, game_name FROM GameHistory WHERE username = ?", (username, ))

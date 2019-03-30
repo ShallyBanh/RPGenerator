@@ -10,7 +10,7 @@ class Map:
         self.width = width
         self.height = height
         self.tilesize = tilesize
-        self.textures = []
+        self.textures = {}
         self.fogOfWar =  [[True for w in range(width)] for h in range(height)]
 
     class Texture:

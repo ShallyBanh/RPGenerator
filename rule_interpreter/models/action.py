@@ -4,6 +4,8 @@ class Action:
     """
 
     def __init__(self, name, content):
+        if ' ' in name:
+            raise Exception("Action name must not have spaces.")
         self._actionName = name.lower()
         self._ruleContent = content
         self._targetLine = self._ruleContent.splitlines()[0]
@@ -26,3 +28,6 @@ class Action:
 
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
+        
+    def __str__(self):
+        return "Name: {}\n".format(self.get_action_name())
