@@ -20,6 +20,7 @@ from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 import game_view as gameView
+import jsonpickle
 
 
 # Import pygameMenu
@@ -710,8 +711,7 @@ def create_new_game_view():
                         break
                     #to pass to the game_view once that is integrated
                     rulesetObject = [item for item in allRulesets if item[0] == ruleset_name.get_text()][0][1]
-                    print(rulesetObject)
-                    create_room(ruleset_name = ruleset_name.get_text(), ruleset_object = rulesetObject)
+                    create_room(ruleset_name = ruleset_name.get_text(), ruleset_object = jsonpickle.decode(rulesetObject))
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
@@ -796,7 +796,7 @@ def create_room(ruleset_name, ruleset_object):
     #client.create_game(Game(), "testgamename", currentUsername)
     gameId = client.get_game_id(currentUsername)[0]
     pygame.display.set_mode((1300, 750))
-    gameView.main(client, gameId, "GM")
+    gameView.main(client, gameId, "GM", ruleset_object)
     #CALL GAME VIEW HERE TO START THE GAME
     print(ruleset_name)
     print(ruleset_object)

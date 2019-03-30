@@ -155,7 +155,7 @@ class RulesetCreationEditView:
 
                     #fake export button for andrew to shoot out an object for him
                     if x in range(1100, 1300) and y in range(70, 130):
-                        return Validator()
+                        return
 
                     for moreIdx in range(len(self._moreButtonList)):
                         x1 = int(self._moreButtonList[moreIdx][0])
