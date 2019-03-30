@@ -496,16 +496,16 @@ class GameView:
                         return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = text.rstrip().replace(" ","\ ")
                         if os.path.isfile(text):
                             if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_bottom_info()
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
                                 if platform.system() == "Windows":
-                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1]
+                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1].replace("_","-")
                                 else:
-                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
+                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1].replace("_","-")
                                 copyfile(text, new_name)
                                 self.clear_bottom_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
