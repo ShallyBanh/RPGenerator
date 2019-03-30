@@ -199,11 +199,11 @@ class GameView:
         return
 
     def add_texture(self):
-        display_string = "_Add Texture Mode_\nPress ESC to exit this mode.\n\nSelect a texture:\n"
+        display_string = "*Add Texture Mode*\nPress ESC to exit this mode.\n\nSelect a texture:\n"
         display_string += self._images_string()
         
         self.clear_bottom_info()
-        self.display_message(display_string)
+        self.display_message(display_string, "*")
 
         chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, 500, 32, DISPLAYSURF)
 
@@ -260,7 +260,7 @@ class GameView:
 
     def _create_entity_help(self, reblit, error=""):
         self.clear_bottom_info()
-        buf, tpos = self.display_message("Create New Entity")
+        buf, tpos = self.display_message("_Create New Entity_ ")
 
         if len(error)>0:
             ptext.draw(error, (tpos[0] + buf.get_width() + 10, tpos[1]), sysfontname="arial", color=COLOR_RED, fontsize=FONTSIZE)
@@ -353,7 +353,7 @@ class GameView:
 
     def edit_entity(self):
         self.clear_bottom_info()
-        buf, tpos = self.display_message("Edit Entity\nSelect an entity, then enter the name of an attribute and its new value, then press ENTER.\nPress ESC to exit this mode.")
+        buf, tpos = self.display_message("_Edit Entity_\nSelect an entity, then enter the name of an attribute and its new value, then press ENTER.\nPress ESC to exit this mode.")
 
         surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -497,16 +497,16 @@ class GameView:
                         return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
-                        text = text.rstrip().replace(" ","\ ")
+                        text = text.rstrip()
                         if os.path.isfile(text):
                             if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_bottom_info()
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
                                 if platform.system() == "Windows":
-                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1].replace("_","-")
+                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1]
                                 else:
-                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1].replace("_","-")
+                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
                                 copyfile(text, new_name)
                                 self.clear_bottom_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
@@ -529,7 +529,7 @@ class GameView:
     
     def remove_player(self):
         self.clear_bottom_info()
-        self.display_message("Remove Player")
+        self.display_message("_Remove Player_\n")
         return
 
     def roll_dice(self):
@@ -602,8 +602,8 @@ class GameView:
         self.display_message(info)
         return
 
-    def display_message(self, message):
-        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = game.map.width*game.map.tilesize, underlinetag="_")
+    def display_message(self, message, notation="_"):
+        txt_surface, tpos = ptext.draw(message, (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = game.map.width*game.map.tilesize, underlinetag=notation)
         return txt_surface, tpos
 
     def update_fog(self):
