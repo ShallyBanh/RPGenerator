@@ -7,8 +7,7 @@ class Game:
         self.GM = None
         self.name = None
         self.players = []
-        self.entities = [] # possibly use dict instead
-        self.map = Map(50, 10, 18) # parameters?
+        self.map = None 
         self.ruleset_copy = None
         self.assets = []
         self.transcript = ""
@@ -50,12 +49,6 @@ class Game:
 
     def set_players(self, players):
         self.players = players
-
-    def get_entities(self):
-        return self.entities
-
-    def set_entities(self, entities):
-        self.uniqueentities = entities
 
     def get_map(self):
         return self.map

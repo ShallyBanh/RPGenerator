@@ -135,6 +135,20 @@ def recover_account():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/add_asset", methods=['POST'])
+def add_asset():
+    username = request.args.get("username")
+    asset_name = request.args.get("asset_name")
+    json_blob = request.args.get("json_blob")
+    if username is None or asset_name is None or json_blob is None:
+        return Response(status=400)
+    print("[server] [add_asset] got username,asset_name,json_blob = {},{},json_blob size {}".format(username, asset_name, len(json_blob)))
+    # print("[server] [add_asset] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
+    response = server.account_manager.add_asset(username, asset_name, json_blob)
+    print("[server] [add_asset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/reset_database", methods=['POST'])
 def reset_database():
     """ WARNING: for test purposes only, @TODO remove """
