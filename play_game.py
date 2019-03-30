@@ -647,7 +647,7 @@ def join_game_view():
                     if not room_number.get_text().isdigit():
                         error_surface = True
                         break
-                    enter_room(room_number = room_number.get_text(), gmOrPlayer ="PLAYER")
+                    enter_room(room_number = room_number.get_text())
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
@@ -744,7 +744,7 @@ def previous_games_view():
     print(values)
     if values is not None:
         #values[0] = game room number, values[1] = game status i.e gm or player
-        enter_room(values[0], values[1])
+        enter_room(values[0])
     return
 
 # -----------------------------------------------------------------------------
@@ -771,13 +771,22 @@ def recover_account_credentials(username, code, password):
     client.recover_account(username, code, password, password)
     return
 
-def enter_room(room_number, gmOrPlayer):
+def enter_room(room_number):
     #TALK TO THOMAS ABOUT CALL TO-DO
     #async_send(['join_game', [room_number]])
     pygame.display.set_mode((1300, 750))
-    #print(client.get_list_of_games_and_their_gms())
-    exit()
-    gameView.main(client, room_number, gmOrPlayer)
+    listOfGames = client.get_list_of_games_and_their_gms()
+    isGM = False
+    for games in listOfGames:
+        print(games[0])
+        print(games[1])
+        if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
+            print("should be true")
+            isGM = True
+    if isGM:
+        gameView.main(client, room_number, "GM")
+    else: 
+        gameView.main(client, room_number, "PLAYER")
     print(room_number)
     return
 

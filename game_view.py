@@ -823,6 +823,7 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.ma
 # -----------------------------------------------------------------------------------------------------------------------
 
 def main(client, gameId, gmOrPlayer):
+    global GM_STATUS
     if gmOrPlayer == "PLAYER":
         GM_STATUS = False
     # FIX RESOLUTION 

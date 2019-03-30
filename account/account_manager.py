@@ -238,6 +238,6 @@ class AccountManager:
     
     def get_list_of_games_and_their_gms(self):
         """Fetches list of games and their gms"""
-        self.database.query("SELECT game_id, username FROM GameHistory;")
+        self.database.query("SELECT distinct(game_id), username FROM GameHistory;", [])
         rows = self.database.cur.fetchall()
         return rows
