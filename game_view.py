@@ -141,6 +141,29 @@ class GameView:
                             return my_entity
         return
 
+    def blit_entire_map(self):
+            # create the entire background
+        for rw in range(game.map.height):
+            for cl in range(game.map.width):
+                self.blit_default(rw,cl)
+                
+        # put all the textures on the map
+        for key, texture in game.map.textures.items():
+            self.blit_texture(texture)
+
+        # put all the entities on the map
+        for location, entity in ruleenactor.all_created_entities.items():
+            entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+            DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+        
+        # blit fog of war overtop everything
+        if not GM_STATUS:
+            for rw in range(game.map.height):
+                for cl in range(game.map.width):
+                    if not game.map.fogOfWar[rw][cl]:
+                        DISPLAYSURF.blit(FOG_IMAGE, self.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
+        return
+
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
 
     def toggle_fog(self):
@@ -851,26 +874,7 @@ def main(client):
     game.map.fogOfWar[9][15] = False
     game.map.fogOfWar[9][16] = False
 
-    # create the entire background
-    for rw in range(game.map.height):
-        for cl in range(game.map.width):
-            gameview.blit_default(rw,cl)
-            
-    # put all the textures on the map
-    for key, texture in game.map.textures.items():
-        gameview.blit_texture(texture)
-
-    fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
-    if not GM_STATUS:
-        for rw in range(game.map.height):
-            for cl in range(game.map.width):
-                if not game.map.fogOfWar[rw][cl]:
-                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
-
-    # put all the entities on the map
-    for location, entity in ruleenactor.all_created_entities.items():
-        entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
-        DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+    gameview.blit_entire_map()
 
     if GM_STATUS:
         gameview.GM_help_screen()
@@ -951,13 +955,15 @@ def main(client):
                     my_entity = None
                 else:
                     x, y = gameview.which_tile(mousepos)
-                    my_entity = gameview.which_entity(x, y)
-                    if my_entity is not None:
-                        if (my_entity.y + my_entity.size.get_width()) >= game.map.width or (my_entity.x + my_entity.size.get_height()) >= game.map.height:
-                            loc_x, loc_y = gameview.tile_location((my_entity.x,my_entity.y))
-                        else:    
-                            loc_x, loc_y = gameview.tile_location((my_entity.size.get_width()+my_entity.x,my_entity.size.get_height()+my_entity.y))
-                        size, location = gameview.make_popup(loc_x, loc_y, my_entity)
+                    if x in range(game.map.height) and y in range(game.map.width) and (GM_STATUS or (not GM_STATUS and game.map.fogOfWar[x][y])):
+                        my_entity = gameview.which_entity(x, y)
+                        if my_entity is not None:
+                            if (my_entity.y + my_entity.size.get_width()) >= game.map.width or (my_entity.x + my_entity.size.get_height()) >= game.map.height:
+                                loc_x, loc_y = gameview.tile_location((my_entity.x,my_entity.y))
+                            else:    
+                                loc_x, loc_y = gameview.tile_location((my_entity.size.get_width()+my_entity.x,my_entity.size.get_height()+my_entity.y))
+                            size, location = gameview.make_popup(loc_x, loc_y, my_entity)
+
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     RUNNING = False
