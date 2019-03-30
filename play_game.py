@@ -137,6 +137,9 @@ def async_command_loop():
                 async_message[1] = [command[1], client.user.get_username()]
             elif command[0] == 'leave_game':
                 print("trying to leave game")
+                leave_message = "{} left the game".format(client.user.get_username())
+                game.append_transcript(leave_message)
+                async_send(['chat', [client_id, leave_message]])
                 async_message[1] = client_id
             elif command[0] == 'chat':
                 async_transcript += "\n" + client.user.get_username() + ": " + " ".join(command[1:])
@@ -188,7 +191,7 @@ def async_receive():
             elif message_type == "join_request":
                 answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                 if answer.lower() in ["y", "yes"]:
-                    game.append_transcript("player {} joined the game".format(client.user.get_username))
+                    game.append_transcript("player {} joined the game".format(message_content[0][1]))
                     message_content.append(game)
                     async_send(['accept_join', message_content])
                 else:
@@ -206,6 +209,7 @@ def async_receive():
                 print("join request rejected")
             elif message_type == 'removed':
                 print("you have been removed @TODO")
+                game = None
             elif message_type == 'update_game':
                 print("updating game")
             elif message_type == 'action_reject':
