@@ -37,6 +37,8 @@ class RuleInputView:
         buttonrects = [pygame.Rect((50, 150, 1000, 550))]
         textSizes = [(50, 100)]
         buttonnames = ["Rule"]
+        print("in rule input view")
+        print(Validator().get_entities())
         
         while self._playing:
 
@@ -48,7 +50,7 @@ class RuleInputView:
                         x, y = pygame.mouse.get_pos()
                         self._currentlySelected = False
                         if x in range(1100,1300) and y in range(600,750):
-                            if self._parser.is_valid_rule(self._user_input) == True:
+                            if self._parser.is_valid_rule(self._user_input, Validator()) == True:
                                 self._valid = True
                                 return self._user_input
                             else:

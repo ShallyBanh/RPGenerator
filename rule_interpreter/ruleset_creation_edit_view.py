@@ -25,7 +25,6 @@ class RulesetCreationEditView:
         self._database = Database("database.db")
         self._moreImage = pygame.image.load('img/moreButton.png')
         self._saveButtonImage = pygame.image.load('img/saveButton.png')
-        self._exportButtonImage = pygame.image.load('img/exportButton.png')
         self._currentlySelected = False
         self._newRuleset = False
         self._entity_view = False
@@ -34,7 +33,7 @@ class RulesetCreationEditView:
         self._attribute_action_view = False
         self._unvalid = False
         self._rulesetName = ""
-        self._entities = [entity.get_name() for entity in Validator().get_entities()]
+        self._entities = [entity.get_type() for entity in Validator().get_entities()]
         self._relationships = [relationship.get_name() for relationship in Validator().get_relationships()]
         self._invalidSubmission = False
         self._client = client
@@ -72,7 +71,6 @@ class RulesetCreationEditView:
             screen.blit(self._plusImage,(565, 135))
             screen.blit(self._plusImage,(1200, 135))
             screen.blit(self._saveButtonImage,(1100, 10))
-            screen.blit(self._exportButtonImage,(1100, 70))
             screen.blit(self._arrowImg,(10, 10))
             clickpos = None
             events = pygame.event.get()
@@ -81,7 +79,7 @@ class RulesetCreationEditView:
                 entityTuple = EntityCreationView().main()
                 if entityTuple[0] is not None:
                     self._entities.append(entityTuple[0])
-                    Validator().add_entity(Entity(entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4], entityTuple[5]))
+                    Validator().add_entity(Entity("", entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4]))
                 self._entity_view = False
 
             if self._relationship_view == True:
@@ -108,7 +106,6 @@ class RulesetCreationEditView:
                         screen.blit(self._plusImage,(565, 135))
                         screen.blit(self._plusImage,(1200, 135))
                         screen.blit(self._saveButtonImage,(1100, 10))
-                        screen.blit(self._exportButtonImage,(1100, 70))
                         screen.blit(self._arrowImg,(10, 10))
                         self._rulesetName = self._rulesetName [:len(self._rulesetName)-1]
                 
@@ -117,7 +114,6 @@ class RulesetCreationEditView:
                         screen.blit(self._plusImage,(565, 135))
                         screen.blit(self._plusImage,(1200, 135))
                         screen.blit(self._saveButtonImage,(1100, 10))
-                        screen.blit(self._exportButtonImage,(1100, 70))
                         screen.blit(self._arrowImg,(10, 10))
                         self._rulesetName = self._rulesetName [:len(self._rulesetName)-1]
 
@@ -132,6 +128,9 @@ class RulesetCreationEditView:
                         if buttonrects[2].collidepoint(x,y):
                             self._currentlySelected = True
                     if x in range(10,40) and y in range(10,40):
+                        if self._newRuleset == False:
+                            serializedValidator = jsonpickle.encode(Validator())
+                            self._client.update_ruleset(self._username, self._rulesetName, serializedValidator)
                         return
                     if x in range(565, 600) and y in range(135, 175):
                         self._entity_view = True

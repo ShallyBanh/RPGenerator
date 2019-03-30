@@ -11,7 +11,7 @@ from action_creation_view import ActionCreationView
 from attribute_creation_view import AttributeCreationView
 
 class AttributeActionCreationView:
-    def __init__(self, currentEntityName):
+    def __init__(self, currentEntityType):
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
@@ -19,10 +19,10 @@ class AttributeActionCreationView:
         self._invalidSubmission = False
         self._action_view = False
         self._attribute_view = False
-        self._currentEntityName = currentEntityName
+        self._currentEntityType = currentEntityType
 
     def get_entity_info(self):
-        entityIdx = Validator().get_entity_idx(self._currentEntityName)
+        entityIdx = Validator().get_entity_idx(self._currentEntityType)
         if entityIdx != -1:
             return Validator().get_entities()[entityIdx]
         return -1
@@ -56,7 +56,7 @@ class AttributeActionCreationView:
                 actionName, rule = ActionCreationView().main()
                 if actionName is not None:
                     actionNames.append(actionName)
-                    entityIdx = Validator().get_entity_idx(self._currentEntityName)
+                    entityIdx = Validator().get_entity_idx(self._currentEntityType)
                     if entityIdx != -1:
                         Validator().set_action(entityIdx, actionName, rule)
                 self._action_view = False
@@ -65,7 +65,7 @@ class AttributeActionCreationView:
                 attrName, attrValue = AttributeCreationView().main()
                 if attrName is not None:
                     attributes.append(attrName)
-                    entityIdx = Validator().get_entity_idx(self._currentEntityName)
+                    entityIdx = Validator().get_entity_idx(self._currentEntityType)
                     if entityIdx != -1:
                         Validator().set_attribute(entityIdx, attrName, attrValue)
                 self._attribute_view = False
