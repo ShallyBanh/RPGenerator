@@ -143,8 +143,8 @@ class Client():
 
     def create_game(self, gameBlob, gameName, username):
         """ WARNING: for test purposes only, @TODO remove """
-        print("[client] [create_game] attempting to create a game with gameBlob = {}".format(gameBlob))        
-        payload = {'gameBlob': gameBlob}
+        print("[client] [create_game] attempting to create a game with gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, username))        
+        payload = {'gameBlob': gameBlob, 'gameName': gameName, 'username': username}
         response = requests.post("{}/create_game".format(self.URL), params=payload)
         print("[client] [create_game] response was {}/{}/{}".format(response, response.status_code, response.text))      
         return 0 if (response.status_code == 200) else -1

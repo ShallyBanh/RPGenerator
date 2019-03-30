@@ -59,7 +59,7 @@ dt = 1 / FPS
 # Asynchronous communication setup
 general_async_port = 5000
 voice_async_port = 9495
-serverAddr = '204.209.76.191'
+serverAddr = '0.0.0.0'
 if len(sys.argv) == 2:
     serverAddr = sys.argv[1]
 general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -694,16 +694,21 @@ def create_new_game_view():
                     option_menu.mainloop(playevents)
                     return
             elif e.type == MOUSEBUTTONDOWN:
+                error_surface = False
                 mouse_pos = pygame.mouse.get_pos()
                 print(mouse_pos)
                 if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,450):
                     # recover ruleset_name
                     if len(ruleset_name.get_text()) < 1: 
                         break
-                    # if not ruleset_name.get_text().isdigit(): # CHECK IF EXISTS
-                    #     error_surface = True
-                    #     break
-                    create_room(ruleset_name = ruleset_name.get_text())
+                    allRulesets = client.load_existing_rulesets(currentUsername)
+                    rulesetNames = [ruleset[0] for ruleset in allRulesets]
+                    if ruleset_name.get_text() not in rulesetNames : # CHECK IF EXISTS
+                        error_surface = True
+                        break
+                    #to pass to the game_view once that is integrated
+                    rulesetObject = [item for item in allRulesets if item[0] == ruleset_name.get_text()][0][1]
+                    create_room(ruleset_name = ruleset_name.get_text(), ruleset_object = rulesetObject)
                     return
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
@@ -716,7 +721,6 @@ def create_new_game_view():
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if error_surface:
             ptext.draw("Ruleset name does not exist", (200, 300), sysfontname="arial", color=COLOR_RED, fontsize=35, width = 300)
-            error_surface = False
         if len(ruleset_name.get_text()) >= 1:
             surface.blit(ruleset_name.get_surface(), (250,170))  
         else:
@@ -765,8 +769,14 @@ def enter_room(room_number):
     print(room_number)
     return
 
-def create_room(ruleset_name):
+def create_room(ruleset_name, ruleset_object):
+    #fake out game name for now until gui is done
+    #also TO-DO PASS VALIDATOR OBJECT TO GAME OBJECT
+    client.create_game(Game(), "testgamename", currentUsername)
+
+    #CALL GAME VIEW HERE TO START THE GAME
     print(ruleset_name)
+    print(ruleset_object)
     return
 
 # -----------------------------------------------------------------------------

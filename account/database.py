@@ -80,6 +80,7 @@ class Database:
                     role text,
                     username text,
                     game_id integer,
+                    time Date,
                     primary key (id),
                     foreign key (username) references users(username),
                     foreign key (game_id) references Game(id)
