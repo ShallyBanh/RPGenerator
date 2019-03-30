@@ -143,7 +143,7 @@ class GameView:
         return
 
     def blit_entire_map(self):
-            # create the entire background
+        # create the entire background
         for rw in range(game.map.height):
             for cl in range(game.map.width):
                 self.blit_default(rw,cl)
@@ -224,6 +224,7 @@ class GameView:
                         texture = Map.Texture(x,y,1,1,selected_image)
                         game.map.textures[(x,y)] = texture
                         if self.which_entity(x,y) is None:
+                            self.blit_default(x,y)
                             self.blit_texture(texture)
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
@@ -352,7 +353,7 @@ class GameView:
 
     def edit_entity(self):
         self.clear_bottom_info()
-        buf, tpos = self.display_message("Edit Entity")
+        buf, tpos = self.display_message("Edit Entity\nSelect an entity, then enter the name of an attribute and its new value, then press ENTER.\nPress ESC to exit this mode.")
 
         surf_name, tpos_name = ptext.draw("Name: ", (tpos[0], self._y_coordinate(buf, tpos)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         surf_value, tpos_value = ptext.draw("Value: ", (tpos[0], self._y_coordinate(surf_name, tpos_name)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -385,10 +386,6 @@ class GameView:
                                     attributes.append(attr.get_attribute_name())
                                 display_string = "Attribute Option Name: " + ", ".join(attributes)
                                 surf_attr, tpos_attr = ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_value, tpos_value)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
-                    else:
-                        self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
-                        self.clear_bottom_info(tpos[0], self._y_coordinate(surf_value, tpos_value))
-                        saved_entity = None 
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
@@ -500,16 +497,16 @@ class GameView:
                         return
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = text.rstrip().replace(" ","\ ")
                         if os.path.isfile(text):
                             if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_bottom_info()
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
                                 if platform.system() == "Windows":
-                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1]
+                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1].replace("_","-")
                                 else:
-                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
+                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1].replace("_","-")
                                 copyfile(text, new_name)
                                 self.clear_bottom_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
@@ -535,7 +532,7 @@ class GameView:
         self.display_message("Remove Player")
         return
 
-    def roll_die(self):
+    def roll_dice(self):
         self.clear_bottom_info()
         surf, tpos = self.display_message("Roll:")
 
@@ -544,7 +541,7 @@ class GameView:
         surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         buf = tpos[0] + surf.get_width() + 10
         d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
-
+        ptext.draw("Max die: 100. Max sides: 120. Press ESC to exit this mode.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height + surf.get_height() + 10, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
 
         RUNNING = True
@@ -849,10 +846,10 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "a": {"name": "Add Asset", "function": GAMEVIEW.add_asset},
               "d": {"name": "Delete Entity", "function": GAMEVIEW.delete_entity},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
-              "r": {"name": "Roll Die", "function": GAMEVIEW.roll_die},
+              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
               "h": {"name": "Show this help screen", "function": GAMEVIEW.GM_help_screen}
               }
-PLAYER_HOTKEYS = {"r": {"name": "Roll Die", "function": GAMEVIEW.roll_die},
+PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
                   "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
                  }
 DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (50,50))
@@ -929,6 +926,7 @@ def main(client, new_game):
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                         else:
                             print("TODO SEND THIS ACTION AS A GM FORCED ACTION TO ALL PLAYERS.")
+                        # TODO ENSURE WE REBLIT EVERYTHING FOR EVERYONE!!
                         print(action_requested)
                     else:
                         my_entity = None
@@ -965,6 +963,7 @@ def main(client, new_game):
 
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
+                    # TODO ALERT FRIENDS THAT THEY HAVE EXITED
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
                     if my_entity is not None:
@@ -976,6 +975,7 @@ def main(client, new_game):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
+                    # TODO ENSURE THAT WE SEND THIS OUT TO EVERYONE
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
