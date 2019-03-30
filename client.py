@@ -141,7 +141,7 @@ class Client():
         data = json.loads(response.text)
         return data
 
-    def create_game(self, gameBlob):
+    def create_game(self, gameBlob, gameName, username):
         """ WARNING: for test purposes only, @TODO remove """
         print("[client] [create_game] attempting to create a game with gameBlob = {}".format(gameBlob))        
         payload = {'gameBlob': gameBlob}

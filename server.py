@@ -220,10 +220,12 @@ def load_game_history():
 @app.route("/create_game", methods=['POST'])
 def create_game():
     gameBlob = request.args.get("gameBlob")
-    if gameBlob is None:
+    gameName = request.args.get("gameName")
+    userName = request.args.get("username")
+    if gameBlob is None or gameName is None or userName is None:
         return Response(status=400)
-    print("[server] [create_game] got gameBlob = {}".format(gameBlob))
-    response = server.account_manager.create_game(gameBlob)
+    print("[server] [create_game] got gameBlob, gameName, username = {},{},{}".format(gameBlob, gameName, userName))
+    response = server.account_manager.create_game(gameBlob, gameName, userName)
 
     print("[server] [create_game] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
