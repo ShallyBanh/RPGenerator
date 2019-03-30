@@ -1,4 +1,4 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess
+import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard
 from pygame.locals import *
 from game_engine.map import Map
 from client import Client
@@ -475,7 +475,7 @@ class GameView:
 
     def add_asset(self):
         self.clear_bottom_info()
-        general_message = "_Add Asset Mode_\nEnter in the path to an image.\nPress ESC to exit this mode."
+        general_message = "_Add Asset Mode_\nEnter in the path to an image.\nRight click the input box to paste a file name path.\nPress ESC to exit this mode."
         self.display_message(general_message)
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
@@ -490,7 +490,8 @@ class GameView:
                     pygame.quit()
                     sys.exit()
                 elif event.type == MOUSEBUTTONDOWN:
-                    pass
+                    if event.button == 3:
+                        chat_input_box.text = clipboard.paste()
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()

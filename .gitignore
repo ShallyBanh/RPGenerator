@@ -4,3 +4,4 @@ __pycache__
 *.pyc
 # examples to not commit
 # pygame_basics/
+/tmp
