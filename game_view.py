@@ -1,4 +1,4 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard
+import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard, jsonpickle
 from pygame.locals import *
 from game_engine.map import Map
 from client import Client
@@ -13,7 +13,6 @@ from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
-import jsonpickle
 from rule_interpreter.models.point import Point
 
 # sources for examples:
@@ -37,8 +36,8 @@ class GameView:
 
     def check_entity_fit(self, width, height, x, y, entity):
         # in the case of moving where entity already is
-        if (x, y) in ruleenactor.all_created_entities:
-            if ruleenactor.all_created_entities[(x, y)] == entity: # is it itself
+        if (x, y) in RULE_ENACTOR.all_created_entities:
+            if RULE_ENACTOR.all_created_entities[(x, y)] == entity: # is it itself
                 return True
             else: # another entity is there
                 return False
@@ -107,7 +106,7 @@ class GameView:
         return images
 
     def which_entity(self, x, y):
-        for key, e in ruleenactor.all_created_entities.items():
+        for key, e in RULE_ENACTOR.all_created_entities.items():
             if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
@@ -153,7 +152,7 @@ class GameView:
             self.blit_texture(texture)
 
         # put all the entities on the map
-        for location, entity in ruleenactor.all_created_entities.items():
+        for location, entity in RULE_ENACTOR.all_created_entities.items():
             entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
             DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
         
@@ -302,13 +301,13 @@ class GameView:
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                     x, y = GAMEVIEW.which_tile(mousepos)
                     if len(selected_type)>0 and x != -1 and y != -1 and self.which_entity(x,y) is None:
-                        entity = ruleenactor.add_new_entity(selected_type, selected_name, x, y)
+                        entity = RULE_ENACTOR.add_new_entity(selected_type, selected_name, x, y)
                         if GAMEVIEW.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
                             entity.set_image_filename(selected_image_filename)
                             texture_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
                             DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
                         else:
-                            ruleenactor.remove_entity(entity)
+                            RULE_ENACTOR.remove_entity(entity)
                         selected_name = ""
                         selected_type = ""
                         selected_image_filename = ""
@@ -401,16 +400,16 @@ class GameView:
                                 type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
                                 if type_of_attr == bool:
                                     if new_value.lower() == "true":
-                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, True)
+                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, True)
                                     elif new_value.lower() == "false":
-                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, False)
+                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, False)
                                 elif type_of_attr == float:
                                     try:
-                                        ruleenactor.modify_attribute(saved_entity, modifying_attr, float(new_value))
+                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, float(new_value))
                                     except Exception as e:
                                         pass
                                 elif type_of_attr == str:
-                                    ruleenactor.modify_attribute(saved_entity, modifying_attr, new_value)
+                                    RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, new_value)
                             self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                         saved_entity = None
                         input_name.text = ""
@@ -463,7 +462,7 @@ class GameView:
                             return
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
-                            ruleenactor.remove_entity(saved_entity)
+                            RULE_ENACTOR.remove_entity(saved_entity)
                             if (saved_entity.x,saved_entity.y) in game.map.textures:
                                 self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
                             else:
@@ -561,7 +560,7 @@ class GameView:
                         if len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
-                            result = ruleenactor.roll_dice(d_string)
+                            result = RULE_ENACTOR.roll_dice(d_string)
                             if result is None:
                                 result = "ERROR: IMPROPER ENTRY"
                             surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -792,51 +791,11 @@ class Transcript:
 
 # ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
-MAPOFFSET = (200,0)
-OLDSURF = None
-gameview = GameView()
-
-IMAGES = gameview.load_pictures()
-
-# Game Class
 game = Game()
-game.name = "Test Suite"
-game.uniqueID = 1
-game.map = Map(tilesize = 50, height = 10, width = 18)
-# Entities used for testing
-# game.entities = [Entity(5,5,2,2,"water.png",["Attack","Defend"]),Entity(2,2,1,1,"rock.png",["Sit"]),Entity(2,3,1,1,"rock.png",["Defend"])]
-
-ruleenactor = RuleEnactor()
-# Rule Validation TEST
-# ruleenactor = RuleEnactor()
-# validator = _Validator()
-# isTemplate = False
-# hp_time = Attribute("HP", "10")    
-# ac_time = Attribute("AC", 11)    
-# template = Entity("", "entity", 1, 1, isTemplate, None)
-# template.add_attribute(hp_time)
-# template.add_attribute(ac_time)
-        
-# attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
-# attack_action = Action("Attack", attack_rule)
-# fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
-# fireball_action = Action("Fireball", fireball_rule)
-# template.add_action(attack_action)
-# template.add_action(fireball_action)
-        
-# validator.add_entity(template)
-# ruleenactor.parse_validator(validator)
-
-# entity = ruleenactor.add_new_entity("entity", "Andrew", 3, 7)
-# entity.set_image_filename("default-image.png")
-####### Rule Validation TEST END #######
-
-# GLOBAL VAR
+RULE_ENACTOR = RuleEnactor()
 GAMEVIEW = GameView()
 IMAGES = GAMEVIEW.load_pictures()
-
 pygame.init()
-# FONTTYPE = pygame.font.SysFont('arial', 25)
 # GENERAL COLORS AND ITEMS
 RESOLUTION_SCALING = 1600
 if platform.system() == "Darwin":
@@ -874,93 +833,26 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, gameObj, gmOrPlayer, validatorObj = None):
-    global ruleenactor
+def main(client, gameObj, gmOrPlayer = True, validatorObj = None):
+    global RULE_ENACTOR
     global game
+    global GM_STATUS
 
     game = gameObj
-    GAMEVIEW.blit_entire_map()
+    GM_STATUS = gmOrPlayer
+    
     if validatorObj is not None:
-        ruleenactor.parse_validator(validatorObj)
-        gameObj.set_ruleset_copy(ruleenactor)
-        client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+        RULE_ENACTOR.parse_validator(validatorObj)
+        gameObj.set_ruleset_copy(RULE_ENACTOR)
+        # client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
     else:
-        ruleenactor = gameObj.get_ruleset_copy()
-
-    global GM_STATUS
-    if gmOrPlayer == "PLAYER":
-        GM_STATUS = False
-    # FIX RESOLUTION 
-    # surf, tpos = ptext.draw("Please enter your screen vertical resolution:", (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
-    # resolution = InputBox(surf.get_width()+10, 0, 200, 32, DISPLAYSURF)
-    # resolution.text = str(pyautogui.size()[1])
-
-    # RUNNING = True
-    # while RUNNING:
-    #     for event in pygame.event.get():
-    #         if event.type == QUIT:
-    #             pygame.quit()
-    #             sys.exit()
-    #         elif event.type == KEYDOWN:   
-    #             if event.key == K_RETURN:
-    #                 # HANDLE SHIT HERE
-    #                 if len(resolution.text)>0:
-    #                     try:
-    #                         FONTSIZE = int(30*int(resolution.text)/RESOLUTION_SCALING)
-    #                     except:
-    #                         FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
-    #                     RUNNING = False
-    #                     if FONTSIZE < 10:
-    #                         FONTSIZE = 10
-    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
-    #                 else:
-    #                     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
-    #                     if FONTSIZE < 10:
-    #                         FONTSIZE = 10
-    #                     FONTTYPE = pygame.font.Font(None, FONTSIZE)
-    #                     RUNNING = False
-    #         resolution.handle_event(event)
-    #     # input commands
-    #     resolution.wipe()
-    #     resolution.draw()
-
-    #     pygame.display.flip()
+        RULE_ENACTOR = gameObj.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
     ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
 
-    # # create the map and add add textures to it
-    # game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
-    # game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
-    
-    # #example fog
-    # game.map.fogOfWar[8][15] = False
-    # game.map.fogOfWar[8][16] = False
-    # game.map.fogOfWar[9][15] = False
-    # game.map.fogOfWar[9][16] = False
-
-    # create the entire background
-    
-    for rw in range(game.map.height):
-        for cl in range(game.map.width):
-            gameview.blit_default(rw,cl)
-            
-    # put all the textures on the map
-    for key, texture in game.map.textures.items():
-        gameview.blit_texture(texture)
-
-    fogImage = pygame.transform.scale(IMAGES["fog.png"], (game.map.tilesize,game.map.tilesize))
-    if not GM_STATUS:
-        for rw in range(game.map.height):
-            for cl in range(game.map.width):
-                if not game.map.fogOfWar[rw][cl]:
-                    DISPLAYSURF.blit(fogImage, gameview.offset_blit(cl*game.map.tilesize, rw*game.map.tilesize))
-
-    # put all the entities on the map
-    # for entity in game.entities:
-    #     entity_image = pygame.transform.scale(IMAGES[entity.name], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
-    #     DISPLAYSURF.blit(entity_image, gameview.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
+    GAMEVIEW.blit_entire_map()
 
     if GM_STATUS:
         GAMEVIEW.GM_help_screen()
@@ -975,7 +867,7 @@ def main(client, gameObj, gmOrPlayer, validatorObj = None):
 
     global TYPES_OF_ENTITIES
     TYPES_OF_ENTITIES = []
-    for entity_type in ruleenactor.entity_types:
+    for entity_type in RULE_ENACTOR.entity_types:
         TYPES_OF_ENTITIES.append(entity_type.get_type())
 
     RUNNING = True
@@ -999,15 +891,15 @@ def main(client, gameObj, gmOrPlayer, validatorObj = None):
                             action_requested = "Move"
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
-                            result = ruleenactor.perform_action(action_requested, my_entity)
+                            result = RULE_ENACTOR.perform_action(action_requested, my_entity)
                             if result == "point":
                                 point = GAMEVIEW.action_sequence(result)
                                 # point = Point(x,y)
-                                result = ruleenactor.perform_action_given_target(action_requested, my_entity, point)
+                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, point)
                             elif result in TYPES_OF_ENTITIES:
                                 # select an entity OF THAT SAME TYPE 
                                 targeted_entity = GAMEVIEW.action_sequence(result)
-                                result = ruleenactor.perform_action_given_target(action_requested, my_entity, targeted_entity)
+                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, targeted_entity)
                             GAMEVIEW.clear_bottom_info()
                             GAMEVIEW.GM_help_screen()
                             my_entity = None
@@ -1033,7 +925,7 @@ def main(client, gameObj, gmOrPlayer, validatorObj = None):
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
 
-                        my_entity = ruleenactor.move_entity(my_entity, (x,y))
+                        my_entity = RULE_ENACTOR.move_entity(my_entity, (x,y))
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(IMAGES[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
@@ -1085,26 +977,46 @@ def main(client, gameObj, gmOrPlayer, validatorObj = None):
         pygame.display.flip()
 
 
-# if __name__ == "__main__":
-#     client = Client()
+if __name__ == "__main__":
+    client = Client()
 
-#     # Game Class
-#     new_game = Game()
-#     new_game.name = "Test Suite"
-#     new_game.uniqueID = 1
-#     new_game.map = Map(tilesize = 50, height = 10, width = 18)
+    # Game Class
+    new_game = Game()
+    new_game.name = "Test Suite"
+    new_game.uniqueID = 1
+    new_game.map = Map(tilesize = 50, height = 10, width = 18)
     
-#     # create the map and add add textures to it
-#     new_game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
-#     new_game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
+    # create the map and add add textures to it
+    new_game.map.textures[(3,3)] = Map.Texture(3,3,1,1,"grass.png")
+    new_game.map.textures[(3,4)] = Map.Texture(3,4,1,1,"grass.png")
     
-#     #example fog
-#     new_game.map.fogOfWar[8][15] = False
-#     new_game.map.fogOfWar[8][16] = False
-#     new_game.map.fogOfWar[9][15] = False
-#     new_game.map.fogOfWar[9][16] = False
+    #example fog
+    new_game.map.fogOfWar[8][15] = False
+    new_game.map.fogOfWar[8][16] = False
+    new_game.map.fogOfWar[9][15] = False
+    new_game.map.fogOfWar[9][16] = False
 
-#     main(client = client, new_game = new_game)
+    # Rule Validation TEST
+    validator = _Validator()
+    isTemplate = False
+    hp_time = Attribute("HP", "10")    
+    ac_time = Attribute("AC", 11)    
+    template = Entity("", "entity", 1, 1, isTemplate, None)
+    template.add_attribute(hp_time)
+    template.add_attribute(ac_time)
+            
+    attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+    attack_action = Action("Attack", attack_rule)
+    fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+    fireball_action = Action("Fireball", fireball_rule)
+    template.add_action(attack_action)
+    template.add_action(fireball_action)
+            
+    validator.add_entity(template)
+    RULE_ENACTOR.parse_validator(validator)
 
+    entity = RULE_ENACTOR.add_new_entity("entity", "Andrew", 3, 7)
+    entity.set_image_filename("default-image.png")
+    ###### Rule Validation TEST END #######
 
-
+    main(client = client, gameObj = new_game, gmOrPlayer = True, validatorObj = validator)

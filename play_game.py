@@ -1,18 +1,8 @@
 # Import pygame and libraries
-import sys
-import os
-import pygame
+import sys, os, pygame, pygame_textinput, threading, time, select, socket, pickle, ptext, jsonpickle
 from pygame.locals import *
 from random import randrange
-import os
-import pygame_textinput
-import threading
-import time
-import select
-import socket
-import pickle
 from client import Client
-import ptext
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from rule_interpreter.models import *
@@ -21,8 +11,6 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
-import jsonpickle
-
 
 # Import pygameMenu
 import pygameMenu
@@ -30,7 +18,6 @@ from pygameMenu.locals import *
 # PYGAMEMENU_TEXT_NEWLINE
 
 # Global variables
-DIFFICULTY = ['EASY']
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
 # COLOR_BACKGROUND = (128, 0, 128)
@@ -295,13 +282,6 @@ def account_login_view():
                     main_menu.enable()
                     main_menu.mainloop(playevents)
                     return
-                # continue to make the rest of the buttons connect to different places
-                # elif e.key != K_ESCAPE and main_menu.is_disabled():
-                #     # Feed it with events every frame
-                      
-                # elif e.key == K_RETURN and main_menu.is_disabled():
-                #     surface.fill(COLOR_BACKGROUND)
-
         
         if selected == "username":
             username.update(playevents)   
@@ -918,33 +898,6 @@ def main_background():
     surface.fill(COLOR_BACKGROUND)
 
 # -----------------------------------------------------------------------------
-# PLAY MENU
-# play_menu = pygameMenu.Menu(surface,
-#                             bgfun=main_background,
-#                             color_selected=COLOR_WHITE,
-#                             font=pygameMenu.fonts.FONT_BEBAS,
-#                             font_color=COLOR_BLACK,
-#                             font_size=30,
-#                             menu_alpha=100,
-#                             menu_color=MENU_BACKGROUND_COLOR,
-#                             menu_height=int(WINDOW_SIZE[1] * 0.6),
-#                             menu_width=int(WINDOW_SIZE[0] * 0.6),
-#                             onclose=PYGAME_MENU_DISABLE_CLOSE,
-#                             option_shadow=False,
-#                             title='Login',
-#                             window_height=WINDOW_SIZE[1],
-#                             window_width=WINDOW_SIZE[0]
-#                             )
-# # When pressing return -> play(DIFFICULTY[0], font)
-# play_menu.add_option('Start', play_function, DIFFICULTY,
-#                      pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 50))
-# play_menu.add_selector('Select difficulty', [('Easy', 'EASY'),
-#                                              ('Medium', 'MEDIUM'),
-#                                              ('Hard', 'HARD')],
-#                        onreturn=None,
-#                        onchange=change_difficulty)
-# login_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
-
 # OPTION MENU
 option_menu = pygameMenu.Menu(surface,
                             bgfun=main_background,
