@@ -142,7 +142,7 @@ class GameView:
         return
 
     def blit_entire_map(self):
-            # create the entire background
+        # create the entire background
         for rw in range(game.map.height):
             for cl in range(game.map.width):
                 self.blit_default(rw,cl)
@@ -534,7 +534,7 @@ class GameView:
         self.display_message("Remove Player")
         return
 
-    def roll_die(self):
+    def roll_dice(self):
         self.clear_bottom_info()
         surf, tpos = self.display_message("Roll:")
 
@@ -543,7 +543,7 @@ class GameView:
         surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         buf = tpos[0] + surf.get_width() + 10
         d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
-
+        ptext.draw("Max die: 100. Max sides: 120.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height + surf.get_height() + 10, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
 
         RUNNING = True
@@ -848,10 +848,10 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "a": {"name": "Add Asset", "function": GAMEVIEW.add_asset},
               "d": {"name": "Delete Entity", "function": GAMEVIEW.delete_entity},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
-              "r": {"name": "Roll Die", "function": GAMEVIEW.roll_die},
+              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
               "h": {"name": "Show this help screen", "function": GAMEVIEW.GM_help_screen}
               }
-PLAYER_HOTKEYS = {"r": {"name": "Roll Die", "function": GAMEVIEW.roll_die},
+PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
                   "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
                  }
 DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (50,50))
@@ -964,6 +964,7 @@ def main(client, new_game):
 
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
+                    # TODO ALERT FRIENDS THAT THEY HAVE EXITED
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
                     if my_entity is not None:
