@@ -3,6 +3,4 @@ requests>=2.18
 Flask>=0.12
 pygame>=1.9.4
 pygame-menu>=1.96.1
-pyobjc-core=>5.1.2
-pyobjc=>5.1.2
 pyautogui=>0.9.42
