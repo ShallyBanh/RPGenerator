@@ -451,7 +451,7 @@ class GameView:
                         if my_entity is not None:
                             # draw rectangle surrounding the actual box
                             saved_entity = my_entity
-                            self.draw_entity_box(x,y)
+                            self.draw_entity_box(saved_entity.x,saved_entity.y, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         if saved_entity is not None:
