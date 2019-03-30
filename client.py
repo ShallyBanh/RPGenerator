@@ -95,7 +95,7 @@ class Client():
         #     response = str(response.text) 
         #     print("response type converted, new response is {} ({})".format(response, type(response)))
         return 0 if (response.status_code == 200) else -1
-        
+
     def recover_account(self, username, code, password1, password2):
         print("[client] [recover_account] attempting to recover account with username,code,password,email = {}, {}, {}"
               .format(username, code, password1))        
@@ -106,6 +106,16 @@ class Client():
         #     response = str(response.status_code)
         return 0 if (response.status_code == 200) else -1
         
+    def add_asset(self, username, asset_name, json_blob):
+        print("[client] [create_account] attempting to create account with username,password,email = {},{},{}".format(username,password,email))        
+        payload = {'username': username, 'password': password, 'email': email}
+        response = requests.post("{}/create_account".format(self.URL), params=payload)
+        print("[client] [create_account] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+    
     def reset_database(self):
         """ WARNING: for test purposes only, @TODO remove """
         response = requests.post("{}/reset_database".format(self.URL))

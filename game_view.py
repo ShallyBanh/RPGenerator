@@ -6,6 +6,8 @@ import math
 import re
 import ptext
 from shutil import copyfile
+import base64
+import PIL.Image
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
@@ -470,6 +472,11 @@ class GameView:
                                 self.display_message("_FILE ADDED_\n"+general_message)
                                 global IMAGES
                                 IMAGES = self.load_pictures() # update the current IMAGES stored
+                                # # insert into database
+                                # with open(text, 'rb') as f:
+                                #     photo = f.read()
+                                # encoded_image = base64.b64encode(photo)
+                                # client.add_asset(client.user.get_username, text, encoded_image)
                         else: 
                             self.clear_GM_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
