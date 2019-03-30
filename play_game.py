@@ -680,6 +680,10 @@ def create_new_game_view():
     login_view = pygame.image.load("images/menu/create-new-game.png")
     surface.fill(COLOR_BACKGROUND)
     error_surface = False
+    #game name, ruleset name, width string, height string
+    inputList = ["", "", "", ""]
+    error_str = ""
+    currentlySelectedInputIdx = -1
     
     while True:
         # Clock tick
@@ -696,23 +700,59 @@ def create_new_game_view():
                     option_menu.enable()
                     option_menu.mainloop(playevents)
                     return
+                if e.key == pygame.K_DELETE:
+                    surface.fill(COLOR_BACKGROUND)
+                    surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+                    inputList[currentlySelectedInputIdx] = inputList[currentlySelectedInputIdx] [:len(inputList[currentlySelectedInputIdx])-1]
+            
+                elif e.key == pygame.K_BACKSPACE:
+                    surface.fill(COLOR_BACKGROUND)
+                    surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
+                    inputList[currentlySelectedInputIdx] = inputList[currentlySelectedInputIdx] [:len(inputList[currentlySelectedInputIdx])-1]
+
+                else:
+                    # If no special key is pressed, add unicode of key to input_string
+                    inputList[currentlySelectedInputIdx] += e.unicode
             elif e.type == MOUSEBUTTONDOWN:
+                surface.fill(COLOR_BACKGROUND)
+                surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
                 error_surface = False
                 mouse_pos = pygame.mouse.get_pos()
                 print(mouse_pos)
-                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,450):
+                if mouse_pos[0] in range(186,612) and mouse_pos[1] in range(480,550):
                     # recover ruleset_name
-                    if len(ruleset_name.get_text()) < 1: 
+                    if inputList[0] == "" or inputList[1] == "" or inputList[2] == "" or inputList[3] == "":
+                        error_surface = True
+                        error_str = "All fields need to be filled out"
                         break
+                    if inputList[2].isdigit() == False or inputList[3].isdigit() == False:
+                        error_surface = True
+                        error_str = "Width and Height both need to be numbers"
+                        break
+                    if int(inputList[2]) < 2 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
+                        error_surface = True
+                        error_str = "Min width and height are 2. Max height is 10 and max width is 18"
+                        break
+
                     allRulesets = client.load_existing_rulesets(currentUsername)
                     rulesetNames = [ruleset[0] for ruleset in allRulesets]
-                    if ruleset_name.get_text() not in rulesetNames : # CHECK IF EXISTS
+                    if inputList[1] not in rulesetNames : # CHECK IF EXISTS
                         error_surface = True
+                        error_str = "Ruleset does not exist"
                         break
                     #to pass to the game_view once that is integrated
-                    rulesetObject = [item for item in allRulesets if item[0] == ruleset_name.get_text()][0][1]
-                    create_room(ruleset_name = ruleset_name.get_text(), ruleset_object = jsonpickle.decode(rulesetObject))
+                    rulesetObject = [item for item in allRulesets if item[0] == inputList[1]][0][1]
+                    create_room(ruleset_name = inputList[1], ruleset_object = jsonpickle.decode(rulesetObject))
                     return
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(400,470):
+                    currentlySelectedInputIdx = 3
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(320,390):
+                    currentlySelectedInputIdx = 2
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(230,300):
+                    currentlySelectedInputIdx = 1
+                elif mouse_pos[0] in range(186,612) and mouse_pos[1] in range(140,210):
+                    currentlySelectedInputIdx = 0
+
                 elif mouse_pos[0] in range(562,617) and mouse_pos[1] in range(62,77):
                     option_menu.enable()
                     option_menu.mainloop(playevents)
@@ -723,11 +763,23 @@ def create_new_game_view():
         # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if error_surface:
-            ptext.draw("Ruleset name does not exist", (200, 300), sysfontname="arial", color=COLOR_RED, fontsize=35, width = 300)
-        if len(ruleset_name.get_text()) >= 1:
-            surface.blit(ruleset_name.get_surface(), (250,170))  
+            ptext.draw(error_str, (100, 550), sysfontname="arial", color=COLOR_RED, fontsize=35)
+        if inputList[0] == "":
+            surface.blit(MY_FONT.render('Game Name', 1, COLOR_BLACK), (260,160))  
         else:
-            surface.blit(MY_FONT.render('Ruleset', 1, COLOR_BLACK), (250,160))  
+            ptext.draw(inputList[0], (260, 160), sysfontname="arial", color="black", fontsize=35)
+        if inputList[1] == "":
+            surface.blit(MY_FONT.render('Rule Name', 1, COLOR_BLACK), (260,250))  
+        else:
+            ptext.draw(inputList[1], (260, 250), sysfontname="arial", color="black", fontsize=35)
+        if inputList[2] == "":
+            surface.blit(MY_FONT.render('Width', 1, COLOR_BLACK), (260,340))  
+        else:
+            ptext.draw(inputList[2], (260, 340), sysfontname="arial", color="black", fontsize=35)
+        if inputList[3] == "":
+            surface.blit(MY_FONT.render('Height', 1, COLOR_BLACK), (260,420))  
+        else:
+            ptext.draw(inputList[3], (260, 420), sysfontname="arial", color="black", fontsize=35)
 
         pygame.display.flip()
 
