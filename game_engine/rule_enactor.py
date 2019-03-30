@@ -89,7 +89,7 @@ class RuleEnactor:
 	def perform_action(self, action, acting_entity):
 		target = self._determine_target(action.get_target_line())
 		if target is None:
-			self.perform_action_given_target(action, acting_entity, acting_entity)
+			return self.perform_action_given_target(action, acting_entity, acting_entity)
 		else:
 			return target
 	
@@ -105,10 +105,12 @@ class RuleEnactor:
 				interrupt_lines = self.interrupting_relationship.get_interrupt_behaviour().splitlines()
 				for line in interrupt_lines:
 					self._evaluate_line(line)
-				return 
+				return "The action \"" + action.get_action_name() + "\" was interrupted by the relationship \"" + self.interrupting_relationship.get_name() + "\" while being performed on \"" + target_entity.get_name() + "\" by \"" + acting_entity.get_name() + "\"."
 		# otherwise perform the action
 		for line in lines:
 			result = self._evaluate_line(line)
+			
+		return "The action \"" + action.get_action_name() + "\" was performed on \"" + target_entity.get_name() + "\" by \"" + acting_entity.get_name() + "\"."
 				
 			
 	def _determine_target(self, target_line):

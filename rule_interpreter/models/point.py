@@ -9,3 +9,6 @@ class Point:
 		
 	def get_size(self):
 		return self._size
+		
+	def get_name(self):
+		return "Point at " + str(self.x) + ", " + str(self.y)
