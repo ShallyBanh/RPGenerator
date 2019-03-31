@@ -16,7 +16,7 @@ from client import Client
 
 
 class RulesetView:
-    def __init__(self, username, client):
+    def __init__(self, username, client, fontsize):
         self._submitButtonImg = pygame.image.load("img/submit.png")
         self._arrowImg = pygame.image.load('img/arrow.png')
         self._plusImage = pygame.image.load('img/plussign.png')
@@ -31,6 +31,7 @@ class RulesetView:
         self._rulesetPositionList =[]
         self._client = client
         self._username = username
+        self._fontsize = fontsize
 
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -41,7 +42,7 @@ class RulesetView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Rulesets")
-        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*4, fontname="CherryCreamSoda")
 
         buttonrects = [pygame.Rect((50, 150, 1100, 550))]
         textSizes = [(50, 100)]
@@ -63,7 +64,7 @@ class RulesetView:
                     clickpos = event.pos
                     x, y = clickpos
                     if x in range(1110, 1150) and y in range(110, 140):
-                        validator = RulesetCreationEditView( self._username, self._client).main("")
+                        validator = RulesetCreationEditView( self._username, self._client, self._fontsize).main("")
                         if validator is not None:
                             return validator
                         self._rulesetList = self._client.load_existing_rulesets(self._username)
@@ -78,7 +79,7 @@ class RulesetView:
                             Validator().clear_entities()
                             Validator().set_entities(deserializedValidator.get_entities())
                             Validator().set_relationships(deserializedValidator.get_relationships())
-                            validator = RulesetCreationEditView(self._username, self._client).main(self._rulesetList[editIdx][0])
+                            validator = RulesetCreationEditView(self._username, self._client, self._fontsize).main(self._rulesetList[editIdx][0])
                             if validator is not None:
                                 return validator
                             self._rulesetList = self._client.load_existing_rulesets(self._username)
@@ -87,7 +88,7 @@ class RulesetView:
                 screen.fill(pygame.Color("#553300"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-8, 100)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
             ruleNamesString = ""
@@ -96,7 +97,7 @@ class RulesetView:
                 ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
                 screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
                 self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
-            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
             
             screen.blit(*titleargs)
             pygame.display.flip()
