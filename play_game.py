@@ -11,6 +11,7 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
+from shared_var import *
 
 # Import pygameMenu
 import pygameMenu

@@ -14,6 +14,7 @@ from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
 from rule_interpreter.models.point import Point
 from play_game import async_send
+from shared_var import *
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
