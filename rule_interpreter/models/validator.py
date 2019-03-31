@@ -1,5 +1,6 @@
 from attribute import Attribute
 from action import Action
+from size import Size
 class _Validator(object):
     """
     Singleton Validator Class
@@ -59,6 +60,12 @@ class _Validator(object):
 
     def update_action(self, entityIdx, oldActionIdx, actionName, ruleContent):
         self._allEntities[entityIdx].update_action(oldActionIdx, Action(actionName, ruleContent))
+    
+    def update_entity(self, entityIdx, newType, width, height, template, inheritedFrom):
+        self._allEntities[entityIdx].set_type(newType)
+        self._allEntities[entityIdx].set_size(Size(width, height))
+        self._allEntities[entityIdx].set_is_template(template)
+        self._allEntities[entityIdx].set_is_inherited_from(inheritedFrom)
 
     def set_action(self, entityIdx, actionName, ruleContent):
         self._allEntities[entityIdx].add_action(Action(actionName, ruleContent))

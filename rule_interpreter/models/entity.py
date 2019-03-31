@@ -119,6 +119,9 @@ class Entity:
     def get_is_inherited_from(self):
         return self._isInheritedFrom
     
+    def set_is_inherited_from(self, isInheritance):
+        self._isInheritedFrom = isInheritance
+    
     def get_current_statuses(self):
         return self._currentStatuses
     

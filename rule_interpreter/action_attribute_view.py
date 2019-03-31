@@ -9,6 +9,7 @@ import ptext
 import pygame_textinput
 from action_creation_view import ActionCreationView
 from attribute_creation_view import AttributeCreationView
+from entity_creation_view import EntityCreationView
 
 class AttributeActionCreationView:
     def __init__(self, currentEntityType, fontsize):
@@ -22,6 +23,7 @@ class AttributeActionCreationView:
         self._currentEntityType = currentEntityType
         self._fontsize = fontsize
         self._editButtonImage = pygame.image.load('img/editButtonSmall.png')
+        self._editButtonImageLarge = pygame.image.load('img/editButton.png')
         self._editActionList = []
         self._editAttributeList = []
 
@@ -35,6 +37,7 @@ class AttributeActionCreationView:
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         entity = self.get_entity_info()
+        entityIdx = Validator().get_entity_idx(self._currentEntityType)
 
         pygame.init()
 
@@ -89,6 +92,13 @@ class AttributeActionCreationView:
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                         return None, None, None
+                    if x in range(70,200) and y in range(600,650):
+                        entityTuple = EntityCreationView(self._fontsize).main(currentEntity)
+                        if entityTuple[0] is not None:
+                            Validator().update_entity(entityIdx, entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4])
+                            self._currentEntityType = entityTuple[0]
+                            entity = self.get_entity_info()
+                            break
                     for joinIdx in range(len(self._editActionList)):
                         x1 = int(self._editActionList[joinIdx][0])
                         y1 = int(self._editActionList[joinIdx][1])
@@ -142,6 +152,7 @@ class AttributeActionCreationView:
 
             if entity != -1:
                 ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+                screen.blit(self._editButtonImageLarge,(70, 600))
 
             pygame.display.flip()
 
