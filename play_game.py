@@ -182,7 +182,7 @@ def async_receive():
                     answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                     if answer.lower() in ["y", "yes"]:
                         game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                        message_content.append(game)
+                        message_content.append(game.get_uniqueID())
                         async_send(['accept_join', message_content])
                     else:
                         async_send(['reject_join', message_content])
@@ -194,7 +194,7 @@ def async_receive():
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 JOIN_FLAG = True
-                game = message_content
+                game_id = message_content
                 print("game is currently {}".format(game.get_name()))
                 print("with transcript\n{}".format(game.transcript))
             elif message_type == 'join_invalid':
@@ -883,6 +883,8 @@ def enter_room(room_number):
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
             if JOIN_FLAG:
+                gameObj = client.get_game_from_room_number(game_id)
+                game = jsonpickle.decode(gameObj)
                 gameView.main(client, game, False)
                 JOIN_FLAG = False
                 break
@@ -906,7 +908,8 @@ def create_room(gameName, ruleset_object, width, height):
     game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
-    async_send(['start_game', [game]])
+    async_send(['start_game', [game.get_uniqueID()]])
+
     gameView.main(client, game, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return

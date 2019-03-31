@@ -165,15 +165,15 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # @TODO connect to database
                 # client = int(command_body[0])
                 # game_id = int(command_body[1])
-                game = command_body[0]
-                game_id = game.get_uniqueID()
+                game_id = command_body[0]
+                # game_id = game.get_uniqueID()
                 client_id = self.my_id
                 print("client {} requesting to start game {}".format(client_dict[self.conn][0], game_id))
                 if game_id not in rooms:
                 # if command_body.isdigit() and int(command_body) not in rooms:
                     # make sure belongs to that user
                     print("game {} started".format(command_body))
-                    rooms[game_id] = [self.conn, game, [client_id]]
+                    rooms[game_id] = [self.conn, None, [client_id]]
                     print("rooms is now {}".format(rooms))
                     client_dict[self.conn][2] = game_id
                 else:
@@ -201,7 +201,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
-                game = command_body[2]
+                game_id = command_body[2]
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -210,7 +210,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
                 print("rooms[{}]: {}".format(room, rooms[room]))               
-                rev_client_dict[client].send(double_pickle(['join_accept', game]))
+                rev_client_dict[client].send(double_pickle(['join_accept', game_id]))
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(double_pickle(['join_reject', command_body]))
