@@ -202,7 +202,7 @@ class AccountManager:
 
     def get_assets(self, username):
         """Get all assets for a user"""
-        self.database.query("select name, blob from assets where username = ?;", (username,))
+        self.database.query("select name, image from assets where username = ?;", (username,))
         rows = self.database.cur.fetchall()
         return rows
 

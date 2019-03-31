@@ -25,9 +25,13 @@ class ActionCreationView:
         self._allInputList = ["", ""]
         self._currentlySelectedInputIdx = 0
         self._fontsize = fontsize
+        self._errorStr = ""
 
-    def main(self):
+    def main(self, actionName = "", rule = ""):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
+        if actionName != "" and rule != "":
+            self._allInputList = [str(actionName), str(rule)]
+            self._rule = str(rule)
 
         pygame.init()
 
@@ -38,7 +42,7 @@ class ActionCreationView:
         buttonrects = [pygame.Rect((50, 150, 1000, 70)), pygame.Rect((50, 325, 1000, 350))]
         textSizes = [(50, 100 + 170 * j) for j in range(2)]
         buttonnames = ["Action Name", "Rule"]
-        titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*4, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*2, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None
@@ -87,6 +91,10 @@ class ActionCreationView:
                     if x in range(1100,1300) and y in range(600, 750):
                         if self._allInputList[0] == "" or self._rule == "":
                             self._invalidSubmission = True
+                            self._errorStr = "Both fields must be complete in order to submit"
+                        if self._allInputList[0].find(" ") != -1:
+                            self._invalidSubmission = True
+                            self._errorStr = "Action name cannot have spaces in it"
                         else:
                             self._playing = False
                             return self._allInputList[0], self._rule
@@ -96,7 +104,7 @@ class ActionCreationView:
                         return None, None
                     
                     if x in range (1010, 1050) and y in range (290, 320):
-                        rule_input = RuleInputView(self._fontsize).main()
+                        rule_input = RuleInputView(self._fontsize).main(self._rule)
                         if rule_input is not None:
                             self._rule = rule_input
 
@@ -104,15 +112,15 @@ class ActionCreationView:
                 screen.fill(pygame.Color(color), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-16, 16)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2.5)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*1.5)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
             
             if self._invalidSubmission == True:
-                ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=self._fontsize*2)
+                ptext.draw(self._errorStr, (60, 700), fontname="Boogaloo", color="red", fontsize=self._fontsize)
 
-            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=self._fontsize)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             
             screen.blit(*titleargs)

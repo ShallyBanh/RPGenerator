@@ -270,6 +270,30 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.variables["xless"], 0)
 		self.assertEqual(self.enactor.variables["yless"], 0)
 		
+	def test_less_than_words(self):
+		self.rule += "x = 10\n"
+		self.rule += "y = 19\n"
+		self.rule += "if x less than y then xless = 1\n"
+		self.rule += "if y less than 999 then yless = 1\n"
+		self.rule += "if y less than x then xless = 0\n"
+		self.rule += "if y less than 1 then yless = 0\n"
+		action = Action(self.action_name, self.rule)
+		self.enactor.perform_action_given_target(action, self.actor, self.target)
+		self.assertEqual(self.enactor.variables["xless"], 1)
+		self.assertEqual(self.enactor.variables["yless"], 1)
+		
+	def test_greater_than_words(self):
+		self.rule += "x = 10\n"
+		self.rule += "y = 19\n"
+		self.rule += "if x greater than y then xless = 1\n"
+		self.rule += "if y greater than 999 then yless = 1\n"
+		self.rule += "if y greater than x then xless = 0\n"
+		self.rule += "if y greater than 1 + 1 then yless = 0\n"
+		action = Action(self.action_name, self.rule)
+		self.enactor.perform_action_given_target(action, self.actor, self.target)
+		self.assertEqual(self.enactor.variables["xless"], 0)
+		self.assertEqual(self.enactor.variables["yless"], 0)
+		
 	def test_multiply_operator(self):
 		self.rule += "x = 5 * 5\n"
 		self.rule += "y = x * 0.2\n"
@@ -385,8 +409,9 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(5 <= self.enactor.variables["z"] and self.enactor.variables["z"] <= 30)
 		
 	def test_add_status(self):
-		self.rule += "add status \"Dodge\" to self\n"
-		self.rule += "add status Poisoned to self\n"
+		self.rule += "x = \"Dodge\"\n"
+		self.rule += "add status x to self\n"
+		self.rule += "add status \"Poisoned\" to self\n"
 		action = Action(self.action_name, self.rule)
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
 		self.assertTrue("dodge" in self.enactor.acting_entity.get_current_statuses())
@@ -394,16 +419,16 @@ class TestRuleInterpreter(unittest.TestCase):
 	
 	def test_remove_status(self):
 		self.rule += "add status \"Dodge\" to self\n"
-		self.rule += "add status Poisoned to self\n"
-		self.rule += "remove status Dodge from self\n"
+		self.rule += "add status \"Poisoned\" to self\n"
+		self.rule += "remove status \"Dodge\" from self\n"
 		action = Action(self.action_name, self.rule)
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
 		self.assertTrue("dodge" not in self.enactor.acting_entity.get_current_statuses())
 		self.assertTrue("poisoned" in self.enactor.acting_entity.get_current_statuses())
 	
 	def test_has_status(self):
-		self.rule += "add status Poisoned to self\n"
-		self.rule += "if self.statuses has Poisoned then yeet = 1\n"
+		self.rule += "add status \"Poisoned\" to self\n"
+		self.rule += "if self.statuses has \"Poisoned\" then yeet = 1\n"
 		action = Action(self.action_name, self.rule)
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
 		self.assertEqual(self.enactor.variables["yeet"],1)
@@ -438,6 +463,13 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
 		self.assertTrue(self.target.get_attribute("HP").get_attribute_value() <= 20 and self.target.get_attribute("HP").get_attribute_value() >= -16)
 		self.assertTrue(self.enactor.acting_entity.get_attribute("HP").get_attribute_value() <= 10 and self.enactor.acting_entity.get_attribute("HP").get_attribute_value() >= -26)
+		
+	def test_is_of_type(self):
+		parent = Entity("papa", "parent", 1,1,True,None)
+		child = Entity("kiddo", "kid", 1,1,False,parent)
+		
+		self.assertTrue(child.is_of_type("kid"))
+		self.assertTrue(child.is_of_type("parent"))
 		
 	def Bianca_test_case(self):
 		enactor = rule_enactor.RuleEnactor()

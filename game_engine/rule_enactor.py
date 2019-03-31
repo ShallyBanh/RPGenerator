@@ -41,7 +41,7 @@ class RuleEnactor:
 			return None
 		newEntity = None
 		for e in self.entity_types:
-			if e.get_type() == entityType:
+			if e.is_of_type(entityType):
 				newEntity = copy.deepcopy(e)
 				break
 		if newEntity is None:
@@ -195,7 +195,7 @@ class RuleEnactor:
 				for attr in self.target_of_action.get_attributes():
 					if attr.get_attribute_name() == entity_attribute[1]:
 						return attr.get_attribute_value()
-			elif entity_attribute[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_attribute[0]):
 				for attr in self.current_entity_in_loop.get_attributes():
 					if attr.get_attribute_name() == entity_attribute[1]:
 						return attr.get_attribute_value()
@@ -209,7 +209,7 @@ class RuleEnactor:
 		interrupt_line = relationship.get_interrupt_line().lower().strip(':')
 		words = interrupt_line.split()
 		entity_action = words[1].split('.')
-		if self.acting_entity.get_type() == entity_action[0] and self.current_action.get_action_name() == entity_action[1]:
+		if self.acting_entity.is_of_type(entity_action[0]) and self.current_action.get_action_name() == entity_action[1]:
 			conditional = interrupt_line.split(' if ')
 			if self._evaluate_line(conditional[1]) == True:
 				self.interrupting_relationship = relationship
@@ -265,7 +265,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(" ".join(rest_of_sentence)))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(" ".join(rest_of_sentence)))
@@ -294,7 +294,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(" ".join(rest_of_sentence)))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(" ".join(rest_of_sentence)))
@@ -323,7 +323,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(" ".join(rest_of_sentence)))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(" ".join(rest_of_sentence)))
@@ -352,7 +352,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(" ".join(rest_of_sentence)))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(" ".join(rest_of_sentence)))
@@ -381,7 +381,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(" ".join(rest_of_sentence)))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(" ".join(rest_of_sentence)))
@@ -402,14 +402,14 @@ class RuleEnactor:
 			item1 = self.acting_entity
 		elif item1_string == 'target':
 			item1 = self.target_of_action
-		elif item1_string == self.current_entity_in_loop.get_type().lower():
+		elif self.current_entity_in_loop.is_of_type(item1_string.lower()):
 			item1 = self.current_entity_in_loop
 		#item 2
 		if item2_string == 'self':
 			item2 = self.acting_entity
 		elif item2_string == 'target':
 			item2 = self.target_of_action
-		elif item2_string == self.current_entity_in_loop.get_type().lower():
+		elif self.current_entity_in_loop.is_of_type(item2_string.lower()):
 			item2 = self.current_entity_in_loop
 		
 		left_bracket_idx = written_rule.find('(')
@@ -464,14 +464,14 @@ class RuleEnactor:
 			entity_to_move = self.acting_entity
 		elif entity_to_move_string == 'target':
 			entity_to_move = self.target_of_action
-		elif entity_to_move_string == current_entity_in_loop.get_type():
+		elif current_entity_in_loop.is_of_type(entity_to_move_string):
 			entity_to_move = self.current_entity_in_loop
 		
 		if item_to_move_string == 'self':
 			item_to_move_from = self.acting_entity
 		elif item_to_move_string == 'target':
 			item_to_move_from = self.target_of_action
-		elif item_to_move_string == self.current_entity_in_loop.get_type():
+		elif self.current_entity_in_loop.is_of_type(item_to_move_string):
 			item_to_move_from = self.current_entity_in_loop
 			
 		if entity_to_move == item_to_move_from:
@@ -511,14 +511,14 @@ class RuleEnactor:
 			entity_to_move = self.acting_entity
 		elif entity_to_move_string == 'target':
 			entity_to_move = self.target_of_action
-		elif entity_to_move_string == current_entity_in_loop.get_type():
+		elif current_entity_in_loop.is_of_type(entity_to_move_string):
 			entity_to_move = self.current_entity_in_loop
 		
 		if item_to_move_string == 'self':
 			item_to_move_from = self.acting_entity
 		elif item_to_move_string == 'target':
 			item_to_move_from = self.target_of_action
-		elif item_to_move_string == self.current_entity_in_loop.get_type():
+		elif self.current_entity_in_loop.is_of_type(item_to_move_string):
 			item_to_move_from = self.current_entity_in_loop
 			
 		if entity_to_move == item_to_move_from:
@@ -603,7 +603,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(words[1].strip()))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(words[1].strip()))
@@ -623,7 +623,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(words[1].strip()))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(words[1].strip()))
@@ -643,7 +643,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(words[1].strip()))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(words[1].strip()))
@@ -663,7 +663,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(words[1].strip()))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(words[1].strip()))
@@ -683,7 +683,7 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(words[1].strip()))
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(words[1].strip()))
@@ -700,36 +700,39 @@ class RuleEnactor:
 		
 	def _handle_add_status(self, written_rule):
 		words = written_rule.split()
-		status_to_add = words[2].strip('"')
+		status_to_add = self._evaluate_line(words[2])
 		affected_entity_string = words[-1]
 		if affected_entity_string == 'self':
 			self.acting_entity.add_status(status_to_add)
 		elif affected_entity_string == 'target':
 			self.target_of_action.add_status(status_to_add)
-		elif affected_entity_string == self.current_entity_in_loop.get_type():
+		elif self.current_entity_in_loop.is_of_type(affected_entity_string):
 			self.current_entity_in_loop.add_status(status_to_add)
 			
 	def _handle_remove_status(self, written_rule):
 		words = written_rule.split()
-		status_to_remove = words[2].strip('"')
+		status_to_remove = self._evaluate_line(words[2])
 		affected_entity_string = words[-1]
-		if affected_entity_string == 'self':
-			self.acting_entity.remove_status(status_to_remove)
-		elif affected_entity_string == 'target':
-			self.target_of_action.remove_status(status_to_remove)
-		elif affected_entity_string == self.current_entity_in_loop.get_type():
-			self.current_entity_in_loop.remove_status(status_to_remove)
+		try:
+			if affected_entity_string == 'self':
+				self.acting_entity.remove_status(status_to_remove)
+			elif affected_entity_string == 'target':
+				self.target_of_action.remove_status(status_to_remove)
+			elif self.current_entity_in_loop.is_of_type(affected_entity_string):
+				self.current_entity_in_loop.remove_status(status_to_remove)
+		except:
+			pass
 		
 	def _handle_has_status(self, written_rule):
 		words = written_rule.split('has')
-		status_to_check = words[1].strip().strip('"')
+		status_to_check = self._evaluate_line(words[1].strip())
 		entity_info = words[0].strip().split('.')
 		if entity_info[1] == 'statuses':
 			if entity_info[0] == 'self':
 				return status_to_check in self.acting_entity.get_current_statuses()
 			elif entity_info[0] == 'target':
 				return status_to_check in self.target_of_action.get_current_statuses()
-			elif entity_info[0] == self.current_entity_in_loop.get_type():
+			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				return status_to_check in self.current_entity_in_loop.get_current_statuses()
 	
 	def roll_dice(self, dice_string):

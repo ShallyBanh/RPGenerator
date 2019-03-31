@@ -25,7 +25,9 @@ class RuleInputView:
         self._fontsize = fontsize
         self._parser = SyntaxParser()
 
-    def main(self): 
+    def main(self, ruleContent = ""): 
+        if ruleContent != "":
+            self._user_input = str(ruleContent)
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.transform.scale(self._submitButtonImg, (10, 10))
         pygame.transform.scale(self._checkmark, (100, 100))
@@ -99,10 +101,10 @@ class RuleInputView:
                     screen.fill(pygame.Color("#2693bf"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-16, 16)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
                 
-            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             if self._unvalid == True:
                 screen.blit(self._errormark,(350,100))

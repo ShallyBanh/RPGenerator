@@ -27,7 +27,16 @@ class EntityCreationView:
         self._invalidSubmissionText = "All fields must be complete in order to submit"
         self._fontsize = fontsize
 
-    def main(self):
+    def get_entity_with_type(self, entityType):
+        allEntities = Validator().get_entities()
+        for entity in allEntities:
+            if entity.get_type() == entityType:
+                return entity
+        return None
+
+    def main(self, currentEntity = None):
+        if currentEntity is not None:
+            self._allInputList = [currentEntity.get_type(), currentEntity.get_size().get_width_as_string(), currentEntity.get_size().get_height_as_string(), str(currentEntity.get_is_template()), self.get_entity_with_type(currentEntity.get_is_inherited_from())]
 
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.init()
@@ -88,7 +97,7 @@ class EntityCreationView:
                             
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
-                        return None, None, None
+                        return None, None, None, None, None
                     if x in range(1100,1300) and y in range(600,750):
                         if self._allInputList[0] == "" or self._allInputList[1] == "" or self._allInputList[2]== "" or self._allInputList[3]== "":
                             self._invalidSubmission = True

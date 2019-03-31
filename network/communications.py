@@ -180,22 +180,28 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("failed to start game")
             elif command_type == "join_game":
                 print("forwarding join request")
+                print("command body is {}".format(command_body))
                 room = command_body[0]
-                if room.isdigit() and int(room) in rooms and self != rooms[int(room)][0]:
+                print("checking for room {}".format(room))
+                if room.isdigit() and int(room) in rooms and self.conn != rooms[int(room)][0]:
                     request = ['join_request', [client_dict[self.conn], int(room)]]
                     # @TODO try except
                     # build target/message then do at end?
                     print("sending the forwarded request")
-                    rooms[int(room)][0].send(double_pickle(request))
+                    pickled = double_pickle(request)      
+                    print("rooms[{}][0] -> {}.send(({} bytes): {})".format(int(room), rooms[int(room)][0], sys.getsizeof(pickled), pickled))
+                    rooms[int(room)][0].send(pickled)
                     print("sent the forwarded request")
                 else:
                     print("join request was invalid")
-                    self.send(double_pickle(['join_invalid']))
+                    print("the active rooms are {}".format(rooms.keys()))
+                    self.send(double_pickle(['join_invalid', '']))
             elif command_type == 'accept_join':
                 print("join request was accepted")
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
+                game = command_body[2]
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -204,7 +210,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
                 print("rooms[{}]: {}".format(room, rooms[room]))               
-                rev_client_dict[client].send(double_pickle(['join_accept', rooms[room][1]]))
+                rev_client_dict[client].send(double_pickle(['join_accept', game]))
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(double_pickle(['join_reject', command_body]))
@@ -259,14 +265,23 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("message: {}".format(message))
                 room = client_dict[rev_client_dict[client_id]][2]
                 print("room {}".format(room))
-                self.broadcast(message, room)
+                pickled_message = double_pickle(['chat', message])
+                self.broadcast(pickled_message, room)
             elif command_type == 'request_action':
                 print("player {} has requested action {}".format(command_body[0], command_body[1]))
-                rooms[client_dict[self.conn][2]][0].send([command_type, command_body])
-            elif command_type == 'action_approved':
-                print("@TODO action_approved, broadcast game object")
-            elif command_type == 'action_rejected':
-                print("@TODO action_rejected")
+                rooms[client_dict[self.conn][2]][0].send(recievedData)
+            elif command_type == 'update_game':
+                room = command_body[1].get_uniqueID()
+                if rooms[room][0] == self.conn:
+                    print("GM has updated the game")
+                    # pickled_message = double_pickle(['update_game', message])
+                    self.broadcast(recievedData, room)
+                else:
+                    print("a non-GM player tried to update the game")
+            # elif command_type == 'action_approved':
+            #     print("@TODO action_approved, broadcast game object")
+            # elif command_type == 'action_rejected':
+            #     print("@TODO action_rejected")
             # chat, start_game, join_game, accept_join_request, reject_join_request, action, voice
             # send_to_GM, broadcast
             #logic for i in outgoing:
@@ -302,14 +317,14 @@ class DataReadServer(asyncore.dispatcher_with_send):
         rev_client_dict[client_id].send(double_pickle(['removed', '']))
     def send_to_GM(self, message, room):
         pass
-    def broadcast(self, message, room):
+    def broadcast(self, pickled_message, room):
         print("broadcasting")
         for client in rooms[room][2]:
             print("trying to send to client_id: {}".format(client))            
             connection = rev_client_dict[client]
             if connection != self.conn:
                 print("sending to someone else")
-                connection.send(double_pickle(['chat', message]))
+                connection.send(pickled_message)
             else:
                 print("not sending back to self")
 

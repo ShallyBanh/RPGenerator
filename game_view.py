@@ -1,10 +1,9 @@
 import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard, jsonpickle
+import base64, PIL.Image
 from pygame.locals import *
 from game_engine.map import Map
 from client import Client
 from shutil import copyfile
-import base64
-import PIL.Image
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
@@ -14,6 +13,8 @@ from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
 from rule_interpreter.models.point import Point
+from play_game import async_send
+from shared_var import REQUEST_RESPONSE_FLAG, MESSAGE_CONTENT
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -22,6 +23,8 @@ from rule_interpreter.models.point import Point
 class GameView:
 
     def __init__(self):
+        self.images = {}
+        self.load_pictures()
         return
 
     def offset_blit(self,x,y):
@@ -86,24 +89,38 @@ class GameView:
     def remove_previous_popup(self):
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
+    def load_pictures_from_database(self):
+        # Grab all pictures located in database and put into tmp folder
+        if not os.path.exists("./tmp/"):
+            os.makedirs('./tmp')
+        direc = os.getcwd() + "/tmp/"
+        arr = []
+        arr = client.get_assets(game.GM.get_username())
+        try:
+            for asset in arr:
+                decoded_image = base64.b64decode(asset[1])        
+                with open(direc+asset[0], 'wb') as recreated:
+                    recreated.write(bytearray(decoded_image))
+        except Exception as e:
+            print(e)
+        self.load_pictures()
+        return 
+
     def load_pictures(self):
         # Grab all pictures located in the textures directory and temporary folder
-        images = {}
-
         direc = os.getcwd() + "/images/textures/"
         pictures = [i for i in os.listdir(direc)]
         for p in pictures:
             if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
-                images[p] = pygame.image.load("images/textures/"+p)
+                self.images[p] = pygame.image.load("images/textures/"+p)
 
         if os.path.exists("./tmp/"):
             direc = os.getcwd() + "/tmp/"
             pictures = [i for i in os.listdir(direc)]
             for p in pictures:
                 if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
-                    images[p] = pygame.image.load("tmp/"+p)
-
-        return images
+                    self.images[p] = pygame.image.load("tmp/"+p)
+        return 
 
     def which_entity(self, x, y):
         for key, e in RULE_ENACTOR.all_created_entities.items():
@@ -153,7 +170,7 @@ class GameView:
 
         # put all the entities on the map
         for location, entity in RULE_ENACTOR.all_created_entities.items():
-            entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+            entity_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
             DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
         
         # blit fog of war overtop everything
@@ -165,6 +182,46 @@ class GameView:
         return
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
+    def join_request_popup(self):
+        OLDSURF = DISPLAYSURF.copy()
+        popupSurf = pygame.Surface((200,200))
+        popupSurf.fill(COLOR_BLACK)
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()
+        x = x+MAPOFFSET[0]
+        y = y+MAPOFFSET[1]
+
+        DISPLAYSURF.blit(popupSurf, (x,y))  
+        surf, tpos = ptext.draw("join request from {}\ny/n?".format(MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        join_request_timeout = 40
+        start = time.time()
+        running = True
+        while(time.time()-start < join_request_timeout and running):  
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_y:
+                        # send the request yes
+                        game.append_transcript("player {} joined the game".format(MESSAGE_CONTENT[0][1]))
+                        MESSAGE_CONTENT.append(game)
+                        async_send(['accept_join', MESSAGE_CONTENT])
+                        DISPLAYSURF.blit(OLDSURF, (0,0))
+                        running = False
+                    elif event.key == K_n:
+                        # send the request no
+                        async_send(['reject_join', MESSAGE_CONTENT])
+                        DISPLAYSURF.blit(OLDSURF, (0,0))
+                        running = False
+            pygame.display.flip()
+        if running:
+            # send the request no
+            async_send(['reject_join', MESSAGE_CONTENT])
+            DISPLAYSURF.blit(OLDSURF, (0,0))
+            pygame.display.flip()
+        return
 
     def toggle_fog(self):
         self.clear_bottom_info()
@@ -230,7 +287,7 @@ class GameView:
                     if event.key == K_ESCAPE:
                         if selected_image is not None:
                             self.clear_bottom_info()
-                            self.display_message(display_string)
+                            self.display_message(display_string, "*")
                             blit_input = True
                             selected_image = None
                         else:
@@ -239,7 +296,7 @@ class GameView:
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
                         text = text.rstrip()
-                        if text in IMAGES:
+                        if text in self.images:
                             self.clear_bottom_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
@@ -308,7 +365,7 @@ class GameView:
                         entity = RULE_ENACTOR.add_new_entity(selected_type, selected_name, x, y)
                         if GAMEVIEW.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
                             entity.set_image_filename(selected_image_filename)
-                            texture_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+                            texture_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
                             DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
                         else:
                             RULE_ENACTOR.remove_entity(entity)
@@ -329,7 +386,7 @@ class GameView:
                         selected_name = input_name.text.rstrip()
                         selected_type = input_type.text.rstrip()
                         selected_image_filename = input_image_filename.text.rstrip()
-                        if selected_image_filename not in IMAGES:
+                        if selected_image_filename not in self.images:
                             selected_image_filename = "default-image.png"
                         if selected_type in TYPES_OF_ENTITIES:
                             blit_input = False
@@ -508,19 +565,19 @@ class GameView:
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
                                 if platform.system() == "Windows":
-                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1]
+                                    filename = text.split("\\")[-1]
                                 else:
-                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
+                                    filename = text.split("/")[-1]
+                                new_name = os.getcwd() + "/tmp/" + filename
                                 copyfile(text, new_name)
+                                self.load_pictures()
+                                # insert into database
+                                with open(new_name, 'rb') as f:
+                                    photo = f.read()
+                                encoded_image = base64.b64encode(photo)
+                                client.add_asset(client.user.get_username(), filename, encoded_image)
                                 self.clear_bottom_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
-                                global IMAGES
-                                IMAGES = self.load_pictures() # update the current IMAGES stored
-                                # # insert into database
-                                # with open(text, 'rb') as f:
-                                #     photo = f.read()
-                                # encoded_image = base64.b64encode(photo)
-                                # client.add_asset(client.user.get_username, text, encoded_image)
                         else: 
                             self.clear_bottom_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
@@ -625,15 +682,14 @@ class GameView:
         return
 
     def _images_string(self):
-        global IMAGES
-        IMAGES = self.load_pictures()
+        self.load_pictures()
         display_string = ""
-        for key in IMAGES:
+        for key in self.images:
             display_string += key + ", "
         return display_string
 
     def blit_texture(self, texture):
-        texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+        texture_image = pygame.transform.scale(self.images[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
         DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
         return
 
@@ -798,7 +854,6 @@ class Transcript:
 game = Game()
 RULE_ENACTOR = RuleEnactor()
 GAMEVIEW = GameView()
-IMAGES = GAMEVIEW.load_pictures()
 pygame.init()
 # GENERAL COLORS AND ITEMS
 RESOLUTION_SCALING = 1600
@@ -809,7 +864,8 @@ if platform.system() == "Darwin":
 elif platform.system() == "Windows":
     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
 FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
-DISPLAYSURF = pygame.display.set_mode((1300,750))
+DISPLAYSIZE = (1300,750)
+DISPLAYSURF = pygame.display.set_mode(DISPLAYSIZE)
 OLDSURF = None
 MAPOFFSET = (200,0)
 COLOR_BLACK = (0, 0, 0)
@@ -832,25 +888,31 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
 PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
                   "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
                  }
-DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (50,50))
-FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
+DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
+FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, gameObj, gmOrPlayer = True, validatorObj = None):
+def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     global RULE_ENACTOR
     global game
     global GM_STATUS
+    global client
+    global REQUEST_RESPONSE_FLAG
+    global MESSAGE_CONTENT
 
     game = gameObj
     GM_STATUS = gmOrPlayer
+    client = clientObj
+
+    GAMEVIEW.load_pictures_from_database()
     
     if validatorObj is not None:
         RULE_ENACTOR.parse_validator(validatorObj)
-        gameObj.set_ruleset_copy(RULE_ENACTOR)
-        # client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+        game.set_ruleset_copy(RULE_ENACTOR)
+        client.update_game(int(game.get_uniqueID()), jsonpickle.encode(game))
     else:
-        RULE_ENACTOR = gameObj.get_ruleset_copy()
+        RULE_ENACTOR = game.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
@@ -878,6 +940,10 @@ def main(client, gameObj, gmOrPlayer = True, validatorObj = None):
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
+        if REQUEST_RESPONSE_FLAG:
+            print(MESSAGE_CONTENT)
+            gameview.join_request_popup()
+            REQUEST_RESPONSE_FLAG = False
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
@@ -931,7 +997,7 @@ def main(client, gameObj, gmOrPlayer = True, validatorObj = None):
 
                         my_entity = RULE_ENACTOR.move_entity(my_entity, (x,y))
                         # blit entity to it
-                        my_entity_image = pygame.transform.scale(IMAGES[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
+                        my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                     # wipe signals
                     action_requested = ""
@@ -1000,7 +1066,7 @@ if __name__ == "__main__":
     new_game.map.fogOfWar[9][15] = False
     new_game.map.fogOfWar[9][16] = False
 
-    # Rule Validation TEST
+    ###### Rule Validation TEST START #######
     validator = _Validator()
     isTemplate = False
     hp_time = Attribute("HP", "10")    
@@ -1023,4 +1089,4 @@ if __name__ == "__main__":
     entity.set_image_filename("default-image.png")
     ###### Rule Validation TEST END #######
 
-    main(client = client, gameObj = new_game, gmOrPlayer = True, validatorObj = validator)
+    main(client, gameObj = new_game, gmOrPlayer = True, validatorObj = validator)

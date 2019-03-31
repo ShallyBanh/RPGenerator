@@ -11,6 +11,7 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
+from shared_var import REQUEST_RESPONSE_FLAG, MESSAGE_CONTENT
 
 # Import pygameMenu
 import pygameMenu
@@ -32,17 +33,19 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
 current_game = None
+JOIN_FLAG = False
+REQUEST_RESPONSE_FLAG = False
+MESSAGE_CONTENT = None
 
 # Game Class
-game = Game()
-game.name = "Test Suite"
-game.uniqueID = 1
-game.map = Map(tilesize = 50, height = 10, width = 18)                    
+# game = Game()
+# game.name = "Test Suite"
+# game.uniqueID = 1
+# game.map = Map(tilesize = 50, height = 10, width = 18)                    
 
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
-client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 currentUsername = ""
 async_transcript = ""
@@ -59,6 +62,7 @@ voice_async_port = 9495
 serverAddr = '0.0.0.0'
 if len(sys.argv) == 2:
     serverAddr = sys.argv[1]
+client = Client(serverAddr)
 general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 general_async_connection.connect((serverAddr, general_async_port))
 
@@ -86,6 +90,7 @@ def double_pickle(data):
     return pickled
 
 def double_unpickle(data):
+    print(data)
     print("unpickling")
     unpickled = pickle.loads(data)
     print("jsonunpickling")
@@ -97,7 +102,9 @@ def async_send(async_message):
     global voice_async_port
     global serverAddr
     print("going to send async message {}".format(async_message))
-    general_async_connection.sendall(double_pickle(async_message))
+    pickled = double_pickle(async_message)
+    print("trying to send pickle of size {}".format(sys.getsizeof(pickled)))
+    general_async_connection.sendall(pickled)
     print("sent async message")
     # register_command = ['register_client']
 
@@ -114,11 +121,19 @@ def async_command_loop():
             async_message = [command[0], " ".join(command[1:])]
             if command[0] == 'start_game':
                 game.set_GM(client.user)
-                game.set_uniqueID(command[1])
-                game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
-                async_message = [command[0], [game]]
+                if command[1].isdigit():
+                    game.set_uniqueID(int(command[1]))
+                    game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
+                    async_message = [command[0], [game]]
+                else:
+                    print("game_id was not a number")
+            elif command[0] == 'join_game':
+                async_message[1] = [command[1], client.user.get_username()]
             elif command[0] == 'leave_game':
                 print("trying to leave game")
+                leave_message = "{} left the game".format(client.user.get_username())
+                game.append_transcript(leave_message)
+                async_send(['chat', [client_id, leave_message]])
                 async_message[1] = client_id
             elif command[0] == 'chat':
                 async_transcript += "\n" + client.user.get_username() + ": " + " ".join(command[1:])
@@ -134,9 +149,14 @@ def async_receive():
     global async_transcript
     global client_id
     global current_game    
+    global game
+    global JOIN_FLAG
+    global REQUEST_RESPONSE_FLAG
+    global MESSAGE_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
+        # try:
         for inm in ins: 
             # how do you know which one was chosen? if equal probably
             print("selected was: {}".format(inm))
@@ -167,15 +187,62 @@ def async_receive():
             elif message_type == 'start_game_reject':
                 print("failed to start game")
             elif message_type == "join_request":
-                answer = input("join request from {}\ny/n?".format(message_content[0][1]))
-                if answer.lower() in ["y", "yes"]:
-                    async_send(['accept_join', message_content])
+                if False:
+                    answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                    if answer.lower() in ["y", "yes"]:
+                        game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                        message_content.append(game)
+                        async_send(['accept_join', message_content])
+                    else:
+                        async_send(['reject_join', message_content])
                 else:
-                    async_send(['reject_join', message_content])
+                    REQUEST_RESPONSE_FLAG = False
+                    MESSAGE_CONTENT = message_content
+                    print(MESSAGE_CONTENT)
+                    # OLDSURF = gameView.DISPLAYSURF.copy()
+                    # popupSurf = pygame.Surface((200,200))
+                    # popupSurf.fill(COLOR_BLACK)
+                    # x = gameView.DISPLAYSIZE[0]/2-popupSurf.get_width()
+                    # y = gameView.DISPLAYSIZE[1]/2-popupSurf.get_height()
+                    # x = x+gameView.MAPOFFSET[0]
+                    # y = y+gameView.MAPOFFSET[1]
+
+                    # gameView.DISPLAYSURF.blit(popupSurf, (x,y))  
+                    # surf, tpos = ptext.draw("join request from {}\ny/n?".format(message_content[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
+                    # surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
+                    # join_request_timeout = 40
+                    # start = time.time()
+                    # running = True
+                    # while(time.time()-start < join_request_timeout and running):  
+                    #     for event in pygame.event.get():
+                    #         if event.type == QUIT:
+                    #             pygame.quit()
+                    #             sys.exit()
+                    #         elif event.type == KEYDOWN:   
+                    #             if event.key == K_y:
+                    #                 # send the request yes
+                    #                 game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                    #                 message_content.append(game)
+                    #                 async_send(['accept_join', message_content])
+                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #                 running = False
+                    #             elif event.key == K_n:
+                    #                 # send the request no
+                    #                 async_send(['reject_join', message_content])
+                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #                 running = False
+                    #     pygame.display.flip()
+                    # if not running or time.time()-start >= join_request_timeout:
+                    #     # send the request no
+                    #     async_send(['reject_join', message_content])
+                    #     gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #     pygame.display.flip()
             elif message_type == 'join_accept':
                 print("join request accepted!")
-                print("@TODO update game object")
+                JOIN_FLAG = True
+                game = message_content
                 print("game is currently {}".format(game.get_name()))
+                print("with transcript\n{}".format(game.transcript))
             elif message_type == 'join_invalid':
                 print("there is no active game with that id")
             elif message_type == 'join_reject':
@@ -183,10 +250,14 @@ def async_receive():
                 print("join request rejected")
             elif message_type == 'removed':
                 print("you have been removed @TODO")
+                game = None
+            elif message_type == 'request_action':
+                print("@TODO action request flag and handle")
             elif message_type == 'update_game':
                 print("updating game")
-            elif message_type == 'action_reject':
-                print("action rejected, restore previous/apply sent version")
+                game = message_content[0]
+            # elif message_type == 'action_reject':
+            #     print("action rejected, restore previous/apply sent version")
             elif message_type == 'chat':
                 async_transcript += "\n" + message_content
                 print("chat message received! transcript is now: \n{}".format(async_transcript))
@@ -202,6 +273,8 @@ def async_receive():
                 # for minion in async_message:
                 #     if minion[0] != playerid:
                 #         minions.append(Minion(minion[1], minion[2], minion[0]))
+        # except Exception as e:
+        #     print(e)
 
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
@@ -690,7 +763,6 @@ def join_game_view():
 
     return
 
-# TODO CREATE NEW GAME VIEW
 def create_new_game_view():
     option_menu.disable()
     option_menu.reset(1)
@@ -843,20 +915,23 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
-    #TALK TO THOMAS ABOUT CALL TO-DO
-    #async_send(['join_game', [room_number]])
+    global JOIN_FLAG
     pygame.display.set_mode((1300, 750))
-    listOfGames = client.get_list_of_games_and_their_gms()
-    isGM = False
-    for games in listOfGames:
-        if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
-            isGM = True
-    if isGM:
-        gameObj = client.get_game_from_room_number(int(room_number))[0]
-        gameView.main(client, jsonpickle.decode(gameObj), "GM")
-    else: 
-        gameObj = client.get_game_from_room_number(int(room_number))[0]
-        gameView.main(client, jsonpickle.decode(gameObj), "PLAYER")
+    gameObj = client.get_game_from_room_number(int(room_number))[0]
+    game = jsonpickle.decode(gameObj)
+    # print(game)
+    if game.GM.get_username()==client.user.get_username():
+        async_send(['start_game', [game]])
+        gameView.main(client, game, True)
+    else:
+        join_request_timeout = 60
+        start = time.time()
+        async_send(['join_game', [room_number, client.user.get_username()]])
+        while(time.time()-start < join_request_timeout):
+            if JOIN_FLAG:
+                gameView.main(client, game, False)
+                JOIN_FLAG = False
+                break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -874,9 +949,11 @@ def create_room(gameName, ruleset_object, width, height):
     game.name = gameName
     game.uniqueID = gameId + 1
     game.map = Map(tilesize=50, width=int(width), height=int(height))
+    game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
-    gameView.main(client, game, "GM", ruleset_object)
+    async_send(['start_game', [game]])
+    gameView.main(client, game, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -977,8 +1054,6 @@ if __name__ == "__main__":
     async_send_thread = threading.Thread(target=async_command_loop)
     async_send_thread.daemon = True
     async_send_thread.start()
-
-
 
     while True:
 
