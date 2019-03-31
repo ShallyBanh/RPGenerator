@@ -128,8 +128,8 @@ class Entity:
             self._inherited_attributes = parentEntity.get_attributes()
         else:
             raise Exception("Given parent entity is not a template entity.")
-			
-	def is_of_type(self, type):
+            
+    def is_of_type(self, type):
         isParentType = False
         if self._isInheritedFrom is not None:
             isParentType = self._isInheritedFrom.is_of_type(type)
