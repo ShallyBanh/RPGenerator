@@ -10,7 +10,6 @@ import pyautogui
 class GameHistoryView:
     def __init__(self, username, client, fontsize):
         self._joinButtonImage = pygame.image.load('img/joinButton.png')
-        self._joinButtonList = []
         self._playing = True
         #contains a tuples with room code and status
         self._gameHistoryList = []
