@@ -61,8 +61,14 @@ class Entity:
     def add_action(self, action):
         self._actions.append(action)
 
+    def update_action(self, oldIdx, action):
+        self._actions[oldIdx] = action
+
     def get_attributes(self):
         return self._attributes
+
+    def update_attribute(self, oldIdx, attribute):
+        self._attributes[oldIdx] = attribute
 
     def get_attributes_string(self):
         disp_str = ""

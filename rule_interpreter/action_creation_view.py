@@ -25,9 +25,13 @@ class ActionCreationView:
         self._allInputList = ["", ""]
         self._currentlySelectedInputIdx = 0
         self._fontsize = fontsize
+        self._errorStr = ""
 
-    def main(self):
+    def main(self, actionName = "", rule = ""):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
+        if actionName != "" and rule != "":
+            self._allInputList = [str(actionName), str(rule)]
+            self._rule = str(rule)
 
         pygame.init()
 
@@ -87,6 +91,10 @@ class ActionCreationView:
                     if x in range(1100,1300) and y in range(600, 750):
                         if self._allInputList[0] == "" or self._rule == "":
                             self._invalidSubmission = True
+                            self._errorStr = "Both fields must be complete in order to submit"
+                        if self._allInputList[0].find(" ") != -1:
+                            self._invalidSubmission = True
+                            self._errorStr = "Action name cannot have spaces in it"
                         else:
                             self._playing = False
                             return self._allInputList[0], self._rule
@@ -96,7 +104,7 @@ class ActionCreationView:
                         return None, None
                     
                     if x in range (1010, 1050) and y in range (290, 320):
-                        rule_input = RuleInputView(self._fontsize).main()
+                        rule_input = RuleInputView(self._fontsize).main(self._rule)
                         if rule_input is not None:
                             self._rule = rule_input
 
@@ -109,7 +117,7 @@ class ActionCreationView:
 
             
             if self._invalidSubmission == True:
-                ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=self._fontsize*2)
+                ptext.draw(self._errorStr, (60, 700), fontname="Boogaloo", color="red", fontsize=self._fontsize*2)
 
             ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
             ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)

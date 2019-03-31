@@ -25,7 +25,9 @@ class RuleInputView:
         self._fontsize = fontsize
         self._parser = SyntaxParser()
 
-    def main(self): 
+    def main(self, ruleContent = ""): 
+        if ruleContent != "":
+            self._user_input = str(ruleContent)
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.transform.scale(self._submitButtonImg, (10, 10))
         pygame.transform.scale(self._checkmark, (100, 100))

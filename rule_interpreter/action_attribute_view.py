@@ -21,6 +21,9 @@ class AttributeActionCreationView:
         self._attribute_view = False
         self._currentEntityType = currentEntityType
         self._fontsize = fontsize
+        self._editButtonImage = pygame.image.load('img/editButtonSmall.png')
+        self._editActionList = []
+        self._editAttributeList = []
 
     def get_entity_info(self):
         entityIdx = Validator().get_entity_idx(self._currentEntityType)
@@ -86,6 +89,35 @@ class AttributeActionCreationView:
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                         return None, None, None
+                    for joinIdx in range(len(self._editActionList)):
+                        x1 = int(self._editActionList[joinIdx][0])
+                        y1 = int(self._editActionList[joinIdx][1])
+                        if x in range(x1, x1 + 100) and y in range(y1, y1+30):
+                            entityIdx = Validator().get_entity_idx(self._currentEntityType)
+                            action = Validator().get_entities()[entityIdx].get_actions()[joinIdx]
+                            actionName = action.get_action_name()
+                            ruleContent = action.get_rule_content()
+                            newActionName, rule = ActionCreationView(self._fontsize).main(actionName, ruleContent)
+                            if newActionName is None or rule is None:
+                                break
+                            actionNames[joinIdx] = newActionName
+                            Validator().update_action(entityIdx, joinIdx, newActionName, rule) 
+                            break
+                    
+                    for joinIdx in range(len(self._editAttributeList)):
+                        x1 = int(self._editAttributeList[joinIdx][0])
+                        y1 = int(self._editAttributeList[joinIdx][1])
+                        if x in range(x1, x1 + 100) and y in range(y1, y1+30):
+                            entityIdx = Validator().get_entity_idx(self._currentEntityType)
+                            attribute = Validator().get_entities()[entityIdx].get_attributes()[joinIdx]
+                            attributeName = attribute.get_attribute_name()
+                            attributeValue = attribute.get_attribute_value()
+                            attrName, attrValue = AttributeCreationView(self._fontsize).main(attributeName, attributeValue)
+                            if attrName is None or attrValue is None:
+                                break
+                            attributes[joinIdx] = attrName
+                            Validator().update_attribute(entityIdx, joinIdx, attrName, attrValue)
+                            break
 
             for rect, name, size in zip(buttonrects, buttonnames, textSizes):
                 screen.fill(pygame.Color("#553300"), rect)
@@ -95,13 +127,17 @@ class AttributeActionCreationView:
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
             actionStr = ""
-            for action in actionNames:
-                actionStr += action + "\n"
+            for actionIdx in range(len(actionNames)):
+                actionStr += actionNames[actionIdx] + "\n"
+                screen.blit(self._editButtonImage,(1000, 425 + actionIdx * 39))
+                self._editActionList.append((1000, 425 + actionIdx * 39))
             ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
 
             attributeStr = ""
-            for attr in attributes:
-                attributeStr += attr + "\n"
+            for attrIdx in range(len(attributes)):
+                attributeStr += attributes[attrIdx] + "\n"
+                screen.blit(self._editButtonImage,(1000, 65 + attrIdx * 39))
+                self._editAttributeList.append((1000, 65 + attrIdx * 39))
             ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
 
             if entity != -1:
