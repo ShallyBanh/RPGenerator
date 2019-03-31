@@ -26,22 +26,13 @@ COLOR_BACKGROUND = (0,50,50)
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
-FPS = 60.0
+FPS = 30.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
-current_game = None
 JOIN_FLAG = False
-REQUEST_RESPONSE_FLAG = False
-MESSAGE_CONTENT = None
-
-# Game Class
-# game = Game()
-# game.name = "Test Suite"
-# game.uniqueID = 1
-# game.map = Map(tilesize = 50, height = 10, width = 18)                    
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -147,8 +138,7 @@ def async_command_loop():
 
 def async_receive():
     global async_transcript
-    global client_id
-    global current_game    
+    global client_id    
     global game
     global JOIN_FLAG
     global REQUEST_RESPONSE_FLAG
@@ -196,8 +186,9 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    REQUEST_RESPONSE_FLAG = False
+                    REQUEST_RESPONSE_FLAG = True
                     MESSAGE_CONTENT = message_content
+                    print("CHANGING THE FLAG")
                     print(MESSAGE_CONTENT)
                     # OLDSURF = gameView.DISPLAYSURF.copy()
                     # popupSurf = pygame.Surface((200,200))

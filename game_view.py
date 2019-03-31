@@ -183,6 +183,7 @@ class GameView:
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
     def join_request_popup(self):
+        print("IM IN THE POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popupSurf = pygame.Surface((200,200))
         popupSurf.fill(COLOR_BLACK)
@@ -941,6 +942,7 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
         if REQUEST_RESPONSE_FLAG:
+            print("in the main trying to do the loop")
             print(MESSAGE_CONTENT)
             gameview.join_request_popup()
             REQUEST_RESPONSE_FLAG = False
