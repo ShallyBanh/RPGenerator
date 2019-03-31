@@ -159,7 +159,7 @@ class Entity:
         self._currentStatuses.remove(status)
     
     def get_basic_entity_info_to_str(self):
-        return "name: {}\ntype:{}\nwidth: {}\nheight: {}\nisTemplate: {}\ninheritedFrom: {}".format(self.get_name(), self.get_type(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), self.get_is_template(), self.get_is_inherited_from())
+        return "name: {}\ntype:{}\nwidth: {}\nheight: {}\nisTemplate: {}\ninheritedFrom:\n\n {}".format(self.get_name(), self.get_type(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), self.get_is_template(), self.get_is_inherited_from())
             
     def __str__(self):
         return "Entity:\nName: {}\nwidth: {}\nheight: {}\ny: {}\nx: {}\nactions: {}\nattributes:\n{}".format(self.get_name(), self.get_size().get_width_as_string(), self.get_size().get_height_as_string(), str(self.x), str(self.y), self.get_actions_string(), self.get_attributes_string())
