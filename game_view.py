@@ -256,6 +256,7 @@ class GameView:
         start = time.time()
         while(time.time()-start < join_request_timeout):  
             pass
+        shared_var.GM_LEAVES_FLAG = False
         return
 
     def action_request_popup(self):
