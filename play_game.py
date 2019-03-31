@@ -11,7 +11,7 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
-from shared_var import *
+import shared_var
 
 # Import pygameMenu
 import pygameMenu
@@ -141,8 +141,8 @@ def async_receive():
     global client_id    
     global game
     global JOIN_FLAG
-    global REQUEST_RESPONSE_FLAG
-    global MESSAGE_CONTENT
+    # global shared_var.REQUEST_RESPONSE_FLAG
+    # global MESSAGE_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -186,10 +186,10 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    REQUEST_RESPONSE_FLAG = True
-                    MESSAGE_CONTENT = message_content
+                    shared_var.REQUEST_RESPONSE_FLAG = True
+                    shared_var.MESSAGE_CONTENT = message_content
                     print("CHANGING THE FLAG")
-                    print(MESSAGE_CONTENT)
+                    print(shared_var.MESSAGE_CONTENT)
                     # OLDSURF = gameView.DISPLAYSURF.copy()
                     # popupSurf = pygame.Surface((200,200))
                     # popupSurf.fill(COLOR_BLACK)

@@ -1,4 +1,4 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard, jsonpickle
+import pygame, sys, random, os, math, re, ptext, pyautogui, time, platform, subprocess, clipboard, jsonpickle
 import base64, PIL.Image
 from pygame.locals import *
 from game_engine.map import Map
@@ -14,7 +14,7 @@ from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
 from rule_interpreter.models.point import Point
 from play_game import async_send
-from shared_var import *
+import shared_var
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -193,7 +193,7 @@ class GameView:
         y = y+MAPOFFSET[1]
 
         DISPLAYSURF.blit(popupSurf, (x,y))  
-        surf, tpos = ptext.draw("join request from {}\ny/n?".format(MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        surf, tpos = ptext.draw("join request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         join_request_timeout = 40
         start = time.time()
@@ -206,20 +206,20 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
                         # send the request yes
-                        game.append_transcript("player {} joined the game".format(MESSAGE_CONTENT[0][1]))
-                        MESSAGE_CONTENT.append(game)
-                        async_send(['accept_join', MESSAGE_CONTENT])
+                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        shared_var.MESSAGE_CONTENT.append(game)
+                        async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
                     elif event.key == K_n:
                         # send the request no
-                        async_send(['reject_join', MESSAGE_CONTENT])
+                        async_send(['reject_join', shared_var.MESSAGE_CONTENT])
                         DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
             pygame.display.flip()
         if running:
             # send the request no
-            async_send(['reject_join', MESSAGE_CONTENT])
+            async_send(['reject_join', shared_var.MESSAGE_CONTENT])
             DISPLAYSURF.blit(OLDSURF, (0,0))
             pygame.display.flip()
         return
@@ -899,8 +899,8 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     global game
     global GM_STATUS
     global client
-    global REQUEST_RESPONSE_FLAG
-    global MESSAGE_CONTENT
+    # global shared_var.REQUEST_RESPONSE_FLAG
+    # global MESSAGE_CONTENT
 
     game = gameObj
     GM_STATUS = gmOrPlayer
@@ -941,11 +941,11 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
-        if REQUEST_RESPONSE_FLAG:
+        if shared_var.REQUEST_RESPONSE_FLAG:
             print("in the main trying to do the loop")
-            print(MESSAGE_CONTENT)
-            gameview.join_request_popup()
-            REQUEST_RESPONSE_FLAG = False
+            print(shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.join_request_popup()
+            shared_var.REQUEST_RESPONSE_FLAG = False
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
