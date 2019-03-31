@@ -239,6 +239,24 @@ class GameView:
         pygame.display.flip()
         return
 
+    def gm_leaves_room_popup(self):
+        print("IM IN THE LEAVE ROOM POPUP")
+        OLDSURF = DISPLAYSURF.copy()
+        popupSurf = pygame.Surface((200,200))
+        popupSurf.fill(COLOR_BLACK)
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
+
+        DISPLAYSURF.blit(popupSurf, (x,y))  
+        surf, tpos = ptext.draw("The GM left the room! Closing in 15seconds.", (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        pygame.display.flip()
+
+        join_request_timeout = 15
+        start = time.time()
+        while(time.time()-start < join_request_timeout):  
+            pass
+        return
+
     def action_request_popup(self):
         print("IM IN THE ACTION REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
@@ -1001,6 +1019,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.action_request_popup()
             shared_var.ACTION_REQUEST_FLAG = False
+        if shared_var.GM_LEAVES_ROOM:
+            print("GM LEFT THE ROOM")
+            GAMEVIEW.gm_leaves_room_popup()
+            return
         for event in pygame.event.get():
             if event.type == QUIT:
                 GAMEVIEW.leave_game()

@@ -201,7 +201,8 @@ def async_receive():
                 # get the game
                 print("join request rejected")
             elif message_type == 'removed':
-                print("you have been removed @TODO")
+                print("setting gm leaves flag is set true")
+                shared_var.GM_LEAVES_FLAG = True
                 game = None
             elif message_type == 'request_action':
                 print("@TODO action request flag and handle")
