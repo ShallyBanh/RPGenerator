@@ -67,7 +67,7 @@ Rules are written in Actions and in Relationships. They determine the actions th
 Every statement is ended by a new line. Indentation is ignored.
 
 Writing Actions:
-Every Action starts off with a target statement:
+Every Action starts off with a 'target' statement:
 1. target self:
 2. target <entity_type>:
 3. target point:
@@ -76,11 +76,17 @@ After this statement, any usage of the word 'target' will be taken to refer to t
 2. You can target a type of entity (ie select another entity of the given type from the map that you wish to affect). Any usages of the work 'target' will refer to the entity you have selected.
 3. You can target a point on the map. Any usages of the word 'target' will refer to this chosen point.
 
+Writing Relationships:
+Every Relationship starts off with an 'interrupt' statement:
+interrupt <entity type>.<action name> if <condition>:
+This statement means that when an action of name <action name> is performed by an entity of type <entity type>, then the action in question will no longer be performed. Instead, whatever statements follow the interrupt statement will be performed instead. The <condition> can include references to 'target' or 'self', which will refer to the 'self' or 'target' of the given action.
+
+
 | Keyword | Explanation |
 | ------- | ----------- |
 |target|refers to the target of the given action|
 |self|refers to the entity doing the action|
-|<entity type>|an existing entity type. Used in the context of if [all] |
+|<entity type>|an existing entity type. Used in the context of if [all] statements|
 
 The following types of statements can be used to write a rule:
 | Statement | Example | Explanation |
@@ -95,7 +101,7 @@ The following types of statements can be used to write a rule:
 |divide <number, variable, or entity attribute> by <number>| divide 100 by 4 | divide a given variable or entity attribute by the given number|
 |set <variable or entity attribute> to <number, string, or boolean>| set target.hp to 100 | set a given variable or entity attribute by the given value|
 |if [all] <condition> then <statement>|if target.ArmorClass < 5 then reduce target.hp by 10, or if all self within(2,2) of entity then reduce entity.hp by d4|if a given conditional statement is true, then execute the statement after the 'then'. The optional 'all' clause causes the statement to be evaluated for all entities of a given type present on the map. Make sure that you are using the 'all' clause if you wish to evaluate a conditional statement for all entities of a given type. The all clause will also evaluate the <statment> for every entity found that satisfies the <condition> statement.|
-|<self, target, or entity type> within(x,y) of <self, target, or entity type> then <statement>|if all self within(2,2) of entity then reduce entity.hp by d4|checks if the given item is within a horizontal distance of (x) or a vertical distance of (y). Returns True or False for conditional statements.|
+|<self, target, or entity type> within(x,y) of <self, target, or entity type>|self within(2,2) of target|checks if the given item is within a horizontal distance of (x) or a vertical distance of (y). Returns True or False for conditional statements. Ex. something at (2,2) is within(2,2) of something at (0,0).|
 |move <entity> <number> away from <entity>|move target 3 away from self|Moves a given entity a number of tiles away from another entity. <entity> can be self, target, or an entity type in the case of an if all statement.|
 |move <entity> <number> towards <entity>|move target 3 towards self|Moves a given entity a number of tiles towards another entity. <entity> can be self, target, or an entity type in the case of an if all statement.|
 |<variable, number, or entity attribute> + <variable, number, or entity attribute>|x + 5, or target.hp + 8|Returns a value equal to the first value plus the second value. Used to assign something else to the sum of two values, such as self.hp = self.healAmount + 5|
