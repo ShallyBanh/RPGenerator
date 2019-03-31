@@ -19,6 +19,7 @@ class Entity:
         self._inherited_actions = []        
         self._self_attributes = []
         self._inherited_attributes = []
+        self._combined_attributes = []
         self.size = Size(int(width),int(height)) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
@@ -76,7 +77,8 @@ class Entity:
         return self._self_attributes + self._inherited_attributes
 
     def update_attribute(self, oldIdx, attribute):
-        self._self_attributes[oldIdx] = attribute
+        self._combined_attributes = self._self_attributes + self._inherited_attributes
+        self._combined_attributes[oldIdx] = attribute
 
     def get_attributes_string(self):
         disp_str = ""

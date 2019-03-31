@@ -39,6 +39,13 @@ class RulesetCreationEditView:
         self._client = client
         self._username = username
         self._fontsize = fontsize
+    
+    def get_entity_with_type(self, entityType):
+        allEntities = Validator().get_entities()
+        for entity in allEntities:
+            if entity.get_type() == entityType:
+                return entity
+        return None
 
     def main(self, rulesetName):
         if rulesetName == "":
@@ -80,7 +87,7 @@ class RulesetCreationEditView:
                 entityTuple = EntityCreationView(self._fontsize).main()
                 if entityTuple[0] is not None:
                     self._entities.append(entityTuple[0])
-                    Validator().add_entity(Entity("", entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4]))
+                    Validator().add_entity(Entity("", entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], self.get_entity_with_type(entityTuple[4])))
                 self._entity_view = False
 
             if self._relationship_view == True:
