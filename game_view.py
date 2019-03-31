@@ -31,6 +31,7 @@ class GameView:
         # TODO CALL THE ASYNC REQUEST?!
         if GM_STATUS:
             print("trying to end game")
+            shared_var.GM_LEAVES_FLAG = False
             end_game_message = "GM {} ended the game session".format(client.user.get_username())
             game.append_transcript(end_game_message)
             client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
@@ -1022,6 +1023,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
         if shared_var.GM_LEAVES_FLAG:
             print("GM LEFT THE ROOM")
             GAMEVIEW.gm_leaves_room_popup()
+            shared_var.GM_LEAVES_FLAG = False
             return
         for event in pygame.event.get():
             if event.type == QUIT:
