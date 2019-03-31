@@ -98,7 +98,9 @@ def async_send(async_message):
     global voice_async_port
     global serverAddr
     print("going to send async message {}".format(async_message))
-    general_async_connection.sendall(double_pickle(async_message))
+    pickled = double_pickle(async_message)
+    print("trying to send pickle of size {}".format(sys.getsizeof(pickled)))
+    general_async_connection.sendall(pickled)
     print("sent async message")
     # register_command = ['register_client']
 
@@ -865,7 +867,9 @@ def enter_room(room_number):
     #         isGM = True
     gameObj = client.get_game_from_room_number(int(room_number))[0]
     game = jsonpickle.decode(gameObj)
+    print(game)
     if game.GM.get_username()==client.user.get_username():
+        async_send(['start_game', [game]])
         gameView.main(client, game, True)
     else:
         join_request_timeout = 60

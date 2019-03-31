@@ -13,6 +13,9 @@ class Map:
         self.textures = {}
         self.fogOfWar =  [[True for w in range(width)] for h in range(height)]
 
+    def __str__(self):
+        return str(self.width) + " " +str(self.height) + " " +str(self.tilesize)
+
     class Texture:
         """
         Inner Texture Class
@@ -28,3 +31,4 @@ class Map:
 
         def __str__(self):
             return  "Texture:\nName: "+self.name+"\nwidth: "+str(self.width)+"\nheight: "+str(self.height)+"\nx: "+ str(self.x)+ "\ny: " + str(self.y) +"\n"
+
