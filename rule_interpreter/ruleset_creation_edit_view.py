@@ -87,7 +87,7 @@ class RulesetCreationEditView:
                 entityTuple = EntityCreationView(self._fontsize).main()
                 if entityTuple[0] is not None:
                     self._entities.append(entityTuple[0])
-                    Validator().add_entity(Entity("", entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], self.get_entity_with_type(entityTuple[4])))
+                    Validator().add_entity(Entity("", entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4]))
                 self._entity_view = False
 
             if self._relationship_view == True:
@@ -185,8 +185,8 @@ class RulesetCreationEditView:
             self._moreButtonList = []
             for entityIdx in range(len(self._entities)):
                 entites_str += self._entities[entityIdx] + "\n"
-                screen.blit(self._moreImage,(465, 210 + entityIdx * 30 + entityIdx*0.05*100))
-                self._moreButtonList.append((465, 210 + entityIdx * 30 + entityIdx*0.05*100))
+                screen.blit(self._moreImage,(465, 210 + entityIdx * 30 + entityIdx*0.1*100))
+                self._moreButtonList.append((465, 210 + entityIdx * 30 + entityIdx*0.1*100))
             ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=35)
 
 
