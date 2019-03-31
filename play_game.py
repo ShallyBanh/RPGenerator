@@ -33,6 +33,7 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
 PLAYER_JOIN_FLAG = False
+PLAYER_REJECTED_FLAG = False
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -142,6 +143,7 @@ def async_receive():
     global client_id    
     global game
     global PLAYER_JOIN_FLAG
+    global PLAYER_REJECTED_FLAG
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -199,6 +201,7 @@ def async_receive():
                 print("there is no active game with that id")
             elif message_type == 'join_reject':
                 # get the game
+                PLAYER_REJECTED_FLAG = True
                 print("join request rejected")
             elif message_type == 'removed':
                 print("setting gm leaves flag is set true")
@@ -885,6 +888,8 @@ def enter_room(room_number):
                 # game = client.get_game_from_room_number(game_id)
                 gameView.main(client, game, client_id, False)
                 PLAYER_JOIN_FLAG = False
+                break
+            elif PLAYER_REJECTED_FLAG:
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
