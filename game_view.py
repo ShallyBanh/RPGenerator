@@ -160,7 +160,7 @@ class GameView:
                         my_entity = GAMEVIEW.which_entity(x, y)
                         if result == "point":
                             return Point(x,y)
-                        elif my_entity is not None and my_entity.get_type() == result:
+                        elif my_entity is not None and my_entity.is_of_type(result):
                             return my_entity
         return
 
