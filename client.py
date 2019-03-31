@@ -113,7 +113,7 @@ class Client():
     def add_asset(self, username, asset_name, json_blob):
         print("[client] [add asset] attempting to add asset with username,asset_name = {},{}".format(username,asset_name))        
         payload = {'username': username, 'asset_name': asset_name, 'json_blob': json_blob}
-        response = requests.post("{}/add asset".format(self.URL), params=payload)
+        response = requests.post("{}/add_asset".format(self.URL), params=payload)
         print("[client] [add asset] response was {}/{}/{}".format(response, response.status_code, response.text))       
         # @TODO why does this one end up a different type even though the code is exactly the same
         # if type(response) == requests.models.Response:

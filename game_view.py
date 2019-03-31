@@ -229,7 +229,7 @@ class GameView:
                     if event.key == K_ESCAPE:
                         if selected_image is not None:
                             self.clear_bottom_info()
-                            self.display_message(display_string)
+                            self.display_message(display_string, "*")
                             blit_input = True
                             selected_image = None
                         else:
@@ -476,7 +476,6 @@ class GameView:
         return
 
     def add_asset(self):
-        global client
         self.clear_bottom_info()
         general_message = "_Add Asset Mode_\nEnter in the path to an image.\nRight click the input box to paste a file name path.\nPress ESC to exit this mode."
         self.display_message(general_message)
@@ -838,18 +837,20 @@ FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(client, gameObj, gmOrPlayer = True, validatorObj = None):
+def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     global RULE_ENACTOR
     global game
     global GM_STATUS
+    global client
 
     game = gameObj
     GM_STATUS = gmOrPlayer
+    client = clientObj
     
     if validatorObj is not None:
         RULE_ENACTOR.parse_validator(validatorObj)
         gameObj.set_ruleset_copy(RULE_ENACTOR)
-        # client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+        client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
     else:
         RULE_ENACTOR = gameObj.get_ruleset_copy()
 
@@ -1024,4 +1025,4 @@ if __name__ == "__main__":
     entity.set_image_filename("default-image.png")
     ###### Rule Validation TEST END #######
 
-    main(client = client, gameObj = new_game, gmOrPlayer = True, validatorObj = validator)
+    main(client, gameObj = new_game, gmOrPlayer = True, validatorObj = validator)
