@@ -131,7 +131,7 @@ class Client():
         print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
         if response.status_code == 200:
             data = json.loads(response.text)
-            return data
+            return data['assets']
         else:
             print("status was not 200")
             return -1
@@ -147,7 +147,7 @@ class Client():
         print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
         if response.status_code == 200:
             data = json.loads(response.text)
-            return data
+            return data['assets']
         else:
             print("status was not 200")
             return -1
