@@ -212,7 +212,8 @@ class GameView:
         DISPLAYSURF.blit(popupSurf, (x,y))  
         surf, tpos = ptext.draw("join request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-        
+        pygame.display.flip()
+
         join_request_timeout = 40
         start = time.time()
         running = True
@@ -249,6 +250,7 @@ class GameView:
         DISPLAYSURF.blit(popupSurf, (x,y))  
         surf, tpos = ptext.draw("Action request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        pygame.display.flip()
 
         join_request_timeout = 60
         start = time.time()
