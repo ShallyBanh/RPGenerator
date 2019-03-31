@@ -25,8 +25,8 @@ class Entity:
         self._isInheritedFrom = inheritedFrom
         if inheritedFrom is not None:
             if inheritedFrom.get_is_template():
-                self._inherited_actions = parentEntity.get_actions()
-                self._inherited_attributes = parentEntity.get_attributes()
+                self._inherited_actions = self._isInheritedFrom.get_actions()
+                self._inherited_attributes = self._isInheritedFrom.get_attributes()
             else:
                 raise Exception("Given parent entity is not a template entity.")
         self.x = x
@@ -64,10 +64,10 @@ class Entity:
         return ", ".join(self.get_action_names())
 
     def set_actions(self, actions):
-        self._actions = actions
+        self._self_actions = actions
         
     def add_action(self, action):
-        self._actions.append(action)
+        self._self_actions.append(action)
 
     def get_attributes(self):
         return self._self_attributes + self._inherited_attributes
@@ -97,7 +97,7 @@ class Entity:
     
     def add_action(self, action):
         if self.get_actions() == []:
-            self._actions.append(action)
+            self._self_actions.append(action)
             return 
 
         if action.get_action_name() in self.get_actions():
