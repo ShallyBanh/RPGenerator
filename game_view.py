@@ -29,6 +29,14 @@ class GameView:
 
     def leave_game(self, full_exit=True):
         # TODO CALL THE ASYNC REQUEST?!
+        if GM_STATUS:
+            print("trying to end game")
+            end_game_message = "GM {} ended the game session".format(client.user.get_username())
+            game.append_transcript(end_game_message)
+            # @TODO update game in database
+            client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+            async_send(['chat', [client_id, end_game_message]])
+            async_send(['end_game', [client_id, game.get_uniqueID()]])
         if full_exit:
             pygame.quit()
             sys.exit()

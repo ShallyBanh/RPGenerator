@@ -904,7 +904,7 @@ def create_room(gameName, ruleset_object, width, height):
     game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
-    async_send(['start_game', [game]])
+    async_send(['start_game', [game.get_uniqueID()]])
     gameView.main(client, game, client_id, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
