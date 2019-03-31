@@ -189,8 +189,8 @@ def async_receive():
                 else:
                     shared_var.REQUEST_RESPONSE_FLAG = True
                     shared_var.MESSAGE_CONTENT = message_content
-                    print("CHANGING THE FLAG")
-                    print(shared_var.MESSAGE_CONTENT)
+                    # print("CHANGING THE FLAG")
+                    # print(shared_var.MESSAGE_CONTENT)
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 JOIN_FLAG = True

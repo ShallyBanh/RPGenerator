@@ -27,6 +27,13 @@ class GameView:
         self.load_pictures()
         return
 
+    def leave_game(self, full_exit=True):
+        # TODO CALL THE ASYNC REQUEST?!
+        if full_exit:
+            pygame.quit()
+            sys.exit()
+        return
+
     def offset_blit(self,x,y):
         return (x+MAPOFFSET[0],y+MAPOFFSET[1])
 
@@ -144,8 +151,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -201,8 +207,7 @@ class GameView:
         while(time.time()-start < join_request_timeout and running):  
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
                         # send the request yes
@@ -232,8 +237,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -272,8 +276,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -356,8 +359,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -427,8 +429,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if saved_entity is None:
                         mousepos = pygame.mouse.get_pos()
@@ -499,8 +500,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -548,8 +548,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if event.button == 3:
                         chat_input_box.text = clipboard.paste()
@@ -610,8 +609,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     pass
                 elif event.type == KEYDOWN:   
@@ -948,8 +946,7 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
             shared_var.REQUEST_RESPONSE_FLAG = False
         for event in pygame.event.get():
             if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+                GAMEVIEW.leave_game()
             elif event.type == MOUSEBUTTONDOWN:
                 mousepos = pygame.mouse.get_pos()
                 mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -1018,6 +1015,7 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     # TODO ALERT FRIENDS THAT THEY HAVE EXITED
+                    GAMEVIEW.leave_game(False)
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
                     if my_entity is not None:
