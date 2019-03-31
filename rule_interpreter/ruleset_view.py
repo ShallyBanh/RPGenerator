@@ -42,7 +42,7 @@ class RulesetView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Rulesets")
-        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*4, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*2, fontname="CherryCreamSoda")
 
         buttonrects = [pygame.Rect((50, 150, 1100, 550))]
         textSizes = [(50, 100)]
@@ -88,7 +88,7 @@ class RulesetView:
                 screen.fill(pygame.Color("#553300"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-8, 100)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
             ruleNamesString = ""
@@ -97,7 +97,7 @@ class RulesetView:
                 ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
                 screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
                 self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
-            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize)
             
             screen.blit(*titleargs)
             pygame.display.flip()

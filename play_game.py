@@ -42,7 +42,6 @@ game.map = Map(tilesize = 50, height = 10, width = 18)
 # -----------------------------------------------------------------------------
 # Init pygame
 pygame.init()
-client = Client()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
 currentUsername = ""
 async_transcript = ""
@@ -59,6 +58,7 @@ voice_async_port = 9495
 serverAddr = '0.0.0.0'
 if len(sys.argv) == 2:
     serverAddr = sys.argv[1]
+client = Client(serverAddr)
 general_async_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 general_async_connection.connect((serverAddr, general_async_port))
 

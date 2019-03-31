@@ -91,21 +91,21 @@ class AttributeActionCreationView:
                 screen.fill(pygame.Color("#553300"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-8, 100)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2.5)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*1.5)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
             actionStr = ""
             for action in actionNames:
                 actionStr += action + "\n"
-            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             attributeStr = ""
             for attr in attributes:
                 attributeStr += attr + "\n"
-            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             if entity != -1:
-                ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+                ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             pygame.display.flip()
 
