@@ -146,6 +146,7 @@ def async_receive():
     global client_id
     global current_game    
     global game
+    global JOIN_FLAG
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -179,13 +180,16 @@ def async_receive():
             elif message_type == 'start_game_reject':
                 print("failed to start game")
             elif message_type == "join_request":
-                answer = input("join request from {}\ny/n?".format(message_content[0][1]))
-                if answer.lower() in ["y", "yes"]:
-                    game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                    message_content.append(game)
-                    async_send(['accept_join', message_content])
+                if True:
+                    answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                    if answer.lower() in ["y", "yes"]:
+                        game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                        message_content.append(game)
+                        async_send(['accept_join', message_content])
+                    else:
+                        async_send(['reject_join', message_content])
                 else:
-                    async_send(['reject_join', message_content])
+                    pass
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 JOIN_FLAG = True
@@ -222,6 +226,24 @@ def async_receive():
 
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
+def gm_popup_request():
+    # w, h = pygame.display.get_surface().get_size()
+    # self.draw_entity_box(w, h, width = entity.size.get_width(), height = entity.size.get_height())
+    #  # newsize = img1.get_width()+4, img1.get_height()+4
+    # for i in options:
+    #     textSurf.append(FONTTYPE.render(i, 1, (255, 255, 255)))
+    #     local_width, height = FONTTYPE.size(i) 
+    #     if (local_width>width):
+    #         width = local_width
+    # popupSurf = pygame.Surface((width+4,height*len(options)))
+    # DISPLAYSURF.blit(popupSurf, self.offset_blit(x,y))    
+    # for i in range(len(textSurf)):
+    #     DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
+
+    # # entity information to display on the left
+    # ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+    return
+
 def account_login_view():
     """
     Login game function
