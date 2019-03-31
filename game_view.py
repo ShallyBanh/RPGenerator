@@ -189,18 +189,17 @@ class GameView:
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
     def join_request_popup(self):
-        print("IM IN THE POPUP")
+        print("IM IN THE JOIN REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popupSurf = pygame.Surface((200,200))
         popupSurf.fill(COLOR_BLACK)
-        x = DISPLAYSIZE[0]/2-popupSurf.get_width()
-        y = DISPLAYSIZE[1]/2-popupSurf.get_height()
-        x = x+MAPOFFSET[0]
-        y = y+MAPOFFSET[1]
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
 
         DISPLAYSURF.blit(popupSurf, (x,y))  
         surf, tpos = ptext.draw("join request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        
         join_request_timeout = 40
         start = time.time()
         running = True
@@ -214,19 +213,53 @@ class GameView:
                         game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
                         shared_var.MESSAGE_CONTENT.append(game)
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
-                        DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
                     elif event.key == K_n:
                         # send the request no
                         async_send(['reject_join', shared_var.MESSAGE_CONTENT])
-                        DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
-            pygame.display.flip()
         if running:
             # send the request no
             async_send(['reject_join', shared_var.MESSAGE_CONTENT])
-            DISPLAYSURF.blit(OLDSURF, (0,0))
-            pygame.display.flip()
+        DISPLAYSURF.blit(OLDSURF, (0,0))
+        pygame.display.flip()
+        return
+
+    def action_request_popup(self):
+        print("IM IN THE ACTION REQUEST POPUP")
+        OLDSURF = DISPLAYSURF.copy()
+        popupSurf = pygame.Surface((200,200))
+        popupSurf.fill(COLOR_BLACK)
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
+        
+        DISPLAYSURF.blit(popupSurf, (x,y))  
+        surf, tpos = ptext.draw("Action request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+
+        join_request_timeout = 60
+        start = time.time()
+        running = True
+        while(time.time()-start < join_request_timeout and running):  
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.leave_game()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_y:
+                        # send the request yes
+                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        shared_var.MESSAGE_CONTENT.append(game)
+                        async_send(['accept_join', shared_var.MESSAGE_CONTENT])
+                        running = False
+                    elif event.key == K_n:
+                        # send the request no
+                        async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+                        running = False
+        if running:
+            # send the request no
+            async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+        DISPLAYSURF.blit(OLDSURF, (0,0))
+        pygame.display.flip()
         return
 
     def toggle_fog(self):
