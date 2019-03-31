@@ -24,8 +24,11 @@ class Entity:
         self._currentStatuses = []
         self._isInheritedFrom = inheritedFrom
         if inheritedFrom is not None:
-            self._inherited_actions = parentEntity.get_actions()
-            self._inherited_attributes = parentEntity.get_attributes()
+            if inheritedFrom.get_is_template():
+                self._inherited_actions = parentEntity.get_actions()
+                self._inherited_attributes = parentEntity.get_attributes()
+            else:
+                raise Exception("Given parent entity is not a template entity.")
         self.x = x
         self.y = y
     
@@ -119,9 +122,12 @@ class Entity:
         return self._isInheritedFrom
         
     def set_inherited_from(self, parentEntity):
-        self._isInheritedFrom = parentEntity
-        self._inherited_actions = parentEntity.get_actions()
-        self._inherited_attributes = parentEntity.get_attributes()
+        if parentEntity.get_is_template():
+            self._isInheritedFrom = parentEntity
+            self._inherited_actions = parentEntity.get_actions()
+            self._inherited_attributes = parentEntity.get_attributes()
+        else:
+            raise Exception("Given parent entity is not a template entity.")
     
     def get_current_statuses(self):
         return self._currentStatuses
