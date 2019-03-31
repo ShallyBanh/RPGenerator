@@ -873,15 +873,15 @@ def enter_room(room_number):
     game = jsonpickle.decode(gameObj)
     # print(game)
     if game.GM.get_username()==client.user.get_username():
-        async_send(['start_game', [game]])
-        gameView.main(client, game, True)
+        async_send(['start_game', [game.get_uniqueID()]])
+        gameView.main(client, game, client_id, True)
     else:
         join_request_timeout = 60
         start = time.time()
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
             if PLAYER_JOIN_FLAG:
-                gameView.main(client, game, False)
+                gameView.main(client, game, client_id, False)
                 PLAYER_JOIN_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
@@ -905,7 +905,7 @@ def create_room(gameName, ruleset_object, width, height):
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
     async_send(['start_game', [game]])
-    gameView.main(client, game, True, ruleset_object)
+    gameView.main(client, game, client_id, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 

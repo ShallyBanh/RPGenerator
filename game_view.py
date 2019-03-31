@@ -925,15 +925,17 @@ FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
+def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global RULE_ENACTOR
     global game
     global GM_STATUS
     global client
+    global client_id
 
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
+    client_id = clientID
 
     GAMEVIEW.load_pictures_from_database()
     
