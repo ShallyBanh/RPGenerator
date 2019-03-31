@@ -89,6 +89,8 @@ This statement means that when an action of name <action name> is performed by a
 |<entity type>|an existing entity type. Used in the context of if [all] statements|
 
 The following types of statements can be used to write a rule:
+
+
 | Statement | Example | Explanation |
 | --------- | ------- | ----------- |
 |<number of dice>d<number of sides>|3d6 or d20|Randomly generates a number of values between 1 and <number of sides> <number of dice> times, and adds them all together. The <number of dice> is an optional requirement, and a d0 returns 0.|
