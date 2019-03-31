@@ -26,6 +26,13 @@ class EntityCreationView:
         self._currentlySelectedInputIdx = 0
         self._invalidSubmissionText = "All fields must be complete in order to submit"
         self._fontsize = fontsize
+    
+    def get_entity_with_type(self, entityType):
+        allEntities = Validator().get_entities()
+        for entity in allEntities:
+            if entity.get_type() == entityType:
+                return entity
+        return None
 
     def main(self, currentEntity = None):
         if currentEntity is not None:
@@ -111,7 +118,7 @@ class EntityCreationView:
                             else:
                                 isTemplate = True
                             self._playing = False
-                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], isTemplate, self._allInputList[4]
+                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], isTemplate, self.get_entity_with_type(self._allInputList[4])
 
             for rect, name, size, color in zip(buttonrects, buttonnames, textSizes, self._currentlySelectedColorList):
                 screen.fill(pygame.Color(color), rect)
