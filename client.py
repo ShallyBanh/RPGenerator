@@ -119,6 +119,26 @@ class Client():
         # if type(response) == requests.models.Response:
         #     response = str(response.text)
         return 0 if (response.status_code == 200) else -1
+
+    def get_asset(self, username, asset_name):
+        print("[client] [get_asset] attempting to get_asset with username,asset_name = {},{}".format(username))        
+        payload = {'username': username, 'asset_name': asset_name}
+        response = requests.post("{}/get_asset".format(self.URL), params=payload)
+        print("[client] [get_asset] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
+
+    def get_assets(self, username):
+        print("[client] [get_assets] attempting to get_assets with username = {}".format(username))        
+        payload = {'username': username}
+        response = requests.post("{}/get_assets".format(self.URL), params=payload)
+        print("[client] [get_assets] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # @TODO why does this one end up a different type even though the code is exactly the same
+        # if type(response) == requests.models.Response:
+        #     response = str(response.text)
+        return 0 if (response.status_code == 200) else -1
     
     def reset_database(self):
         """ WARNING: for test purposes only, @TODO remove """

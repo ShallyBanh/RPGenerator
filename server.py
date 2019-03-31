@@ -149,6 +149,31 @@ def add_asset():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/get_asset", methods=['POST'])
+def get_asset():
+    username = request.args.get("username")
+    asset_name = request.args.get("asset_name")
+    if username is None or asset_name is None:
+        return Response(status=400)
+    print("[server] [get_asset] got username,asset_name = {},{}".format(username, asset_name))
+    # print("[server] [get_asset] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
+    response = server.account_manager.get_asset(username, asset_name)
+    print("[server] [get_asset] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/get_assets", methods=['POST'])
+def get_assets():
+    username = request.args.get("username")
+    if username is None:
+        return Response(status=400)
+    print("[server] [get_assets] got username = {}".format(username))
+    # print("[server] [get_assets] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
+    response = server.account_manager.get_assets(username)
+    print("[server] [get_assets] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/reset_database", methods=['POST'])
 def reset_database():
     """ WARNING: for test purposes only, @TODO remove """
