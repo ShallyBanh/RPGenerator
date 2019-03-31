@@ -805,12 +805,12 @@ def create_new_game_view():
     return
 
 def ruleset_view():
-    RulesetView(currentUsername, client).main()
+    RulesetView(currentUsername, client, gameView.FONTSIZE).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
 def previous_games_view():
-    values = GameHistoryView(currentUsername, client).main()
+    values = GameHistoryView(currentUsername, client, gameView.FONTSIZE).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
     print(values)
     if values is not None:

@@ -11,7 +11,7 @@ import ptext
 import pygame.locals as pl
 
 class RuleInputView:
-    def __init__(self):
+    def __init__(self, fontsize):
         self._user_input = ""
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._checkmark = pygame.image.load('img/checkmark.png')
@@ -22,6 +22,7 @@ class RuleInputView:
         self._currentlySelected = False
         self._unvalid = False
         self._valid = False
+        self._fontsize = fontsize
         self._parser = SyntaxParser()
 
     def main(self): 
@@ -98,10 +99,10 @@ class RuleInputView:
                     screen.fill(pygame.Color("#2693bf"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-16, 16)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
                 
-            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
 
             if self._unvalid == True:
                 screen.blit(self._errormark,(350,100))
