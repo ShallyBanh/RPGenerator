@@ -464,6 +464,13 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertTrue(self.target.get_attribute("HP").get_attribute_value() <= 20 and self.target.get_attribute("HP").get_attribute_value() >= -16)
 		self.assertTrue(self.enactor.acting_entity.get_attribute("HP").get_attribute_value() <= 10 and self.enactor.acting_entity.get_attribute("HP").get_attribute_value() >= -26)
 		
+	def test_is_of_type(self):
+		parent = Entity("papa", "parent", 1,1,True,None)
+		child = Entity("kiddo", "kid", 1,1,False,parent)
+		
+		self.assertTrue(child.is_of_type("kid"))
+		self.assertTrue(child.is_of_type("parent"))
+		
 	def Bianca_test_case(self):
 		enactor = rule_enactor.RuleEnactor()
 		isTemplate = False

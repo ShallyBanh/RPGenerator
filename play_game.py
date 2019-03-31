@@ -87,6 +87,7 @@ def double_pickle(data):
     return pickled
 
 def double_unpickle(data):
+    print(data)
     print("unpickling")
     unpickled = pickle.loads(data)
     print("jsonunpickling")
@@ -150,6 +151,7 @@ def async_receive():
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
+        # try:
         for inm in ins: 
             # how do you know which one was chosen? if equal probably
             print("selected was: {}".format(inm))
@@ -180,7 +182,7 @@ def async_receive():
             elif message_type == 'start_game_reject':
                 print("failed to start game")
             elif message_type == "join_request":
-                if True:
+                if False:
                     answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                     if answer.lower() in ["y", "yes"]:
                         game.append_transcript("player {} joined the game".format(message_content[0][1]))
@@ -189,7 +191,42 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    pass
+                    OLDSURF = gameView.DISPLAYSURF.copy()
+                    popupSurf = pygame.Surface((100,100))
+                    popupSurf.fill(COLOR_BLACK)
+                    x = gameView.DISPLAYSIZE[0]/2-popupSurf.get_width()
+                    y = gameView.DISPLAYSIZE[1]/2-popupSurf.get_height()
+
+                    DISPLAYSURF.blit(popupSurf, (x+gameView.MAPOFFSET[0],y+gameView.MAPOFFSET[1]))  
+                    surf, tpos = ptext.draw("join request from {}\ny/n?".format(message_content[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 100)
+                    surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 100)
+                    join_request_timeout = 40
+                    start = time.time()
+                    running = True
+                    while(time.time()-start < join_request_timeout and running):  
+                        for event in pygame.event.get():
+                            if event.type == QUIT:
+                                pygame.quit()
+                                sys.exit()
+                            elif event.type == KEYDOWN:   
+                                if event.key == K_y:
+                                    # send the request yes
+                                    game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                                    message_content.append(game)
+                                    async_send(['accept_join', message_content])
+                                    gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                                    running = False
+                                elif event.key == K_n:
+                                    # send the request no
+                                    async_send(['reject_join', message_content])
+                                    gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                                    running = False
+                        pygame.display.flip()
+                    if not running:
+                        # send the request no
+                        async_send(['reject_join', message_content])
+                        gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                        pygame.display.flip()
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 JOIN_FLAG = True
@@ -226,27 +263,11 @@ def async_receive():
                 # for minion in async_message:
                 #     if minion[0] != playerid:
                 #         minions.append(Minion(minion[1], minion[2], minion[0]))
+        # except Exception as e:
+        #     print(e)
 
 # -----------------------------------------------------------------------------
 # VIEW FUNCTIONS
-def gm_popup_request():
-    # w, h = pygame.display.get_surface().get_size()
-    # self.draw_entity_box(w, h, width = entity.size.get_width(), height = entity.size.get_height())
-    #  # newsize = img1.get_width()+4, img1.get_height()+4
-    # for i in options:
-    #     textSurf.append(FONTTYPE.render(i, 1, (255, 255, 255)))
-    #     local_width, height = FONTTYPE.size(i) 
-    #     if (local_width>width):
-    #         width = local_width
-    # popupSurf = pygame.Surface((width+4,height*len(options)))
-    # DISPLAYSURF.blit(popupSurf, self.offset_blit(x,y))    
-    # for i in range(len(textSurf)):
-    #     DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
-
-    # # entity information to display on the left
-    # ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-    return
-
 def account_login_view():
     """
     Login game function
@@ -884,15 +905,11 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
+    global JOIN_FLAG
     pygame.display.set_mode((1300, 750))
-    # listOfGames = client.get_list_of_games_and_their_gms()
-    # isGM = False
-    # for games in listOfGames:
-    #     if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
-    #         isGM = True
     gameObj = client.get_game_from_room_number(int(room_number))[0]
     game = jsonpickle.decode(gameObj)
-    print(game)
+    # print(game)
     if game.GM.get_username()==client.user.get_username():
         async_send(['start_game', [game]])
         gameView.main(client, game, True)
@@ -900,7 +917,7 @@ def enter_room(room_number):
         join_request_timeout = 60
         start = time.time()
         async_send(['join_game', [room_number, client.user.get_username()]])
-        while(time.time() < start):
+        while(time.time()-start < join_request_timeout):
             if JOIN_FLAG:
                 gameView.main(client, game, False)
                 JOIN_FLAG = False
@@ -925,6 +942,7 @@ def create_room(gameName, ruleset_object, width, height):
     game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
+    async_send(['start_game', [game]])
     gameView.main(client, game, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return

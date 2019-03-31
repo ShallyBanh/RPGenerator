@@ -14,9 +14,9 @@ class Size:
         return str(self.get_width())
 
     def set_width(self, width):
-        if width < 1:
+        if int(width) < 1:
             raise Exception("Width must be at least 1. Received width was " + str(width) + ".")
-        self._width = width
+        self._width = int(width) 
     
     def get_height(self):
         return self._height
@@ -25,6 +25,6 @@ class Size:
         return str(self.get_height())
 
     def set_height(self, height):
-        if height < 1:
+        if int(height) < 1:
             raise Exception("Height must be at least 1. Received height was " + str(height) + ".")
-        self._height = height
+        self._height = int(height)
