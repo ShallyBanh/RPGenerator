@@ -44,9 +44,9 @@ class _Validator(object):
     def get_entities(self):
         return self._allEntities
     
-    def get_entity_idx(self, name):
+    def get_entity_idx(self, entityType):
         for entityIdx in range(len(self.get_entities())):
-            if self.get_entities()[entityIdx].get_name() == name:
+            if self.get_entities()[entityIdx].get_type() == entityType:
                 return entityIdx
         
         return -1

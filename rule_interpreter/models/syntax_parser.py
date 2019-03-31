@@ -237,7 +237,7 @@ class SyntaxParser(object):
             if actions[2].strip() != "to":
                 return False
 
-            entityNames = [entity.get_name() for entity in self._validator.get_entities()]
+            entityNames = [entity.get_type() for entity in self._validator.get_entities()]
             if actions[3].strip() not in self._variables_list and actions[3].strip() not in entityNames and actions[3].strip() != "target":
                 self._variables_list.append(actions[3].strip())
 

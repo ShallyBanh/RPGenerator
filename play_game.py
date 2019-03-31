@@ -805,12 +805,12 @@ def create_new_game_view():
     return
 
 def ruleset_view():
-    RulesetView(currentUsername, client).main()
+    RulesetView(currentUsername, client, gameView.FONTSIZE).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
 def previous_games_view():
-    values = GameHistoryView(currentUsername, client).main()
+    values = GameHistoryView(currentUsername, client, gameView.FONTSIZE).main()
     surface = pygame.display.set_mode(WINDOW_SIZE)
     print(values)
     if values is not None:
@@ -849,20 +849,15 @@ def enter_room(room_number):
     listOfGames = client.get_list_of_games_and_their_gms()
     isGM = False
     for games in listOfGames:
-        print(games[0])
-        print(games[1])
         if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
-            print("should be true")
             isGM = True
     if isGM:
         gameObj = client.get_game_from_room_number(int(room_number))[0]
-        print(gameObj)
         gameView.main(client, jsonpickle.decode(gameObj), "GM")
     else: 
         gameObj = client.get_game_from_room_number(int(room_number))[0]
-        print(gameObj)
         gameView.main(client, jsonpickle.decode(gameObj), "PLAYER")
-    print(room_number)
+    surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
 def create_room(gameName, ruleset_object, width, height):
@@ -882,6 +877,7 @@ def create_room(gameName, ruleset_object, width, height):
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
     gameView.main(client, game, "GM", ruleset_object)
+    surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
 # -----------------------------------------------------------------------------

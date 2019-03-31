@@ -10,7 +10,7 @@ import pygame_textinput
 
 class EntityCreationView:
 
-    def __init__(self):
+    def __init__(self, fontsize):
         self._entityNameInput = ""
         self._entityTypeInput = ""
         self._widthInput = ""
@@ -22,9 +22,10 @@ class EntityCreationView:
         self._playing = True
         self._invalidSubmission = False
         self._currentlySelectedColorList = ["#553300", "#553300", "#553300", "#553300", "#553300", "#553300"]
-        self._allInputList = [self._entityNameInput, self._entityTypeInput, self._widthInput, self._heightInput, self._isTemplateInput, self._inheritanceInput]
+        self._allInputList = [self._entityTypeInput, self._widthInput, self._heightInput, self._isTemplateInput, self._inheritanceInput]
         self._currentlySelectedInputIdx = 0
         self._invalidSubmissionText = "All fields must be complete in order to submit"
+        self._fontsize = fontsize
 
     def main(self):
 
@@ -34,11 +35,11 @@ class EntityCreationView:
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Entity Creation")
 
-        buttonrects = [pygame.Rect((50, 150, 500, 70)), pygame.Rect((50, 150 + 160 * 1, 500, 70)), pygame.Rect((50, 150 + 160 * 2, 500, 70)), pygame.Rect((50, 150 + 160 * 3, 500, 70)), pygame.Rect((600, 150, 500, 70)), pygame.Rect((600, 150 + 160 * 1, 500, 70))]
-        textSizes = [(50, 100), (50, 100 + 155 * 1), (50, 100 + 155 * 2), (50, 100 + 155 * 3), (600, 100), (600, 100 + 155 * 1)]
-        buttonnames = ["Entity Name", "Entity Type", "Width", "Height", "Is Template?", "Is Inherited From?"]
+        buttonrects = [pygame.Rect((50, 150, 500, 70)), pygame.Rect((50, 150 + 160 * 1, 500, 70)), pygame.Rect((50, 150 + 160 * 2, 500, 70)), pygame.Rect((50, 150 + 160 * 3, 500, 70)), pygame.Rect((600, 150, 500, 70))]
+        textSizes = [(50, 100), (50, 100 + 155 * 1), (50, 100 + 155 * 2), (50, 100 + 155 * 3), (600, 100)]
+        buttonnames = ["Entity Type", "Width", "Height", "Is Template?", "Is Inherited From?"]
         size = ""
-        titleargs = ptext.draw("Entity Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Entity Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*4, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None
@@ -89,33 +90,43 @@ class EntityCreationView:
                         self._playing = False
                         return None, None, None
                     if x in range(1100,1300) and y in range(600,750):
-                        if self._allInputList[0] == "" or self._allInputList[1] == "" or self._allInputList[2]== "" or self._allInputList[3]== "" or self._allInputList[4] == "":
+                        if self._allInputList[0] == "" or self._allInputList[1] == "" or self._allInputList[2]== "" or self._allInputList[3]== "":
                             self._invalidSubmission = True
                             self._invalidSubmissionText = "All fields must be complete in order to submit"
-                        elif self._allInputList[2].isdigit() == False or self._allInputList[3].isdigit() == False :
+                        elif self._allInputList[1].isdigit() == False or self._allInputList[2].isdigit() == False :
                             self._invalidSubmission = True
                             self._invalidSubmissionText = "Width and Height fields must be a number"
+                        elif self._allInputList[0].find(" ") != -1: 
+                            self._invalidSubmission = True
+                            self._invalidSubmissionText = "Cannot have spaces in entity type"
+                        elif self._allInputList[3].lower() != "false" and self._allInputList[3].lower() != "true" : 
+                            print(self._allInputList[3])
+                            self._invalidSubmission = True
+                            self._invalidSubmissionText = "isTemplate must be true or false"
                         else:
+                            if self._allInputList[3].lower() == "false":
+                                isTemplate = False
+                            else:
+                                isTemplate = True
                             self._playing = False
-                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], self._allInputList[3], self._allInputList[4], self._allInputList[5]
+                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], isTemplate, self._allInputList[4]
 
             for rect, name, size, color in zip(buttonrects, buttonnames, textSizes, self._currentlySelectedColorList):
                 screen.fill(pygame.Color(color), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-16, 16)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
             
             if self._invalidSubmission == True:
-                ptext.draw(self._invalidSubmissionText, (615, 500), fontname="Boogaloo", color="red", fontsize=30)
+                ptext.draw(self._invalidSubmissionText, (615, 500), fontname="Boogaloo", color="red", fontsize=self._fontsize*2)
 
 
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[1], (60, 145 + 185 * 1), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[2], (60, 125 + 185 * 2), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[3], (60, 100 + 185 * 3), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[4], (610, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=30)
-            ptext.draw(self._allInputList[5], (610, 150 + 185 * 1), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._allInputList[1], (60, 145 + 185 * 1), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._allInputList[2], (60, 125 + 185 * 2), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._allInputList[3], (60, 100 + 185 * 3), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._allInputList[4], (610, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
 
             screen.blit(*titleargs)
             pygame.display.flip()

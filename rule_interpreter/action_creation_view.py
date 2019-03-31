@@ -13,7 +13,7 @@ from rule_input_view import RuleInputView
 
 
 class ActionCreationView:
-    def __init__(self):
+    def __init__(self, fontsize):
         self._rule = ""
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._arrowImg = pygame.image.load('img/arrow.png')
@@ -24,6 +24,7 @@ class ActionCreationView:
         #Action name and then rule content
         self._allInputList = ["", ""]
         self._currentlySelectedInputIdx = 0
+        self._fontsize = fontsize
 
     def main(self):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -37,7 +38,7 @@ class ActionCreationView:
         buttonrects = [pygame.Rect((50, 150, 1000, 70)), pygame.Rect((50, 325, 1000, 350))]
         textSizes = [(50, 100 + 170 * j) for j in range(2)]
         buttonnames = ["Action Name", "Rule"]
-        titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Action Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*4, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None
@@ -95,7 +96,7 @@ class ActionCreationView:
                         return None, None
                     
                     if x in range (1010, 1050) and y in range (290, 320):
-                        rule_input = RuleInputView().main()
+                        rule_input = RuleInputView(self._fontsize).main()
                         if rule_input is not None:
                             self._rule = rule_input
 
@@ -103,15 +104,15 @@ class ActionCreationView:
                 screen.fill(pygame.Color(color), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-16, 16)
-                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=40)
+                ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=self._fontsize*2.5)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
             
             if self._invalidSubmission == True:
-                ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=30)
+                ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=self._fontsize*2)
 
-            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=20)
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=self._fontsize*2)
 
             
             screen.blit(*titleargs)

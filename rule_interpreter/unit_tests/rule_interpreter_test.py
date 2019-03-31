@@ -64,6 +64,9 @@ class TestValidator(unittest.TestCase):
 
     def test_reduce_action_by(self):
         self.assertTrue(self.parser.is_valid_rule("target goblin:\n reduce goblin.HP by 5"))
+    
+    def test_reduce_action_by_10d10(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\n reduce goblin.HP by 10d10"))
 
     def test_reduce_action_to(self):
         self.assertTrue(self.parser.is_valid_rule("target goblin:\n reduce goblin.HP to 5"))
