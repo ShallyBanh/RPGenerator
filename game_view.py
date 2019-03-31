@@ -930,8 +930,6 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     global game
     global GM_STATUS
     global client
-    # global shared_var.REQUEST_RESPONSE_FLAG
-    # global MESSAGE_CONTENT
 
     game = gameObj
     GM_STATUS = gmOrPlayer
@@ -976,11 +974,16 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
-        if shared_var.REQUEST_RESPONSE_FLAG:
-            print("in the main trying to do the loop")
+        if shared_var.JOIN_REQUEST_FLAG:
+            print("in the main trying to do the join loop")
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.join_request_popup()
-            shared_var.REQUEST_RESPONSE_FLAG = False
+            shared_var.JOIN_REQUEST_FLAG = False
+        if shared_var.ACTION_REQUEST_FLAG:
+            print("in the main trying to do the action loop")
+            print(shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.action_request_popup()
+            shared_var.ACTION_REQUEST_FLAG = False
         for event in pygame.event.get():
             if event.type == QUIT:
                 GAMEVIEW.leave_game()

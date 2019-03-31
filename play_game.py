@@ -32,7 +32,7 @@ WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
-JOIN_FLAG = False
+PLAYER_JOIN_FLAG = False
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -141,9 +141,7 @@ def async_receive():
     global async_transcript
     global client_id    
     global game
-    global JOIN_FLAG
-    # global shared_var.REQUEST_RESPONSE_FLAG
-    # global MESSAGE_CONTENT
+    global PLAYER_JOIN_FLAG
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -187,13 +185,13 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    shared_var.REQUEST_RESPONSE_FLAG = True
+                    shared_var.JOIN_REQUEST_FLAG = True
                     shared_var.MESSAGE_CONTENT = message_content
                     # print("CHANGING THE FLAG")
                     # print(shared_var.MESSAGE_CONTENT)
             elif message_type == 'join_accept':
                 print("join request accepted!")
-                JOIN_FLAG = True
+                PLAYER_JOIN_FLAG = True
                 game = message_content
                 print("game is currently {}".format(game.get_name()))
                 print("with transcript\n{}".format(game.transcript))
@@ -869,7 +867,7 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
-    global JOIN_FLAG
+    global PLAYER_JOIN_FLAG
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))[0]
     game = jsonpickle.decode(gameObj)
@@ -882,9 +880,9 @@ def enter_room(room_number):
         start = time.time()
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
-            if JOIN_FLAG:
+            if PLAYER_JOIN_FLAG:
                 gameView.main(client, game, False)
-                JOIN_FLAG = False
+                PLAYER_JOIN_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
