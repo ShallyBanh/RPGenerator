@@ -140,7 +140,7 @@ class Client():
         print("[client] [get_assets] attempting to get_assets with username = {}".format(username))        
         payload = {'username': username}
         response = requests.post("{}/get_assets".format(self.URL), params=payload)
-        print("[client] [get_assets] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # print("[client] [get_assets] response was {}/{}/{}".format(response, response.status_code, response.text))       
         # @TODO why does this one end up a different type even though the code is exactly the same
         # if type(response) == requests.models.Response:
         #     response = str(response.text)
