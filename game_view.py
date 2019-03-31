@@ -21,6 +21,8 @@ from rule_interpreter.models.point import Point
 class GameView:
 
     def __init__(self):
+        self.images = {}
+        self.load_pictures()
         return
 
     def offset_blit(self,x,y):
@@ -85,24 +87,38 @@ class GameView:
     def remove_previous_popup(self):
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
+    def load_pictures_from_database(self):
+        # Grab all pictures located in database and put into tmp folder
+        if not os.path.exists("./tmp/"):
+            os.makedirs('./tmp')
+        direc = os.getcwd() + "/tmp/"
+        arr = []
+        arr = client.get_assets(game.GM.get_username())
+        try:
+            for asset in arr:
+                decoded_image = base64.b64decode(asset[1])        
+                with open(direc+asset[0], 'wb') as recreated:
+                    recreated.write(bytearray(decoded_image))
+        except Exception as e:
+            print(e)
+        self.load_pictures()
+        return 
+
     def load_pictures(self):
         # Grab all pictures located in the textures directory and temporary folder
-        images = {}
-
         direc = os.getcwd() + "/images/textures/"
         pictures = [i for i in os.listdir(direc)]
         for p in pictures:
             if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
-                images[p] = pygame.image.load("images/textures/"+p)
+                self.images[p] = pygame.image.load("images/textures/"+p)
 
         if os.path.exists("./tmp/"):
             direc = os.getcwd() + "/tmp/"
             pictures = [i for i in os.listdir(direc)]
             for p in pictures:
                 if p.endswith(".png") or p.endswith(".jpg") or p.endswith(".jpeg"):
-                    images[p] = pygame.image.load("tmp/"+p)
-
-        return images
+                    self.images[p] = pygame.image.load("tmp/"+p)
+        return 
 
     def which_entity(self, x, y):
         for key, e in RULE_ENACTOR.all_created_entities.items():
@@ -152,7 +168,7 @@ class GameView:
 
         # put all the entities on the map
         for location, entity in RULE_ENACTOR.all_created_entities.items():
-            entity_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+            entity_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
             DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
         
         # blit fog of war overtop everything
@@ -238,7 +254,7 @@ class GameView:
                     elif event.key == K_RETURN:
                         text = chat_input_box.handle_event(event)
                         text = text.rstrip()
-                        if text in IMAGES:
+                        if text in self.images:
                             self.clear_bottom_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
@@ -307,7 +323,7 @@ class GameView:
                         entity = RULE_ENACTOR.add_new_entity(selected_type, selected_name, x, y)
                         if GAMEVIEW.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
                             entity.set_image_filename(selected_image_filename)
-                            texture_image = pygame.transform.scale(IMAGES[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
+                            texture_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
                             DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
                         else:
                             RULE_ENACTOR.remove_entity(entity)
@@ -328,7 +344,7 @@ class GameView:
                         selected_name = input_name.text.rstrip()
                         selected_type = input_type.text.rstrip()
                         selected_image_filename = input_image_filename.text.rstrip()
-                        if selected_image_filename not in IMAGES:
+                        if selected_image_filename not in self.images:
                             selected_image_filename = "default-image.png"
                         if selected_type in TYPES_OF_ENTITIES:
                             blit_input = False
@@ -512,8 +528,7 @@ class GameView:
                                     filename = text.split("/")[-1]
                                 new_name = os.getcwd() + "/tmp/" + filename
                                 copyfile(text, new_name)
-                                global IMAGES
-                                IMAGES = self.load_pictures() # update the current IMAGES stored
+                                self.load_pictures()
                                 # insert into database
                                 with open(new_name, 'rb') as f:
                                     photo = f.read()
@@ -625,15 +640,14 @@ class GameView:
         return
 
     def _images_string(self):
-        global IMAGES
-        IMAGES = self.load_pictures()
+        self.load_pictures()
         display_string = ""
-        for key in IMAGES:
+        for key in self.images:
             display_string += key + ", "
         return display_string
 
     def blit_texture(self, texture):
-        texture_image = pygame.transform.scale(IMAGES[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
+        texture_image = pygame.transform.scale(self.images[texture.name], (texture.width*game.map.tilesize,texture.height*game.map.tilesize))
         DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(texture.y*game.map.tilesize, texture.x*game.map.tilesize))
         return
 
@@ -798,7 +812,6 @@ class Transcript:
 game = Game()
 RULE_ENACTOR = RuleEnactor()
 GAMEVIEW = GameView()
-IMAGES = GAMEVIEW.load_pictures()
 pygame.init()
 # GENERAL COLORS AND ITEMS
 RESOLUTION_SCALING = 1600
@@ -832,8 +845,8 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
 PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
                   "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
                  }
-DEFAULT_IMAGE = pygame.transform.scale(IMAGES["grey.png"], (50,50))
-FOG_IMAGE = pygame.transform.scale(IMAGES["fog.png"], (50,50))
+DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
+FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
@@ -846,6 +859,8 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
+
+    GAMEVIEW.load_pictures_from_database()
     
     if validatorObj is not None:
         RULE_ENACTOR.parse_validator(validatorObj)
@@ -933,7 +948,7 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
 
                         my_entity = RULE_ENACTOR.move_entity(my_entity, (x,y))
                         # blit entity to it
-                        my_entity_image = pygame.transform.scale(IMAGES[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
+                        my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                     # wipe signals
                     action_requested = ""

@@ -159,8 +159,8 @@ def get_asset():
     # print("[server] [get_asset] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_asset(username, asset_name)
     print("[server] [get_asset] response from account_manager was {}".format(response))
-    response_status = 200 if (response == 0) else 400
-    return Response(status=response_status)
+    response_status = 200 if (response) else 400
+    return jsonify(assets=response)
 
 @app.route("/get_assets", methods=['POST'])
 def get_assets():
@@ -171,8 +171,8 @@ def get_assets():
     # print("[server] [get_assets] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_assets(username)
     print("[server] [get_assets] response from account_manager was {}".format(response))
-    response_status = 200 if (response == 0) else 400
-    return Response(status=response_status)
+    response_status = 200 if (response) else 400
+    return jsonify(assets=response)
 
 @app.route("/reset_database", methods=['POST'])
 def reset_database():

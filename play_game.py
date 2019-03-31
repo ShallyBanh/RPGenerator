@@ -848,15 +848,15 @@ def enter_room(room_number):
     pygame.display.set_mode((1300, 750))
     listOfGames = client.get_list_of_games_and_their_gms()
     isGM = False
-    for games in listOfGames:
-        if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
-            isGM = True
-    if isGM:
-        gameObj = client.get_game_from_room_number(int(room_number))[0]
-        gameView.main(client, jsonpickle.decode(gameObj), "GM")
-    else: 
-        gameObj = client.get_game_from_room_number(int(room_number))[0]
-        gameView.main(client, jsonpickle.decode(gameObj), "PLAYER")
+    # for games in listOfGames:
+    #     if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
+    #         isGM = True
+    gameObj = client.get_game_from_room_number(int(room_number))[0]
+    game = jsonpickle.decode(gameObj)
+    if game.GM.get_username()==client.user.get_username():
+        gameView.main(client, game, True)
+    else:
+        print("TODO NEED TO ASK FOR PERMISSION")
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -874,6 +874,7 @@ def create_room(gameName, ruleset_object, width, height):
     game.name = gameName
     game.uniqueID = gameId + 1
     game.map = Map(tilesize=50, width=int(width), height=int(height))
+    game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
     gameView.main(client, game, "GM", ruleset_object)
