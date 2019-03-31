@@ -154,7 +154,10 @@ def async_receive():
             if inm == general_async_connection:
                 print("equal to general connection")
                 # async_message = double_unpickle(receive_bundle(inm, BUFFERSIZE))
-                async_message = double_unpickle(inm.recv(BUFFERSIZE))
+                saved = inm.recv(BUFFERSIZE)
+                if len(saved) < 1:
+                    continue
+                async_message = double_unpickle()
                 print("the async message is {}".format(async_message))
                 message_type = async_message[0]
                 message_content = async_message[1]
