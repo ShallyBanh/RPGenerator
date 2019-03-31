@@ -137,21 +137,22 @@ class AttributeActionCreationView:
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
             actionStr = ""
-            for action in actionNames:
-                actionStr += action + "\n"
+            for actionIdx in range(len(actionNames)):
+                actionStr += actionNames[actionIdx] + "\n"
+                screen.blit(self._editButtonImage,(1000, 425 + actionIdx * 39))
+                self._editActionList.append((1000, 425 + actionIdx * 39))
             ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             attributeStr = ""
-            for attr in attributes:
-                attributeStr += attr + "\n"
+            for attrIdx in range(len(attributes)):
+                attributeStr += attributes[attrIdx] + "\n"
+                screen.blit(self._editButtonImage,(1000, 65 + attrIdx * 39))
+                self._editAttributeList.append((1000, 65 + attrIdx * 39))
             ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize)
 
             if entity != -1:
                 ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=self._fontsize)
+                screen.blit(self._editButtonImageLarge,(70, 600))
 
             pygame.display.flip()
-
-
-
-
 

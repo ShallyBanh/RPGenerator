@@ -64,19 +64,19 @@ class Entity:
         return ", ".join(self.get_action_names())
 
     def set_actions(self, actions):
-        self._actions = actions
+        self._self_actions = actions
         
     def add_action(self, action):
-        self._actions.append(action)
+        self._self_actions.append(action)
 
     def update_action(self, oldIdx, action):
-        self._actions[oldIdx] = action
+        self._self_actions[oldIdx] = action
 
     def get_attributes(self):
         return self._self_attributes + self._inherited_attributes
 
     def update_attribute(self, oldIdx, attribute):
-        self._attributes[oldIdx] = attribute
+        self._self_attributes[oldIdx] = attribute
 
     def get_attributes_string(self):
         disp_str = ""
