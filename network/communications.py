@@ -248,13 +248,18 @@ class DataReadServer(asyncore.dispatcher_with_send):
             elif command_type == 'end_game':
                 print("@TODO end game, remove players")
                 # requester = command_body[0]
-                client_id = command_body[0]
-                room = command_body[1]
+                game = command_body[0]
+                room = game.get_uniqueID()
                 if rooms[room][0] == self.conn:
                     room_member_copy = rooms[room][2]
                     for player in room_member_copy:
-                        self.remove_player(player, rooms[room])
-                    self.remove_player(client_id, rooms[room])
+                        if player == self.my_id:
+                            print("removing other player")
+                            self.remove_player(player, rooms[room])
+                        else:
+                            print("not removing self yet")
+                    print("removing self")
+                    self.remove_player(self.my_id, rooms[room])
 
             elif command_type == 'chat':
                 # for client in room

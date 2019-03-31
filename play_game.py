@@ -877,6 +877,12 @@ def enter_room(room_number):
     if game.GM.get_username()==client.user.get_username():
         async_send(['start_game', [game]])
         gameView.main(client, game, True)
+        print("trying to end game")
+        end_game_message = "GM {} ended the game session".format(client.user.get_username())
+        game.append_transcript(end_game_message)
+        # @TODO update game in database
+        async_send(['chat', [client_id, end_game_message]])
+        async_send(['end_game', [game]])
     else:
         join_request_timeout = 60
         start = time.time()
@@ -886,6 +892,11 @@ def enter_room(room_number):
                 gameObj = client.get_game_from_room_number(game_id)
                 game = jsonpickle.decode(gameObj)
                 gameView.main(client, game, False)
+                print("trying to leave game")
+                leave_message = "{} left the game".format(client.user.get_username())
+                game.append_transcript(leave_message)
+                async_send(['chat', [client_id, leave_message]])
+                async_send(['leave_game', client_id])
                 JOIN_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
