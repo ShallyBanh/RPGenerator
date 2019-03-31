@@ -1019,7 +1019,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.action_request_popup()
             shared_var.ACTION_REQUEST_FLAG = False
-        if shared_var.GM_LEAVES_ROOM:
+        if shared_var.GM_LEAVES_FLAG:
             print("GM LEFT THE ROOM")
             GAMEVIEW.gm_leaves_room_popup()
             return
