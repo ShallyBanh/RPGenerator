@@ -201,7 +201,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
-                game_id = command_body[2]
+                game_id = room
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -209,7 +209,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("rooms[{}]: {}".format(room, rooms[room]))
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
-                print("rooms[{}]: {}".format(room, rooms[room]))            
+                print("rooms[{}]: {}".format(room, rooms[room]))         
                 rev_client_dict[client].send(double_pickle(['join_accept', game_id]))
             elif command_type == 'reject_join':
                 print("join request was rejected")

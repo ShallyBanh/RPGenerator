@@ -182,7 +182,7 @@ def async_receive():
                     answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                     if answer.lower() in ["y", "yes"]:
                         game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                        message_content.append(game.get_uniqueID())
+                        # message_content.append(game.get_uniqueID())
                         async_send(['accept_join', message_content])
                     else:
                         async_send(['reject_join', message_content])
