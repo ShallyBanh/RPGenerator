@@ -1,5 +1,5 @@
 # Import pygame and libraries
-import sys, os, pygame, pygame_textinput, threading, time, select, socket, pickle, ptext, jsonpickle
+import sys, os, pygame, pygame_textinput, threading, time, select, socket, pickle, ptext, jsonpickle, json
 from pygame.locals import *
 from random import randrange
 from client import Client
@@ -871,18 +871,31 @@ def recover_account_credentials(username, code, password):
 def enter_room(room_number):
     global JOIN_FLAG
     pygame.display.set_mode((1300, 750))
-    gameObj = client.get_game_from_room_number(int(room_number))[0]
-    game = jsonpickle.decode(gameObj)
+    print("trying to get the game from database")
+    # game = client.get_game_from_room_number(int(room_number))[0]
+    game = client.get_game_from_room_number(int(room_number))[0]
+    # print("gameObj is {}".format(gameObj))
+    print("got the game from database")
+    print("game in play_game is {} ({})".format(game, type(game)))
+    # game = jsonpickle.decode(gameObj)
+    # game = json.loads(gameObj)
+
+    # data = json.loads(response.text)
+    # print("the data is now {}".format(data))
+    # game = data["game"]
+    # self.user = User(data["username"], data["email"], data["assets"], None)
+
+    # print("decoded the game from database")
     # print(game)
     if game.GM.get_username()==client.user.get_username():
         async_send(['start_game', [game]])
-        gameView.main(client, game, True)
-        print("trying to end game")
-        end_game_message = "GM {} ended the game session".format(client.user.get_username())
-        game.append_transcript(end_game_message)
-        # @TODO update game in database
-        async_send(['chat', [client_id, end_game_message]])
-        async_send(['end_game', [game]])
+        gameView.main(client, game, client_id, True)
+        # print("trying to end game")
+        # end_game_message = "GM {} ended the game session".format(client.user.get_username())
+        # game.append_transcript(end_game_message)
+        # # @TODO update game in database
+        # async_send(['chat', [client_id, end_game_message]])
+        # async_send(['end_game', [game]])
     else:
         join_request_timeout = 60
         start = time.time()
@@ -890,13 +903,9 @@ def enter_room(room_number):
         while(time.time()-start < join_request_timeout):
             if JOIN_FLAG:
                 gameObj = client.get_game_from_room_number(game_id)
-                game = jsonpickle.decode(gameObj)
-                gameView.main(client, game, False)
-                print("trying to leave game")
-                leave_message = "{} left the game".format(client.user.get_username())
-                game.append_transcript(leave_message)
-                async_send(['chat', [client_id, leave_message]])
-                async_send(['leave_game', client_id])
+                # game = jsonpickle.decode(gameObj)
+                game = gameObj
+                gameView.main(client, game, client_id, False)
                 JOIN_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
@@ -921,7 +930,7 @@ def create_room(gameName, ruleset_object, width, height):
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
     async_send(['start_game', [game.get_uniqueID()]])
 
-    gameView.main(client, game, True, ruleset_object)
+    gameView.main(client, game, client_id, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 

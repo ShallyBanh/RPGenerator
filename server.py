@@ -2,6 +2,7 @@
 import sys
 import time
 from flask import Flask, request, jsonify, Response
+import jsonpickle
 import status
 import threading
 
@@ -155,7 +156,7 @@ def get_asset():
     asset_name = request.args.get("asset_name")
     if username is None or asset_name is None:
         return Response(status=400)
-    print("[server] [get_asset] got username,asset_name = {},{}".format(username, asset_name))
+    # print("[server] [get_asset] got username,asset_name = {},{}".format(username, asset_name))
     # print("[server] [get_asset] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_asset(username, asset_name)
     # print("[server] [get_asset] response from account_manager was {}".format(response))
@@ -167,7 +168,7 @@ def get_assets():
     username = request.args.get("username")
     if username is None:
         return Response(status=400)
-    print("[server] [get_assets] got username = {}".format(username))
+    # print("[server] [get_assets] got username = {}".format(username))
     # print("[server] [get_assets] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_assets(username)
     # print("[server] [get_assets] response from account_manager was {}".format(response))
@@ -234,12 +235,12 @@ def update_ruleset():
     jsonBlob = request.args.get("jsonBlob")
     if username is None or rulesetName is None or jsonBlob is None:
         return Response(status=400)
-    print("[server] [update_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
+    # print("[server] [update_ruleset] got username,rulesetName,jsonBlob = {},{},{}".format(username, rulesetName, jsonBlob))
     #start encryption
     f = Fernet(testkey)
     response = server.account_manager.update_ruleset(username, rulesetName, f.encrypt(jsonBlob.encode('utf-8')))
 
-    print("[server] [update_ruleset] response from account_manager was {}".format(response))
+    # print("[server] [update_ruleset] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
@@ -274,12 +275,15 @@ def get_game_from_room_number():
     gameId = request.args.get("gameId")
     if gameId is None:
         return Response(status=400)
-    response = server.account_manager.get_game_from_room_number(gameId)
+    response = server.account_manager.get_game_from_room_number(gameId)[0]
     if response is not None:
         print(response)
-        return jsonify(response)
+        # return jsonify(game=response)
+        return jsonify(game=jsonpickle.decode(response))
+    else:
+        print("there was no game found with that id")
 
-    print("[server] [get_game_from_room_number] response from account_manager was {}".format(response))
+    # print("[server] [get_game_from_room_number] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
@@ -317,11 +321,11 @@ def update_game():
     gameObj = request.args.get("gameObj")
     if gameId is None or gameObj is None:
         return Response(status=400)
-    print("[server] [update_game] got gameId, gameObj= {}, {}".format(gameId, gameObj))
+    # print("[server] [update_game] got gameId, gameObj= {}, {}".format(gameId, gameObj))
     #start encryption
     response = server.account_manager.update_game(gameId, gameObj)
 
-    print("[server] [update_game] response from account_manager was {}".format(response))
+    # print("[server] [update_game] response from account_manager was {}".format(response))
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
     

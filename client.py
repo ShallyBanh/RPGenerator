@@ -144,7 +144,7 @@ class Client():
         # @TODO why does this one end up a different type even though the code is exactly the same
         # if type(response) == requests.models.Response:
         #     response = str(response.text)
-        print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
+        # print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
         if response.status_code == 200:
             data = json.loads(response.text)
             return data['assets']
@@ -208,6 +208,22 @@ class Client():
         print("[client] [get_game_from_room_number] attempting to get a game blob from the game id")  
         payload = {'gameId': gameId}      
         response = requests.post("{}/get_game_from_room_number".format(self.URL), params=payload)
+
+        print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
+        if response.status_code == 200:
+            print("got a successful response, trying to get game from \n{}\n({})".format(response.text, type(response.text)))
+            # response
+            data = json.loads(response.text)
+            print("the data is now {}".format(data))
+            game = data["game"]
+            # self.user = User(data["username"], data["email"], data["assets"], None)
+            print("game is now {}".format(game))
+            return game
+        else:
+            print("status was not 200")
+            return -1
+
+
         data = json.loads(response.text)
         return data
 
@@ -215,7 +231,7 @@ class Client():
         print("[client] [update_game] attempting to update a game with gameId= {}".format(gameId))        
         payload = {'gameId': gameId, 'gameObj': gameObj}
         response = requests.post("{}/update_game".format(self.URL), params=payload)
-        print("[client] [update_game] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # print("[client] [update_game] response was {}/{}/{}".format(response, response.status_code, response.text))       
         return 0 if (response.status_code == 200) else -1
     
 

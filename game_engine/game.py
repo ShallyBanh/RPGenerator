@@ -12,11 +12,11 @@ class Game:
         self.assets = []
         self.transcript = ""
     
-    def __str__(self):
-        string = "Game:"
-        for k in self.__dict__.keys():
-            string += "\n\t{}: {}".format(k, self.__dict__[k])
-        return string
+    # def __str__(self):
+    #     string = "Game:"
+    #     for k in self.__dict__.keys():
+    #         string += "\n\t{}: {}".format(k, self.__dict__[k])
+    #     return string
 
     def serialize(self):
         return self.__dict__
@@ -77,5 +77,5 @@ class Game:
     def append_transcript(self, new_content):
         self.transcript += "\n" + new_content
 
-    def __str__(self):
-        return self.get_name()+str(self.get_map())+self.get_GM().get_username()
+    # def __str__(self):
+        # return self.get_name()+str(self.get_map())+self.get_GM().get_username()

@@ -222,6 +222,9 @@ class AccountManager:
     def create_game(self, gameBlob, gameName, username):
         """Creates a game in the database"""
         self.database.query("insert into Game (game) values (?)", (gameBlob, ))
+        # self.database.query("select * from Game", [])
+        # self.database.query("select id from Game", [])
+        # "games table is {}".format()
         self.database.query("SELECT MAX(id) from Game;", [])
         gameId = self.database.cur.fetchone()
         if gameId[0] is not None:

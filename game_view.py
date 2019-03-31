@@ -29,6 +29,20 @@ class GameView:
 
     def leave_game(self, full_exit=True):
         # TODO CALL THE ASYNC REQUEST?!
+        if GM_STATUS:
+            print("trying to end game")
+            end_game_message = "GM {} ended the game session".format(client.user.get_username())
+            game.append_transcript(end_game_message)
+            # @TODO update game in database
+            client.update_game(game.get_uniqueID(), game)
+            async_send(['chat', [client_id, end_game_message]])
+            async_send(['end_game', [client_id, game.get_uniqueID()]])
+        else:
+            print("trying to leave game")
+            leave_message = "{} left the game".format(client.user.get_username())
+            game.append_transcript(leave_message)
+            async_send(['chat', [client_id, leave_message]])
+            async_send(['leave_game', client_id])
         if full_exit:
             pygame.quit()
             sys.exit()
@@ -892,17 +906,19 @@ FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
+def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global RULE_ENACTOR
     global game
     global GM_STATUS
     global client
+    global client_id
     # global shared_var.REQUEST_RESPONSE_FLAG
     # global MESSAGE_CONTENT
 
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
+    client_id = clientID
 
     GAMEVIEW.load_pictures_from_database()
     
