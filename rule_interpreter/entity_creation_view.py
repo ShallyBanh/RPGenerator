@@ -43,7 +43,7 @@ class EntityCreationView:
 
     def main(self, currentEntity = None):
         if currentEntity is not None:
-            self._allInputList = [currentEntity.get_type(), currentEntity.get_size().get_width_as_string(), currentEntity.get_size().get_height_as_string(), str(currentEntity.get_is_template()), currentEntity.get_is_inherited_from().get_type()]
+            self._allInputList = [currentEntity.get_type(), currentEntity.get_size().get_width_as_string(), currentEntity.get_size().get_height_as_string(), str(currentEntity.get_is_template()), "none"]
 
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.init()
