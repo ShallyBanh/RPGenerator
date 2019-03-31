@@ -188,7 +188,9 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     # @TODO try except
                     # build target/message then do at end?
                     print("sending the forwarded request")
-                    rooms[int(room)][0].send(double_pickle(request))
+                    pickled = double_pickle(request)       
+                    print("rooms[{}][0] -> {}.send(({} bytes): {})".format(int(room), rooms[int(room)][0], sys.getsizeof(pickled), pickled))
+                    rooms[int(room)][0].send(pickled)
                     print("sent the forwarded request")
                 else:
                     print("join request was invalid")
