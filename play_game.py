@@ -114,11 +114,19 @@ def async_command_loop():
             async_message = [command[0], " ".join(command[1:])]
             if command[0] == 'start_game':
                 game.set_GM(client.user)
-                game.set_uniqueID(command[1])
-                game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
-                async_message = [command[0], [game]]
+                if command[1].isdigit():
+                    game.set_uniqueID(int(command[1]))
+                    game.append_transcript("{} started the game: {}".format(client.user.get_username(), game.get_name()))
+                    async_message = [command[0], [game]]
+                else:
+                    print("game_id was not a number")
+            elif command[0] == 'join_game':
+                async_message[1] = [command[1], client.user.get_username()]
             elif command[0] == 'leave_game':
                 print("trying to leave game")
+                leave_message = "{} left the game".format(client.user.get_username())
+                game.append_transcript(leave_message)
+                async_send(['chat', [client_id, leave_message]])
                 async_message[1] = client_id
             elif command[0] == 'chat':
                 async_transcript += "\n" + client.user.get_username() + ": " + " ".join(command[1:])
@@ -134,6 +142,7 @@ def async_receive():
     global async_transcript
     global client_id
     global current_game    
+    global game
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -169,13 +178,17 @@ def async_receive():
             elif message_type == "join_request":
                 answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                 if answer.lower() in ["y", "yes"]:
+                    game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                    message_content.append(game)
                     async_send(['accept_join', message_content])
                 else:
                     async_send(['reject_join', message_content])
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 print("@TODO update game object")
+                game = message_content
                 print("game is currently {}".format(game.get_name()))
+                print("with transcript\n{}".format(game.transcript))
             elif message_type == 'join_invalid':
                 print("there is no active game with that id")
             elif message_type == 'join_reject':
@@ -183,6 +196,7 @@ def async_receive():
                 print("join request rejected")
             elif message_type == 'removed':
                 print("you have been removed @TODO")
+                game = None
             elif message_type == 'update_game':
                 print("updating game")
             elif message_type == 'action_reject':
