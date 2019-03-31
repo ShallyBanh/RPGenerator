@@ -374,7 +374,7 @@ class GameView:
             input_type = None
             input_image_filename = None
         
-        display_string = "Type Options: " + ", ".join(TYPES_OF_ENTITIES) + "\nImage Options: "
+        display_string = "Type Options: " + ", ".join(CONCRETE_TYPES_OF_ENTITIES) + "\nImage Options: "
         display_string += self._images_string()
         ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_image, tpos_image)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE,  width = game.map.width*game.map.tilesize)
         
@@ -424,7 +424,7 @@ class GameView:
                         selected_image_filename = input_image_filename.text.rstrip()
                         if selected_image_filename not in self.images:
                             selected_image_filename = "default-image.png"
-                        if selected_type in TYPES_OF_ENTITIES:
+                        if selected_type in CONCRETE_TYPES_OF_ENTITIES:
                             blit_input = False
                             self.clear_bottom_info()
                             self.display_message("Please select tile you would like to place this " + selected_name)
@@ -967,6 +967,10 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     TYPES_OF_ENTITIES = []
     for entity_type in RULE_ENACTOR.entity_types:
         TYPES_OF_ENTITIES.append(entity_type.get_type())
+    global CONCRETE_TYPES_OF_ENTITIES
+    CONCRETE_TYPES_OF_ENTITIES = []
+    for entity_type in RULE_ENACTOR.concrete_entity_types:
+        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
 
     RUNNING = True
     while RUNNING:   
@@ -994,14 +998,10 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
                             result = RULE_ENACTOR.perform_action(action_requested, my_entity)
-                            if result == "point":
-                                point = GAMEVIEW.action_sequence(result)
-                                # point = Point(x,y)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, point)
-                            elif result in TYPES_OF_ENTITIES:
-                                # select an entity OF THAT SAME TYPE 
-                                targeted_entity = GAMEVIEW.action_sequence(result)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, targeted_entity)
+                            if result == "point" or result in TYPES_OF_ENTITIES:
+                                item = GAMEVIEW.action_sequence(result)
+                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, item)
+                            # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                             GAMEVIEW.clear_bottom_info()
                             GAMEVIEW.GM_help_screen()
                             my_entity = None
