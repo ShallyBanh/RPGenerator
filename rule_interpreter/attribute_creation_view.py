@@ -18,11 +18,13 @@ class AttributeCreationView:
         self._invalidSubmission = False
         self._currentlySelectedColorList = ["#553300", "#553300", "#553300"]
         #attribute name, attribute type and attribute value
-        self._allInputList = ["", "", ""]
+        self._allInputList = ["", ""]
         self._currentlySelectedInputIdx = 0
         self._fontsize = fontsize
 
-    def main(self):
+    def main(self, attrName = "", attrValue = ""):
+        if attrName != "" and attrValue != "":
+            self._allInputList = [str(attrName), str(attrValue)]
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.init()
 
@@ -79,7 +81,7 @@ class AttributeCreationView:
 
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
-                        return None, None, None
+                        return None, None
 
                     if x in range(1100,1300) and y in range(600,750):
                         if self._allInputList[0] == "" or self._allInputList[1] == "":

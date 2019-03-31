@@ -19,6 +19,7 @@ class Entity:
         self._inherited_actions = []        
         self._self_attributes = []
         self._inherited_attributes = []
+        self._combined_attributes = []
         self.size = Size(int(width),int(height)) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
@@ -68,9 +69,16 @@ class Entity:
         
     def add_action(self, action):
         self._self_actions.append(action)
+		
+    def update_action(self, oldIdx, action):
+        self._self_actions[oldIdx] = action
 
     def get_attributes(self):
         return self._self_attributes + self._inherited_attributes
+
+    def update_attribute(self, oldIdx, attribute):
+        self._combined_attributes = self._self_attributes + self._inherited_attributes
+        self._combined_attributes[oldIdx] = attribute
 
     def get_attributes_string(self):
         disp_str = ""
@@ -134,6 +142,9 @@ class Entity:
         if self._isInheritedFrom is not None:
             isParentType = self._isInheritedFrom.is_of_type(type)
         return type == self.get_type() or isParentType
+    
+    def set_is_inherited_from(self, isInheritance):
+        self._isInheritedFrom = isInheritance
     
     def get_current_statuses(self):
         return self._currentStatuses
