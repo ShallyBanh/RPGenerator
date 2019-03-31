@@ -193,8 +193,8 @@ def async_receive():
                 print("join request accepted!")
                 PLAYER_JOIN_FLAG = True
                 game_id = message_content
-                print("game is currently {}".format(game.get_name()))
-                print("with transcript\n{}".format(game.transcript))
+                # print("game is currently {}".format(game.get_name()))
+                # print("with transcript\n{}".format(game.transcript))
             elif message_type == 'join_invalid':
                 print("there is no active game with that id")
             elif message_type == 'join_reject':
