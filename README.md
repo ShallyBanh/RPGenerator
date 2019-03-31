@@ -66,7 +66,7 @@ python3 play_game.py
 Rules are written in Actions and in Relationships. They determine the actions that are able to be taken by Entities, and how they interact.
 Every statement is ended by a new line. Indentation is ignored.
 
-# Writing Actions:
+### Writing Actions:
 
 Every Action starts off with a 'target' statement:
 1. target self:
@@ -79,7 +79,7 @@ After this statement, any usage of the word 'target' will be taken to refer to t
 2. You can target a type of entity (ie select another entity of the given type from the map that you wish to affect). Any usages of the work 'target' will refer to the entity you have selected.
 3. You can target a point on the map. Any usages of the word 'target' will refer to this chosen point.
 
-# Writing Relationships:
+### Writing Relationships:
 
 Every Relationship starts off with an 'interrupt' statement:
 1. interrupt {entity type}.{action name} if {condition}:
