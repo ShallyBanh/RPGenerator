@@ -11,6 +11,7 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
+import shared_var
 
 # Import pygameMenu
 import pygameMenu
@@ -25,21 +26,13 @@ COLOR_BACKGROUND = (0,50,50)
 COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
-FPS = 60.0
+FPS = 30.0
 MENU_BACKGROUND_COLOR = (228, 55, 36)
 WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
-current_game = None
 JOIN_FLAG = False
-REQUEST_RESPONSE_FLAG = False
-MESSAGE_CONTENT = None
-# Game Class
-# game = Game()
-# game.name = "Test Suite"
-# game.uniqueID = 1
-# game.map = Map(tilesize = 50, height = 10, width = 18)                    
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -145,12 +138,11 @@ def async_command_loop():
 
 def async_receive():
     global async_transcript
-    global client_id
-    global current_game    
+    global client_id    
     global game
     global JOIN_FLAG
-    global REQUEST_RESPONSE_FLAG
-    global MESSAGE_CONTENT
+    # global shared_var.REQUEST_RESPONSE_FLAG
+    # global MESSAGE_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -194,9 +186,10 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    REQUEST_RESPONSE_FLAG = False
-                    MESSAGE_CONTENT = message_content
-                    print(MESSAGE_CONTENT)
+                    shared_var.REQUEST_RESPONSE_FLAG = True
+                    shared_var.MESSAGE_CONTENT = message_content
+                    print("CHANGING THE FLAG")
+                    print(shared_var.MESSAGE_CONTENT)
                     # OLDSURF = gameView.DISPLAYSURF.copy()
                     # popupSurf = pygame.Surface((200,200))
                     # popupSurf.fill(COLOR_BLACK)
