@@ -1,10 +1,9 @@
 import pygame, sys, random, os, math, re, ptext, pyautogui, platform, subprocess, clipboard, jsonpickle
+import base64, PIL.Image
 from pygame.locals import *
 from game_engine.map import Map
 from client import Client
 from shutil import copyfile
-import base64
-import PIL.Image
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
@@ -477,6 +476,7 @@ class GameView:
         return
 
     def add_asset(self):
+        global client
         self.clear_bottom_info()
         general_message = "_Add Asset Mode_\nEnter in the path to an image.\nRight click the input box to paste a file name path.\nPress ESC to exit this mode."
         self.display_message(general_message)
@@ -508,19 +508,20 @@ class GameView:
                                 self.display_message("_FILE IS NOT AN IMAGE_\n"+general_message)
                             else:
                                 if platform.system() == "Windows":
-                                    new_name = os.getcwd() + "/tmp/" + text.split("\\")[-1]
+                                    filename = text.split("\\")[-1]
                                 else:
-                                    new_name = os.getcwd() + "/tmp/" + text.split("/")[-1]
+                                    filename = text.split("/")[-1]
+                                new_name = os.getcwd() + "/tmp/" + filename
                                 copyfile(text, new_name)
-                                self.clear_bottom_info()
-                                self.display_message("_FILE ADDED_\n"+general_message)
                                 global IMAGES
                                 IMAGES = self.load_pictures() # update the current IMAGES stored
-                                # # insert into database
-                                # with open(text, 'rb') as f:
-                                #     photo = f.read()
-                                # encoded_image = base64.b64encode(photo)
-                                # client.add_asset(client.user.get_username, text, encoded_image)
+                                # insert into database
+                                with open(new_name, 'rb') as f:
+                                    photo = f.read()
+                                encoded_image = base64.b64encode(photo)
+                                client.add_asset(client.user.get_username(), filename, encoded_image)
+                                self.clear_bottom_info()
+                                self.display_message("_FILE ADDED_\n"+general_message)
                         else: 
                             self.clear_bottom_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
@@ -1000,7 +1001,7 @@ if __name__ == "__main__":
     new_game.map.fogOfWar[9][15] = False
     new_game.map.fogOfWar[9][16] = False
 
-    # Rule Validation TEST
+    ###### Rule Validation TEST START #######
     validator = _Validator()
     isTemplate = False
     hp_time = Attribute("HP", "10")    
