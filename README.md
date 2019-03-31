@@ -22,17 +22,22 @@ Note that the MAX_PATH limitation should be expanded (see https://docs.python.or
 
 ### pip3 Instructions
 **For macOS**: 
-`pip3 install --requirement requirements.txt --user`
-
+```
+pip3 install --requirement requirements.txt --user
+```
 Test pygame by running:
-`python3 -m pygame.examples.aliens`
-
+```
+python3 -m pygame.examples.aliens
+```
 
 **For Windows Powershell**: 
-`py -m pip install --requirement requirements.txt --user`
-
+```
+py -m pip install --requirement requirements.txt --user
+```
 Test pygame by running:
-`py -m pygame.examples.aliens`
+```
+py -m pygame.examples.aliens
+```
 
 ### Docker Image Instructions
 A Docker image exists for automated testing. It does not have graphical capability.
@@ -57,9 +62,14 @@ To run the game locally, spin up one instance of the server and one of the clien
 python3 server.py _keytoEncryptDatabase_
 ```
 _keytoEncryptDatabase_ is the user's key to use to encrypt and decrypt their rulesets
-**Client:**
+
+**Client (local):**
 ```
 python3 play_game.py
+```
+**Client (online with friends):**
+```
+python3 play_game.py 204.209.76.191
 ```
 
 ## WRITING RULES
