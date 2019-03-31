@@ -11,6 +11,7 @@ from game_engine.game_history_view.game_history_view import GameHistoryView
 from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
+from shared_var import REQUEST_RESPONSE_FLAG, MESSAGE_CONTENT
 
 # Import pygameMenu
 import pygameMenu
@@ -33,6 +34,8 @@ BUFFERSIZE = 4096
 client_id = None
 current_game = None
 JOIN_FLAG = False
+REQUEST_RESPONSE_FLAG = False
+MESSAGE_CONTENT = None
 
 # Game Class
 # game = Game()
@@ -148,6 +151,8 @@ def async_receive():
     global current_game    
     global game
     global JOIN_FLAG
+    global REQUEST_RESPONSE_FLAG
+    global MESSAGE_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -191,42 +196,47 @@ def async_receive():
                     else:
                         async_send(['reject_join', message_content])
                 else:
-                    OLDSURF = gameView.DISPLAYSURF.copy()
-                    popupSurf = pygame.Surface((100,100))
-                    popupSurf.fill(COLOR_BLACK)
-                    x = gameView.DISPLAYSIZE[0]/2-popupSurf.get_width()
-                    y = gameView.DISPLAYSIZE[1]/2-popupSurf.get_height()
+                    REQUEST_RESPONSE_FLAG = False
+                    MESSAGE_CONTENT = message_content
+                    print(MESSAGE_CONTENT)
+                    # OLDSURF = gameView.DISPLAYSURF.copy()
+                    # popupSurf = pygame.Surface((200,200))
+                    # popupSurf.fill(COLOR_BLACK)
+                    # x = gameView.DISPLAYSIZE[0]/2-popupSurf.get_width()
+                    # y = gameView.DISPLAYSIZE[1]/2-popupSurf.get_height()
+                    # x = x+gameView.MAPOFFSET[0]
+                    # y = y+gameView.MAPOFFSET[1]
 
-                    DISPLAYSURF.blit(popupSurf, (x+gameView.MAPOFFSET[0],y+gameView.MAPOFFSET[1]))  
-                    surf, tpos = ptext.draw("join request from {}\ny/n?".format(message_content[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 100)
-                    surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 100)
-                    join_request_timeout = 40
-                    start = time.time()
-                    running = True
-                    while(time.time()-start < join_request_timeout and running):  
-                        for event in pygame.event.get():
-                            if event.type == QUIT:
-                                pygame.quit()
-                                sys.exit()
-                            elif event.type == KEYDOWN:   
-                                if event.key == K_y:
-                                    # send the request yes
-                                    game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                                    message_content.append(game)
-                                    async_send(['accept_join', message_content])
-                                    gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                                    running = False
-                                elif event.key == K_n:
-                                    # send the request no
-                                    async_send(['reject_join', message_content])
-                                    gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                                    running = False
-                        pygame.display.flip()
-                    if not running:
-                        # send the request no
-                        async_send(['reject_join', message_content])
-                        gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                        pygame.display.flip()
+                    # gameView.DISPLAYSURF.blit(popupSurf, (x,y))  
+                    # surf, tpos = ptext.draw("join request from {}\ny/n?".format(message_content[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
+                    # surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
+                    # join_request_timeout = 40
+                    # start = time.time()
+                    # running = True
+                    # while(time.time()-start < join_request_timeout and running):  
+                    #     for event in pygame.event.get():
+                    #         if event.type == QUIT:
+                    #             pygame.quit()
+                    #             sys.exit()
+                    #         elif event.type == KEYDOWN:   
+                    #             if event.key == K_y:
+                    #                 # send the request yes
+                    #                 game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                    #                 message_content.append(game)
+                    #                 async_send(['accept_join', message_content])
+                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #                 running = False
+                    #             elif event.key == K_n:
+                    #                 # send the request no
+                    #                 async_send(['reject_join', message_content])
+                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #                 running = False
+                    #     pygame.display.flip()
+                    # if not running or time.time()-start >= join_request_timeout:
+                    #     # send the request no
+                    #     async_send(['reject_join', message_content])
+                    #     gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
+                    #     pygame.display.flip()
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 JOIN_FLAG = True

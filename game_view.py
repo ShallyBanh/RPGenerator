@@ -13,6 +13,8 @@ from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
 from rule_interpreter.models.action import Action
 from rule_interpreter.models.point import Point
+from play_game import async_send
+from shared_var import REQUEST_RESPONSE_FLAG, MESSAGE_CONTENT
 
 # sources for examples:
 # http://usingpython.com/pygame-tilemaps/
@@ -180,6 +182,47 @@ class GameView:
         return
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
+    def join_request_popup(self):
+        OLDSURF = DISPLAYSURF.copy()
+        popupSurf = pygame.Surface((200,200))
+        popupSurf.fill(COLOR_BLACK)
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()
+        x = x+MAPOFFSET[0]
+        y = y+MAPOFFSET[1]
+
+        DISPLAYSURF.blit(popupSurf, (x,y))  
+        surf, tpos = ptext.draw("join request from {}\ny/n?".format(MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        join_request_timeout = 40
+        start = time.time()
+        running = True
+        while(time.time()-start < join_request_timeout and running):  
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    pygame.quit()
+                    sys.exit()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_y:
+                        # send the request yes
+                        game.append_transcript("player {} joined the game".format(MESSAGE_CONTENT[0][1]))
+                        MESSAGE_CONTENT.append(game)
+                        async_send(['accept_join', MESSAGE_CONTENT])
+                        DISPLAYSURF.blit(OLDSURF, (0,0))
+                        running = False
+                    elif event.key == K_n:
+                        # send the request no
+                        async_send(['reject_join', MESSAGE_CONTENT])
+                        DISPLAYSURF.blit(OLDSURF, (0,0))
+                        running = False
+            pygame.display.flip()
+        if running:
+            # send the request no
+            async_send(['reject_join', MESSAGE_CONTENT])
+            DISPLAYSURF.blit(OLDSURF, (0,0))
+            pygame.display.flip()
+        return
+
     def toggle_fog(self):
         self.clear_bottom_info()
         self.display_message("_Toggle Fog Mode_\n\nA blue box around a tile indicates it is hidden by the Fog of War.\nPress ESC to exit this mode.")
@@ -855,6 +898,8 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     global game
     global GM_STATUS
     global client
+    global REQUEST_RESPONSE_FLAG
+    global MESSAGE_CONTENT
 
     game = gameObj
     GM_STATUS = gmOrPlayer
@@ -895,6 +940,10 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
+        if REQUEST_RESPONSE_FLAG:
+            print(MESSAGE_CONTENT)
+            gameview.join_request_popup()
+            REQUEST_RESPONSE_FLAG = False
         for event in pygame.event.get():
             if event.type == QUIT:
                 pygame.quit()
