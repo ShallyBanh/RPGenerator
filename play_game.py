@@ -180,7 +180,7 @@ def async_receive():
                     answer = input("join request from {}\ny/n?".format(message_content[0][1]))
                     if answer.lower() in ["y", "yes"]:
                         game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                        message_content.append(game)
+                        message_content.append(game.get_uniqueID())
                         async_send(['accept_join', message_content])
                     else:
                         async_send(['reject_join', message_content])
@@ -192,7 +192,7 @@ def async_receive():
             elif message_type == 'join_accept':
                 print("join request accepted!")
                 PLAYER_JOIN_FLAG = True
-                game = message_content
+                game_id = message_content
                 print("game is currently {}".format(game.get_name()))
                 print("with transcript\n{}".format(game.transcript))
             elif message_type == 'join_invalid':
@@ -881,6 +881,7 @@ def enter_room(room_number):
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
             if PLAYER_JOIN_FLAG:
+                # game = client.get_game_from_room_number(game_id)
                 gameView.main(client, game, client_id, False)
                 PLAYER_JOIN_FLAG = False
                 break

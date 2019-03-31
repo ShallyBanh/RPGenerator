@@ -188,7 +188,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     # @TODO try except
                     # build target/message then do at end?
                     print("sending the forwarded request")
-                    pickled = double_pickle(request)      
+                    pickled = double_pickle(request)
                     print("rooms[{}][0] -> {}.send(({} bytes): {})".format(int(room), rooms[int(room)][0], sys.getsizeof(pickled), pickled))
                     rooms[int(room)][0].send(pickled)
                     print("sent the forwarded request")
@@ -201,7 +201,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
-                game = command_body[2]
+                game_id = command_body[2]
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -209,14 +209,14 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("rooms[{}]: {}".format(room, rooms[room]))
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
-                print("rooms[{}]: {}".format(room, rooms[room]))               
-                rev_client_dict[client].send(double_pickle(['join_accept', game]))
+                print("rooms[{}]: {}".format(room, rooms[room]))            
+                rev_client_dict[client].send(double_pickle(['join_accept', game_id]))
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(double_pickle(['join_reject', command_body]))
             elif command_type == 'leave_game':
                 print("player trying to leave game @TODO append to transcript")
-                client_id = int(command_body)
+                client_id = int(command_body[0])
                 if client_id == self.my_id:
                     print("client_id is {}".format(client_id))
                     client = client_dict[rev_client_dict[client_id]]
