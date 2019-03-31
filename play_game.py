@@ -251,10 +251,13 @@ def async_receive():
             elif message_type == 'removed':
                 print("you have been removed @TODO")
                 game = None
+            elif message_type == 'request_action':
+                print("@TODO action request flag and handle")
             elif message_type == 'update_game':
                 print("updating game")
-            elif message_type == 'action_reject':
-                print("action rejected, restore previous/apply sent version")
+                game = message_content[0]
+            # elif message_type == 'action_reject':
+            #     print("action rejected, restore previous/apply sent version")
             elif message_type == 'chat':
                 async_transcript += "\n" + message_content
                 print("chat message received! transcript is now: \n{}".format(async_transcript))

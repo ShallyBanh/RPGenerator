@@ -158,7 +158,7 @@ def get_asset():
     print("[server] [get_asset] got username,asset_name = {},{}".format(username, asset_name))
     # print("[server] [get_asset] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_asset(username, asset_name)
-    print("[server] [get_asset] response from account_manager was {}".format(response))
+    # print("[server] [get_asset] response from account_manager was {}".format(response))
     response_status = 200 if (response) else 400
     return jsonify(assets=response)
 
@@ -170,7 +170,7 @@ def get_assets():
     print("[server] [get_assets] got username = {}".format(username))
     # print("[server] [get_assets] got username,asset_name,json_blob = {},{},{}".format(username, asset_name, json_blob))
     response = server.account_manager.get_assets(username)
-    print("[server] [get_assets] response from account_manager was {}".format(response))
+    # print("[server] [get_assets] response from account_manager was {}".format(response))
     response_status = 200 if (response) else 400
     return jsonify(assets=response)
 
