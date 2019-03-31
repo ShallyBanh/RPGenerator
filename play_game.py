@@ -909,8 +909,11 @@ def enter_room(room_number):
     global JOIN_FLAG
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))[0]
+    if gameObj is None:
+        return
     game = jsonpickle.decode(gameObj)
-    # print(game)
+    print(game)
+    exit()
     if game.GM.get_username()==client.user.get_username():
         async_send(['start_game', [game]])
         gameView.main(client, game, True)
