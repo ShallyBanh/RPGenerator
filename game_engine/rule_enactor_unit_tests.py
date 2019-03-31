@@ -434,7 +434,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.variables["yeet"],1)
 		
 	def test_interrupt(self):
-		relationship_rule = "interrupt entity.Action if target.statuses has \"Dodge\"\nincrease target.HP by 10\n"
+		relationship_rule = "interrupt entity.Action if target.statuses has \"Dodge\":\nincrease target.HP by 10\n"
 		relationship = Relationship("Dodge", relationship_rule)
 		self.rule += "add status \"Dodge\" to target"
 		action = Action("Setup", self.rule)
