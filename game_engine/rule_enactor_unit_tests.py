@@ -258,7 +258,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.enactor.variables["xless"], 1)
 		self.assertEqual(self.enactor.variables["yless"], 1)
 		
-	def test_less_than(self):
+	def test_greater_than(self):
 		self.rule += "x = 10\n"
 		self.rule += "y = 19\n"
 		self.rule += "if x > y then xless = 1\n"
