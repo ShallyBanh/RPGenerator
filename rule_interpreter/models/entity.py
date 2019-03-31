@@ -15,12 +15,20 @@ class Entity:
         self._type = entityType
         self._name = name
         self._image_filename = ""
-        self._actions = [] 
-        self._attributes = [] 
+        self._self_actions = []
+        self._inherited_actions = []        
+        self._self_attributes = []
+        self._inherited_attributes = []
         self.size = Size(int(width),int(height)) 
         self._isTemplate = isTemplate
         self._currentStatuses = []
         self._isInheritedFrom = inheritedFrom
+        if inheritedFrom is not None:
+            if inheritedFrom.get_is_template():
+                self._inherited_actions = self._isInheritedFrom.get_actions()
+                self._inherited_attributes = self._isInheritedFrom.get_attributes()
+            else:
+                raise Exception("Given parent entity is not a template entity.")
         self.x = x
         self.y = y
     
@@ -44,11 +52,11 @@ class Entity:
         self._image_filename = id
 
     def get_actions(self):
-        return self._actions
+        return self._self_actions + self._inherited_actions
         
     def get_action_names(self):
         names = []
-        for action in self._actions:
+        for action in self._self_actions + self._inherited_actions:
             names.append(action.get_action_name())
         return names
 
@@ -65,7 +73,7 @@ class Entity:
         self._actions[oldIdx] = action
 
     def get_attributes(self):
-        return self._attributes
+        return self._self_attributes + self._inherited_attributes
 
     def update_attribute(self, oldIdx, attribute):
         self._attributes[oldIdx] = attribute
@@ -78,31 +86,31 @@ class Entity:
         
     def get_attribute(self, attributeName):
         attributeName = attributeName.lower()
-        for a in self._attributes:
+        for a in self.get_attributes():
             if a.get_attribute_name() == attributeName:
                 return a
         print("No attribute of name " + attributeName + " found.")
 
-    def set_attributes(self, attributes):
-        self._attributes = attributes
+    # def set_attributes(self, attributes):
+        # self._attributes = attributes
     
     def add_attribute(self, attribute):
-        for a in self._attributes:
+        for a in self.get_attributes():
             if a.get_attribute_name() == attribute.get_attribute_name():
                 raise Exception("An attribute with the name \"" + attribute.get_attribute_name() + "\" already exists.")
 
-        self._attributes.append(attribute)
+        self._self_attributes.append(attribute)
     
     def add_action(self, action):
         if self.get_actions() == []:
-            self._actions.append(action)
+            self._self_actions.append(action)
             return 
 
         if action.get_action_name() in self.get_actions():
             print("Error, action name already exists")
             return
 
-        self._actions.append(action)
+        self._self_actions.append(action)
 
     def get_size(self):
         return self.size
@@ -118,6 +126,14 @@ class Entity:
     
     def get_is_inherited_from(self):
         return self._isInheritedFrom
+        
+    def set_inherited_from(self, parentEntity):
+        if parentEntity.get_is_template():
+            self._isInheritedFrom = parentEntity
+            self._inherited_actions = parentEntity.get_actions()
+            self._inherited_attributes = parentEntity.get_attributes()
+        else:
+            raise Exception("Given parent entity is not a template entity.")
     
     def set_is_inherited_from(self, isInheritance):
         self._isInheritedFrom = isInheritance

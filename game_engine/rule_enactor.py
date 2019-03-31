@@ -700,7 +700,7 @@ class RuleEnactor:
 		
 	def _handle_add_status(self, written_rule):
 		words = written_rule.split()
-		status_to_add = words[2].strip('"')
+		status_to_add = self._evaluate_line(words[2])
 		affected_entity_string = words[-1]
 		if affected_entity_string == 'self':
 			self.acting_entity.add_status(status_to_add)
@@ -711,18 +711,21 @@ class RuleEnactor:
 			
 	def _handle_remove_status(self, written_rule):
 		words = written_rule.split()
-		status_to_remove = words[2].strip('"')
+		status_to_remove = self._evaluate_line(words[2])
 		affected_entity_string = words[-1]
-		if affected_entity_string == 'self':
-			self.acting_entity.remove_status(status_to_remove)
-		elif affected_entity_string == 'target':
-			self.target_of_action.remove_status(status_to_remove)
-		elif affected_entity_string == self.current_entity_in_loop.get_type():
-			self.current_entity_in_loop.remove_status(status_to_remove)
+		try:
+			if affected_entity_string == 'self':
+				self.acting_entity.remove_status(status_to_remove)
+			elif affected_entity_string == 'target':
+				self.target_of_action.remove_status(status_to_remove)
+			elif affected_entity_string == self.current_entity_in_loop.get_type():
+				self.current_entity_in_loop.remove_status(status_to_remove)
+		except:
+			pass
 		
 	def _handle_has_status(self, written_rule):
 		words = written_rule.split('has')
-		status_to_check = words[1].strip().strip('"')
+		status_to_check = self._evaluate_line(words[1].strip())
 		entity_info = words[0].strip().split('.')
 		if entity_info[1] == 'statuses':
 			if entity_info[0] == 'self':
