@@ -180,7 +180,6 @@ class GameView:
         return
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
-
     def toggle_fog(self):
         self.clear_bottom_info()
         self.display_message("_Toggle Fog Mode_\n\nA blue box around a tile indicates it is hidden by the Fog of War.\nPress ESC to exit this mode.")
@@ -822,7 +821,8 @@ if platform.system() == "Darwin":
 elif platform.system() == "Windows":
     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
 FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
-DISPLAYSURF = pygame.display.set_mode((1300,750))
+DISPLAYSIZE = (1300,750)
+DISPLAYSURF = pygame.display.set_mode(DISPLAYSIZE)
 OLDSURF = None
 MAPOFFSET = (200,0)
 COLOR_BLACK = (0, 0, 0)
