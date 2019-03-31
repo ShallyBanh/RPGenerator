@@ -32,12 +32,13 @@ MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
 current_game = None
+JOIN_FLAG = False
 
 # Game Class
-game = Game()
-game.name = "Test Suite"
-game.uniqueID = 1
-game.map = Map(tilesize = 50, height = 10, width = 18)                    
+# game = Game()
+# game.name = "Test Suite"
+# game.uniqueID = 1
+# game.map = Map(tilesize = 50, height = 10, width = 18)                    
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -185,7 +186,7 @@ def async_receive():
                     async_send(['reject_join', message_content])
             elif message_type == 'join_accept':
                 print("join request accepted!")
-                print("@TODO update game object")
+                JOIN_FLAG = True
                 game = message_content
                 print("game is currently {}".format(game.get_name()))
                 print("with transcript\n{}".format(game.transcript))
@@ -704,7 +705,6 @@ def join_game_view():
 
     return
 
-# TODO CREATE NEW GAME VIEW
 def create_new_game_view():
     option_menu.disable()
     option_menu.reset(1)
@@ -857,11 +857,9 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
-    #TALK TO THOMAS ABOUT CALL TO-DO
-    #async_send(['join_game', [room_number]])
     pygame.display.set_mode((1300, 750))
-    listOfGames = client.get_list_of_games_and_their_gms()
-    isGM = False
+    # listOfGames = client.get_list_of_games_and_their_gms()
+    # isGM = False
     # for games in listOfGames:
     #     if int(games[0]) == int(room_number) and str(games[1]) == str(currentUsername):
     #         isGM = True
@@ -870,7 +868,14 @@ def enter_room(room_number):
     if game.GM.get_username()==client.user.get_username():
         gameView.main(client, game, True)
     else:
-        print("TODO NEED TO ASK FOR PERMISSION")
+        join_request_timeout = 60
+        start = time.time()
+        async_send(['join_game', [room_number, client.user.get_username()]])
+        while(time.time() < start):
+            if JOIN_FLAG:
+                gameView.main(client, game, False)
+                JOIN_FLAG = False
+                break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -891,7 +896,7 @@ def create_room(gameName, ruleset_object, width, height):
     game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
-    gameView.main(client, game, "GM", ruleset_object)
+    gameView.main(client, game, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -992,8 +997,6 @@ if __name__ == "__main__":
     async_send_thread = threading.Thread(target=async_command_loop)
     async_send_thread.daemon = True
     async_send_thread.start()
-
-
 
     while True:
 

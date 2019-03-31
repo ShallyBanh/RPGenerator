@@ -864,10 +864,10 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     
     if validatorObj is not None:
         RULE_ENACTOR.parse_validator(validatorObj)
-        gameObj.set_ruleset_copy(RULE_ENACTOR)
-        client.update_game(int(gameObj.get_uniqueID()), jsonpickle.encode(gameObj))
+        game.set_ruleset_copy(RULE_ENACTOR)
+        client.update_game(int(game.get_uniqueID()), jsonpickle.encode(game))
     else:
-        RULE_ENACTOR = gameObj.get_ruleset_copy()
+        RULE_ENACTOR = game.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
