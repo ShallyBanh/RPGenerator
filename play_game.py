@@ -208,6 +208,7 @@ def async_receive():
                     # print("with transcript\n{}".format(game.transcript))
                 elif message_type == 'join_invalid':
                     print("there is no active game with that id")
+                    PLAYER_REJECTED_FLAG = True
                 elif message_type == 'join_reject':
                     # get the game
                     PLAYER_REJECTED_FLAG = True
@@ -893,7 +894,7 @@ def enter_room(room_number):
         async_send(['start_game', [game.get_uniqueID()]])
         gameView.main(client, game, client_id, True)
     else:
-        join_request_timeout = 60
+        join_request_timeout = 30
         start = time.time()
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):

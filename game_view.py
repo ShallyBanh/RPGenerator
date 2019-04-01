@@ -241,18 +241,21 @@ class GameView:
 
     def gm_leaves_room_popup(self):
         print("IM IN THE LEAVE ROOM POPUP")
-        popupSurf = pygame.Surface((200,200))
-        popupSurf.fill(COLOR_BLACK)
-        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
-        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
+        # popupSurf = pygame.Surface((200,200))
+        # popupSurf.fill(COLOR_BLACK)
+        # x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        # y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
 
-        DISPLAYSURF.blit(popupSurf, (x,y))  
-        surf, tpos = ptext.draw("The GM left the room! Closing in 8seconds.", (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        # DISPLAYSURF.blit(popupSurf, (x,y))  
+        # ptext.draw("The GM left the room! Closing in 8seconds.", (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        # pygame.display.update()
 
-        join_request_timeout = 8
-        start = time.time()
-        while(time.time()-start < join_request_timeout):  
-            pygame.display.flip()
+        # time.sleep(5)
+
+        # join_request_timeout = 5
+        # start = time.time()
+        # while(time.time()-start < join_request_timeout):  
+        #     pass
         shared_var.GM_LEAVES_FLAG = False
         return
 
@@ -1107,7 +1110,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
-                    # TODO ENSURE THAT WE SEND THIS OUT TO EVERYONE
+                    async_send(["update_game",[game.get_uniqueID()]])
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
