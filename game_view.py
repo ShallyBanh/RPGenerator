@@ -969,7 +969,6 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global client_id
 
     game = gameObj
-    game.ruleset_copy = RuleEnactor()
     GM_STATUS = gmOrPlayer
     client = clientObj
     client_id = clientID
@@ -977,11 +976,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     GAMEVIEW.load_pictures_from_database()
     
     if validatorObj is not None:
+        game.ruleset_copy = RuleEnactor()
         game.ruleset_copy.parse_validator(validatorObj)
         game.set_ruleset_copy(game.ruleset_copy)
         client.update_game(int(game.get_uniqueID()), jsonpickle.encode(game))
-    else:
-        game.ruleset_copy = game.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
