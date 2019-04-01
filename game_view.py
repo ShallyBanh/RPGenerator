@@ -1026,6 +1026,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             print("GM UPDATED THE GAME, GETTING GAME")
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
             game = jsonpickle.decode(gameObj[0][0])
+            print(game.ruleset_copy.all_created_entities)
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
@@ -1076,7 +1077,13 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                                     GAMEVIEW.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
-
+                        print("IN GAMEVIEW")
+                        print(game.ruleset_copy.all_created_entities)
+                        print(my_entity)
+                        print(my_entity.x)
+                        print(my_entity.y)
+                        print(x)
+                        print(y)
                         my_entity = game.ruleset_copy.move_entity(my_entity, (x,y))
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))

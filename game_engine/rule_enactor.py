@@ -54,6 +54,13 @@ class RuleEnactor:
 		return newEntity
 		
 	def move_entity(self, entity, new_xy_tuple):
+		print("IN RULE ENACTOR")
+        print(self.all_created_entities)
+        print(entity)
+        print(entity.x)
+        print(entity.y)
+        print(new_xy_tuple[0])
+        print(new_xy_tuple[1])
 		del self.all_created_entities[(entity.x, entity.y)]
 		entity.x = new_xy_tuple[0]
 		entity.y = new_xy_tuple[1]
