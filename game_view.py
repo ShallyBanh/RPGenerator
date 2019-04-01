@@ -1023,8 +1023,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             shared_var.GM_LEAVES_FLAG = False
             return
         if shared_var.UPDATE_GAME_FLAG:
-            gameObj = client.get_game_from_room_number(game.get_uniqueID())[0]
-            game = jsonpickle.decode(gameObj)
+            gameObj = client.get_game_from_room_number(game.get_uniqueID())
+            game = jsonpickle.decode(gameObj[0][0])
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
