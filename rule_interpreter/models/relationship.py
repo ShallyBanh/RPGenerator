@@ -15,6 +15,9 @@ class Relationship:
 
     def get_name(self):
         return self._name
+        
+    def set_name(self, name):
+        self._name = name
 
     def get_rule_content(self):
         return self._ruleContent
@@ -26,6 +29,6 @@ class Relationship:
 
     def get_interrupt_line(self):
         return self._interruptLine
-		
+        
     def get_interrupt_behaviour(self):
         return self._interruptBehaviour

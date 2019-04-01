@@ -8,7 +8,7 @@ class SyntaxParser(object):
 
     def __init__(self):
         self._validConnectives = ["equals", "greater than", "less than", "greater or equal to", "less than or equal to", 
-                                ">", ">=", "<", "<=", '+=', "-=" "not equal to", "not equal", "=", "==", "!=", "within", "has", "contains"]
+                                ">", ">=", "<", "<=", '+=', "-=", "*=", "/=", "not equal to", "not equal", "=", "==", "!=", "within", "has", "contains"]
         self._specialConnectives = ["by", "to", "towards", "away", "from"]
         self._actionCommands = ["move", "decrease", "increase", "reduce", "add", "multiply", "divide", "set"]
         self._arithmeticConnectives = ['*', '/', '+', '-']
@@ -215,6 +215,14 @@ class SyntaxParser(object):
         """
         actions = actionStatement.split(' ')
         actions = [x for x in actions if x]
+
+        target = targetName
+        if actions[1].find(".") != self._cannotFindSubstring:
+            dotSplitter = actions[1].find(".")
+            ourObject = actions[1][:dotSplitter].strip()
+            if ourObject.lower() == "target" or ourObject.lower() == "self":
+                target = ourObject.lower()
+        
         if len(actions) < 4:
             return False
         # the form will always be <action command> <targetname> <by or to> <number>
@@ -228,7 +236,7 @@ class SyntaxParser(object):
             if actions[3].strip() not in self._specialConnectives:
                 return False
             
-            return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[len(actions)-1].strip(), targetName)
+            return self.validate_object(actions[1].strip(), target) and self.validate_object(actions[len(actions)-1].strip(), targetName)
 
         elif actions[0].strip() == "set":
             if actions[1].strip().isdigit() == True:
@@ -247,7 +255,7 @@ class SyntaxParser(object):
             if actions[2].strip() not in self._specialConnectives:
                 return False
         
-            return self.validate_object(actions[1].strip(), targetName) and self.validate_object(actions[3].strip(), targetName)
+            return self.validate_object(actions[1].strip(), target) and self.validate_object(actions[3].strip(), targetName)
     
     def is_valid_status_action(self, content, targetName):
         """
@@ -333,6 +341,7 @@ class SyntaxParser(object):
         arithmeticConnectiveIndicies = self.get_arithmetic_connective(content)
         currentConnectiveIndex = 0
         if self.validate_connective_order(andOrConnectiveIndicies, regularConnectiveIndicies) == False:
+            #print("wrong connective order")
             return False
         
         for i in range(len(regularConnectiveIndicies)):
@@ -344,7 +353,7 @@ class SyntaxParser(object):
                 leftHandSide = content[currentConnectiveIndex: regularConnectiveIndicies[i][0]].strip()
 
                 if i < len(andOrConnectiveIndicies):
-                    rightHandSide = content[regularConnectiveIndicies[i][0] + 1: andOrConnectiveIndicies[i]].strip()
+                    rightHandSide = content[regularConnectiveIndicies[i][0] + len(regularConnectiveIndicies[i][1]): andOrConnectiveIndicies[i]].strip()
                 else:
                     rightHandSide = content[regularConnectiveIndicies[i][0] + len(regularConnectiveIndicies[i][1]):].strip()
 
@@ -365,6 +374,7 @@ class SyntaxParser(object):
                             arithmeticSymbolSplitter = rightHandSide.find(arithmeticSymbol)
                             rhs = rightHandSide[:arithmeticSymbolSplitter].strip()
                             lhs = rightHandSide[arithmeticSymbolSplitter + 1:].strip()
+
                             # print("rhs")
                             # print(rhs)
                             # print("rhs validate")
@@ -375,8 +385,22 @@ class SyntaxParser(object):
                             # print(self.validate_object(lhs, target))
                             if self.validate_object(leftHandSide, target) == False or self.validate_object(lhs, target) == False or self.validate_object(rhs, target) == False:
                                 return False
-                else:        
-                    if self.validate_object(leftHandSide, target) == False or self.validate_object(rightHandSide, target, isStatus) == False:
+                else:
+                    lhsTarget = target
+                    rhsTarget = target
+                    if leftHandSide.find(".") != self._cannotFindSubstring:
+                        dotSplitter = leftHandSide.find(".")
+                        ourObject = leftHandSide[:dotSplitter].strip()
+                        if ourObject.lower() == "target" or ourObject.lower() == "self":
+                            lhsTarget = ourObject.lower()
+                    
+                    if rightHandSide.find(".") != self._cannotFindSubstring:
+                        dotSplitter = rightHandSide.find(".")
+                        ourObject = rightHandSide[:dotSplitter].strip()
+                        if ourObject.lower() == "target" or ourObject.lower() == "self":
+                            rhsTarget = ourObject.lower()
+                    if self.validate_object(leftHandSide, lhsTarget, isStatus) == False or self.validate_object(rightHandSide, rhsTarget, isStatus) == False:
+                        # print(isStatus)
                         # print("lhs validate. lhs is:")
                         # print(leftHandSide)
                         # print("lhs validate. result is:")
@@ -433,6 +457,8 @@ class SyntaxParser(object):
             entity = content[ofIndex + 3: ].strip()
             targetIndex = content.find(entity)
             self._entityTarget  = entity
+        elif entity == "self":
+            targetIndex = content.find("self")
         else:
             targetIndex = content.find("target")
 
@@ -440,7 +466,7 @@ class SyntaxParser(object):
         if pointIndex == self._cannotFindSubstring and targetIndex == self._cannotFindSubstring:
             return False
 
-        if entity == "entity":
+        if entity == "entity" or entity == "self" or entity == "target":
             return True
 
         for ob in self._validator.get_entities():
@@ -501,7 +527,7 @@ class SyntaxParser(object):
             if status entered is valid
         """
         #generic target so look through all entity statuses to find if we have a matching status
-        if target == "target":
+        if target == "target" or target == "self":
             for obj in self._validator.get_entities(): 
                 for stat in obj.get_current_statuses():
                     stat = stat.lower()
@@ -510,12 +536,13 @@ class SyntaxParser(object):
         else:
             entity = None
             for ob in self._validator.get_entities():
-                if ob.get_type() == obj or ob.get_name() == obj:
+                if ob.get_type() == target or ob.get_name() == target:
                     entity = ob
                     break
             
             if entity is None:
                 #no matching entity
+                # print("no matching entity")
                 return False
             
             for stat in entity.get_current_statuses():
@@ -523,6 +550,7 @@ class SyntaxParser(object):
                 if stat == status:
                     return True
 
+            # print("non status")
             return False
         
     def validate_generic_object_attribute(self, obj, attr):
@@ -600,7 +628,7 @@ class SyntaxParser(object):
         # so by this logic and and ors should be in between connectives
         for i in range(len(andOrConnectives)):
             if not (andOrConnectives[i] < regularConnectives[i +1][0] and andOrConnectives[i] > regularConnectives[i][0]):
-                print("connectives are out of order")
+                #print("connectives are out of order")
                 return False
         
         return True
@@ -618,9 +646,13 @@ class SyntaxParser(object):
         # this is where the conditions will be located i,e >, <, => !=
         connectiveIndicies = []
         currentConnectiveIndex = 0
-
+        # print("connective")
+        # print(content)
         for connective in self._validConnectives:
+            #print(connective)
             if content.find(connective) != self._cannotFindSubstring:
+                # print("found it")
+                # print(connective)
                 currentConnectiveIndex = content.find(connective, currentConnectiveIndex) + 1
                 connectiveIndicies.append((currentConnectiveIndex -1, connective))
                 while content.find(connective,currentConnectiveIndex) != -1:
@@ -629,14 +661,35 @@ class SyntaxParser(object):
                 
                 # there's an issue with "="" since if the connective is += it will match both += and = which is incorrect
                 if len(connectiveIndicies) != 0 and connective == "=":
-                    correctIndicies = connectiveIndicies
+                    correctIndicies = list(connectiveIndicies)
                     for c in connectiveIndicies:
                         symbolBeforeEqual = content[c[0]-1]
-                        if symbolBeforeEqual == "+" or symbolBeforeEqual == "-" or symbolBeforeEqual == ">" or symbolBeforeEqual == "<":
+                        if symbolBeforeEqual == "+" or symbolBeforeEqual == "-" or symbolBeforeEqual == ">" or symbolBeforeEqual == "*" or symbolBeforeEqual == "/" or symbolBeforeEqual == "<":
                             correctIndicies.remove(c)
                     connectiveIndicies = correctIndicies
 
             currentConnectiveIndex = 0
+        
+        connectiveDict = dict(connectiveIndicies)
+        removeIndices = []
+        
+        for idx, symbol in connectiveDict.items():
+            if symbol == "==":
+                removeIndices.append(idx)
+                removeIndices.append(idx + 1)
+        
+        #shally's lazy coding garbage
+        # print(removeIndices)
+        if len(removeIndices) != 0:
+            indiciesWithoutDoubleEquals = list(connectiveIndicies)
+            # print(connectiveIndicies)
+            for c in connectiveIndicies:
+                # print(c)
+                if c[0] in removeIndices and c[1] == "=":
+                    indiciesWithoutDoubleEquals.remove(c)
+            
+            connectiveIndicies = indiciesWithoutDoubleEquals
+
 
         connectiveIndicies.sort()
         return connectiveIndicies

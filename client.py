@@ -201,6 +201,7 @@ class Client():
     def get_list_of_games_and_their_gms(self):
         print("[client] [get_list_of_games_and_their_gms] attempting to get list of games and their gms")        
         response = requests.post("{}/get_list_of_games_and_their_gms".format(self.URL), params={})
+        print(response.text)
         data = json.loads(response.text)
         return data
 
