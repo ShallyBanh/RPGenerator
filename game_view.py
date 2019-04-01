@@ -720,21 +720,19 @@ class GameView:
         pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
         return
 
-    def GM_help_screen(self):
+    def help_screen(self, status):
         self.clear_bottom_info()
         # blit hotkey information
-        info = "_GM HOTKEYS:_\n"
-        for key, pair in GM_HOTKEYS.items():
+        if status:
+            info = "_GM HOTKEYS:_\n"
+            hotkeys = GM_HOTKEYS
+        else:
+            info = "_PLAYER HOTKEYS:_\n"
+            hotkeys = PLAYER_HOTKEYS
+        
+        for key, pair in hotkeys.items():
             info += key + ": " + pair["name"] + "\n"
-        self.display_message(info)
-        return
 
-    def PLAYER_help_screen(self):
-        self.clear_bottom_info()
-        # blit hotkey information
-        info = "_PLAYER HOTKEYS:_\n"
-        for key, pair in PLAYER_HOTKEYS.items():
-            info += key + ": " + pair["name"] + "\n"
         self.display_message(info)
         return
 
@@ -992,11 +990,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
 
     GAMEVIEW.blit_entire_map()
-
-    if GM_STATUS:
-        GAMEVIEW.GM_help_screen()
-    else:
-        GAMEVIEW.PLAYER_help_screen()
+    GAMEVIEW.help_screen(GM_STATUS)
 
     my_entity = None
     chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF, client = client)
@@ -1062,8 +1056,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
-                            GAMEVIEW.clear_bottom_info()
-                            GAMEVIEW.GM_help_screen()
+                            GAMEVIEW.help_screen(GM_STATUS)
                             my_entity = None
                             print(result)
                             if GM_STATUS:
@@ -1127,12 +1120,12 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         pygame.display.flip()
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
-                    GAMEVIEW.GM_help_screen()
+                    GAMEVIEW.help_screen(GM_STATUS)
                     GAMEVIEW.send_update_to_all()
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
-                    GAMEVIEW.PLAYER_help_screen()
+                    GAMEVIEW.help_screen(GM_STATUS)
             # input box handling + transcript update
             transcript = chat_input_box.handle_event(event, history.transcript)
             history.handle_event(event)
