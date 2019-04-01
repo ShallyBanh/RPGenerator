@@ -28,7 +28,6 @@ class GameView:
         return
 
     def leave_game(self, full_exit=True):
-        # TODO CALL THE ASYNC REQUEST?!
         if GM_STATUS:
             print("trying to end game")
             end_game_message = "GM {} ended the game session".format(client.user.get_username())
@@ -45,6 +44,11 @@ class GameView:
         if full_exit:
             pygame.quit()
             sys.exit()
+        return
+
+    def send_update_to_all(self):
+        client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+        async_send(["update_game", [client_id, game.get_uniqueID()]])       
         return
 
     def offset_blit(self,x,y):
@@ -1024,7 +1028,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             return
         if shared_var.UPDATE_GAME_FLAG:
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
-            game = jsonpickle.decode(gameObj[0])
+            game = jsonpickle.decode(gameObj[0][0])
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
@@ -1048,16 +1052,15 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, item)
-                            # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                             GAMEVIEW.clear_bottom_info()
                             GAMEVIEW.GM_help_screen()
                             my_entity = None
                             print(result)
-                        if not GM_STATUS:
-                            print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
-                        else:
-                            print("TODO SEND THIS ACTION AS A GM FORCED ACTION TO ALL PLAYERS.")
-                        # TODO ENSURE WE REBLIT EVERYTHING FOR EVERYONE!!
+                            if GM_STATUS:
+                                self.send_update_to_all()
+                            else:
+                                # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
+                                print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                         print(action_requested)
                     else:
                         my_entity = None
@@ -1078,6 +1081,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
+                        if GM_STATUS:
+                            self.send_update_to_all()
+                        else:
+                            print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                     # wipe signals
                     action_requested = ""
                     my_entity = None
@@ -1094,7 +1101,6 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
-                    # TODO ALERT FRIENDS THAT THEY HAVE EXITED
                     GAMEVIEW.leave_game(False)
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
@@ -1107,8 +1113,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
-                    client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
-                    async_send(["update_game", [client_id, game.get_uniqueID()]])
+                    GAMEVIEW.send_update_to_all()
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()

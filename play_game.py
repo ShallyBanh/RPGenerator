@@ -895,7 +895,7 @@ def enter_room(room_number):
     if len(gameObj) == 0:
         pygame.display.set_mode(WINDOW_SIZE)
         return
-    game = jsonpickle.decode(gameObj[0])
+    game = jsonpickle.decode(gameObj[0][0])
     if game.GM.get_username()==client.user.get_username():
         async_send(['start_game', [game.get_uniqueID()]])
         gameView.main(client, game, client_id, True)
