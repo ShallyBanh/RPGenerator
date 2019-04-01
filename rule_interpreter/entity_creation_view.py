@@ -27,6 +27,13 @@ class EntityCreationView:
         self._invalidSubmissionText = "All fields must be complete in order to submit"
         self._fontsize = fontsize
 
+    def does_entity_with_type_exist(self, entityType):
+        allEntities = Validator().get_entities()
+        for entity in allEntities:
+            if entity.get_type() == entityType:
+                return True
+        return False
+    
     def get_entity_with_type(self, entityType):
         allEntities = Validator().get_entities()
         for entity in allEntities:
@@ -36,7 +43,7 @@ class EntityCreationView:
 
     def main(self, currentEntity = None):
         if currentEntity is not None:
-            self._allInputList = [currentEntity.get_type(), currentEntity.get_size().get_width_as_string(), currentEntity.get_size().get_height_as_string(), str(currentEntity.get_is_template()), self.get_entity_with_type(currentEntity.get_is_inherited_from())]
+            self._allInputList = [currentEntity.get_type(), currentEntity.get_size().get_width_as_string(), currentEntity.get_size().get_height_as_string(), str(currentEntity.get_is_template()), "none"]
 
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
         pygame.init()
@@ -108,17 +115,19 @@ class EntityCreationView:
                         elif self._allInputList[0].find(" ") != -1: 
                             self._invalidSubmission = True
                             self._invalidSubmissionText = "Cannot have spaces in entity type"
-                        elif self._allInputList[3].lower() != "false" and self._allInputList[3].lower() != "true" : 
-                            print(self._allInputList[3])
+                        elif self._allInputList[3].lower() != "false" and self._allInputList[3].lower() != "true" :
                             self._invalidSubmission = True
                             self._invalidSubmissionText = "isTemplate must be true or false"
+                        elif self.does_entity_with_type_exist(self._allInputList[4]) == False and self._allInputList[4].lower() != "none":
+                            self._invalidSubmission = True
+                            self._invalidSubmissionText = "No such inherited type. If none type None."
                         else:
                             if self._allInputList[3].lower() == "false":
                                 isTemplate = False
                             else:
                                 isTemplate = True
                             self._playing = False
-                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], isTemplate, self._allInputList[4]
+                            return self._allInputList[0], self._allInputList[1], self._allInputList[2], isTemplate, self.get_entity_with_type(self._allInputList[4])
 
             for rect, name, size, color in zip(buttonrects, buttonnames, textSizes, self._currentlySelectedColorList):
                 screen.fill(pygame.Color(color), rect)

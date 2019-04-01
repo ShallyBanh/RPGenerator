@@ -28,11 +28,11 @@ class GameHistoryView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Game History")
-        titleargs = ptext.draw("Game History", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=self._fontsize*2, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Game History", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         buttonrects = [pygame.Rect((50, 150, 1200, 550))]
         textSizes = [(50, 100)]
-        buttonnames = ["Game Name                           Room code       Status     Timestamp"]
+        buttonnames = ["Game Name                                  Room code           Status          Timestamp"]
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -64,7 +64,7 @@ class GameHistoryView:
                 screen.fill(pygame.Color("#553300"), rect)
                 screen.fill(pygame.Color("#332200"), rect.inflate(-8, -8))
                 box = rect.inflate(-8, 100)
-                ptext.draw(name, size, color="white", owidth=0.5, fontsize=self._fontsize*1.5, fontname="Boogaloo")
+                ptext.draw(name, size, color="white", owidth=0.5, fontsize=35, fontname="Boogaloo")
                 ptext.drawbox("", box, color = "white", owidth=0.5)
             
             gameHistoryRoomCodeStr = ""
@@ -76,12 +76,12 @@ class GameHistoryView:
                 gameHistoryStatusStr += str(self._gameHistoryList[gameIdx][1]) + "\n"
                 gameHistoryNameStr += str(self._gameHistoryList[gameIdx][2]) + "\n"
                 gameHistoryTimestampStr += str(self._gameHistoryList[gameIdx][3].split(' ')[0]) + "\n"
-                screen.blit(self._joinButtonImage,(1050, 210 + gameIdx * 39))
-                self._gameHistoryPositionList.append((1050, 210 + gameIdx * 39))
-            ptext.draw(gameHistoryNameStr, (70, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize)
-            ptext.draw(gameHistoryRoomCodeStr, (500, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize)
-            ptext.draw(gameHistoryStatusStr, (700, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize)
-            ptext.draw(gameHistoryTimestampStr, (850, 200), fontname="Boogaloo", color="white", fontsize=self._fontsize)
+                screen.blit(self._joinButtonImage,(1050, 210 + gameIdx * 35))
+                self._gameHistoryPositionList.append((1050, 210 + gameIdx * 35))
+            ptext.draw(gameHistoryNameStr, (70, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryRoomCodeStr, (500, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryStatusStr, (700, 200), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(gameHistoryTimestampStr, (850, 200), fontname="Boogaloo", color="white", fontsize=30)
             
             screen.blit(*titleargs)
             pygame.display.flip()

@@ -245,7 +245,7 @@ class AccountManager:
     def get_game_from_room_number(self, gameId):
         """Fetches game from gameId"""
         self.database.query("SELECT game FROM Game where id = ?;", (gameId, ))
-        row = self.database.cur.fetchone()
+        row = self.database.cur.fetchall()
         return row
 
     def update_game(self, gameId, gameObj):
