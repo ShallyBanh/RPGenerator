@@ -920,7 +920,6 @@ class Transcript:
 # ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
 game = Game()
-game.ruleset_copy = RuleEnactor()
 GAMEVIEW = GameView()
 pygame.init()
 # GENERAL COLORS AND ITEMS
@@ -928,7 +927,10 @@ RESOLUTION_SCALING = 1600
 if platform.system() == "Darwin":
     res = subprocess.check_output(["system_profiler","SPDisplaysDataType"])
     res_val = str(res).split("Resolution")[1].split("\\n")[0].split("x")[1].split()[0]
-    FONTSIZE = int(30*int(res_val)/RESOLUTION_SCALING)
+    res_val = int(res_val)
+    if res_val < 800: 
+        res_val = 800 #added for other computers being too small in res
+    FONTSIZE = int(30*res_val/RESOLUTION_SCALING)
 elif platform.system() == "Windows":
     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
 FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
