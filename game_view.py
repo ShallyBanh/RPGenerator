@@ -276,7 +276,7 @@ class GameView:
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         pygame.display.flip()
 
-        join_request_timeout = 60
+        join_request_timeout = 40
         start = time.time()
         running = True
         while(time.time()-start < join_request_timeout and running):  
@@ -285,18 +285,15 @@ class GameView:
                     self.leave_game()
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
-                        # send the request yes
-                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
-                        # shared_var.MESSAGE_CONTENT.append(game)
-                        async_send(['accept_join', shared_var.MESSAGE_CONTENT])
+                        gameObj = client.get_game_from_room_number(game.get_uniqueID())
+                        game = jsonpickle.decode(gameObj[0][0])
+                        game.append_transcript("player {} did an action".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
                     elif event.key == K_n:
                         # send the request no
-                        async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+                        game.append_transcript("player {} action rejected".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
-        if running:
-            # send the request no
-            async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+        self.send_update_to_all()
         DISPLAYSURF.blit(OLDSURF, (0,0))
         pygame.display.flip()
         return
@@ -1065,8 +1062,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             if GM_STATUS:
                                 GAMEVIEW.send_update_to_all()
                             else:
-                                # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
+                                # TODO APPEND TO TRANSCRIPT
+                                client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                                async_send(["request_action", [client_id, game.get_uniqueID(), result]])    
                         print(action_requested)
                     else:
                         my_entity = None
@@ -1091,6 +1090,9 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
+                            # TODO APPEND TO TRANSCRIPT
+                            client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                            async_send(["request_action", [client_id, game.get_uniqueID(), result]]) 
                     # wipe signals
                     action_requested = ""
                     my_entity = None
