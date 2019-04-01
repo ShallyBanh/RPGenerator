@@ -913,6 +913,7 @@ def enter_room(room_number):
             elif PLAYER_REJECTED_FLAG:
                 PLAYER_REJECTED_FLAG = False
                 break
+    game = None
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 
@@ -936,6 +937,7 @@ def create_room(gameName, ruleset_object, width, height):
     async_send(['start_game', [game.get_uniqueID()]])
     gameView.main(client, game, client_id, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
+    game = None
     return
 
 # -----------------------------------------------------------------------------

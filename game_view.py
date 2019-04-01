@@ -1054,7 +1054,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             my_entity = None
                             print(result)
                             if GM_STATUS:
-                                self.send_update_to_all()
+                                GAMEVIEW.send_update_to_all()
                             else:
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                                 # TODO APPEND TO TRANSCRIPT
@@ -1081,7 +1081,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                         if GM_STATUS:
-                            self.send_update_to_all()
+                            GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                             # TODO APPEND TO TRANSCRIPT
