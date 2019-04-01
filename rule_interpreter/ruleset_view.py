@@ -79,6 +79,7 @@ class RulesetView:
                             Validator().clear_entities()
                             Validator().set_entities(deserializedValidator.get_entities())
                             Validator().set_relationships(deserializedValidator.get_relationships())
+                            Validator().set_hierarchy(deserializedValidator.get_hierarchy())
                             validator = RulesetCreationEditView(self._username, self._client, self._fontsize).main(self._rulesetList[editIdx][0])
                             if validator is not None:
                                 return validator

@@ -71,14 +71,17 @@ class Entity:
         self._self_actions.append(action)
 		
     def update_action(self, oldIdx, action):
-        self._self_actions[oldIdx] = action
+        self._self_actions[oldIdx].set_action_name(action.get_action_name())
+        self._self_actions[oldIdx].set_rule_content(action.get_rule_content())
 
     def get_attributes(self):
-        return self._self_attributes + self._inherited_attributes
+        self._combined_attributes = self._self_attributes + self._inherited_attributes
+        return self._combined_attributes
 
     def update_attribute(self, oldIdx, attribute):
         self._combined_attributes = self._self_attributes + self._inherited_attributes
-        self._combined_attributes[oldIdx] = attribute
+        self._combined_attributes[oldIdx].set_attribute_name(attribute.get_attribute_name())
+        self._combined_attributes[oldIdx].set_attribute_value(attribute.get_attribute_value())
 
     def get_attributes_string(self):
         disp_str = ""

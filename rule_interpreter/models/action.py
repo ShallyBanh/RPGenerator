@@ -28,6 +28,8 @@ class Action:
 
     def set_rule_content(self, ruleContent):
         self._ruleContent = ruleContent
+        self._targetLine = ruleContent.splitlines()[0]
+        self._actionBehaviour = "\n".join(ruleContent.splitlines()[1:])
         
     def __str__(self):
         return "Name: {}\n".format(self.get_action_name())

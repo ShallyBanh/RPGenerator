@@ -108,6 +108,12 @@ class _Validator(object):
     def set_entities(self, entities):
         self._allEntities = entities
     
+    def set_hierarchy(self, hierarchy):
+        self._hierarchy = hierarchy
+    
+    def get_hierarchy(self):
+        return self._hierarchy
+    
     def set_relationships(self, relationships):
         self._allRelationships = relationships
     
