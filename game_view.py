@@ -7,7 +7,7 @@ from shutil import copyfile
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
-from game_engine.game.rule_enactor import RuleEnactor
+from game_engine.rule_enactor import RuleEnactor
 from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
