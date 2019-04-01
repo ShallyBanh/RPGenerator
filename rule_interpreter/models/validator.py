@@ -23,6 +23,10 @@ class _Validator(object):
     
     def add_relationship(self, relationship):
         self._allRelationships.append(relationship)
+        
+    def update_relationship(self, relationshipIdx, name, ruleContent):
+        self._allRelationships[relationshipIdx].set_name(name)
+        self._allRelationships[relationshipIdx].set_rule_content(ruleContent)
     
     def remove_relationship(self, entity):
         self._allRelationships.remove(entity)
