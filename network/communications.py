@@ -256,12 +256,12 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     for player in room_member_copy:
                         if player != client_id:
                             username = client_dict[rev_client_dict[player]][1]
-                            print("calling to remove other player {} on connection {}".format(username, player))                     
-                            self.remove_player(player, rooms[room])
+                            print("calling to remove other player {} on connection {}".format(username, player))                  
+                            self.remove_player(player, rooms[room], is_GM=False)
                         else:
                             print("not removing self yet")
                     print("removing self")
-                    self.remove_player(client_id, rooms[room])
+                    self.remove_player(client_id, rooms[room], is_GM=True)
                     del rooms[room]
                     print("rooms after end_game are {}".format(rooms))
 
@@ -311,10 +311,14 @@ class DataReadServer(asyncore.dispatcher_with_send):
         #     i.send(double_pickle(update))
         #     updateWorld(recievedData)
         else: self.close()
-    def remove_player(self, client_id, room):
+    def remove_player(self, client_id, room, is_GM=False):
         username = client_dict[rev_client_dict[client_id]][1]
         print("removing player {} on connection {}".format(username, client_id))
-        rev_client_dict[client_id].send(double_pickle(['removed', '']))            
+        if is_GM:
+            print("not sending remove message to GM")      
+        else:
+            print("sending the remove message to another player")
+            rev_client_dict[client_id].send(double_pickle(['removed', '']))
         client = client_dict[rev_client_dict[client_id]]
         room[2].remove(client_id)
         client[2] = None
