@@ -165,15 +165,15 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # @TODO connect to database
                 # client = int(command_body[0])
                 # game_id = int(command_body[1])
-                game = command_body[0]
-                game_id = game.get_uniqueID()
+                # game = command_body[0]
+                game_id = command_body[0]
                 client_id = self.my_id
                 print("client {} requesting to start game {}".format(client_dict[self.conn][0], game_id))
                 if game_id not in rooms:
                 # if command_body.isdigit() and int(command_body) not in rooms:
                     # make sure belongs to that user
                     print("game {} started".format(command_body))
-                    rooms[game_id] = [self.conn, game, [client_id]]
+                    rooms[game_id] = [self.conn, None, [client_id]]
                     print("rooms is now {}".format(rooms))
                     client_dict[self.conn][2] = game_id
                 else:
@@ -188,7 +188,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     # @TODO try except
                     # build target/message then do at end?
                     print("sending the forwarded request")
-                    pickled = double_pickle(request)      
+                    pickled = double_pickle(request)
                     print("rooms[{}][0] -> {}.send(({} bytes): {})".format(int(room), rooms[int(room)][0], sys.getsizeof(pickled), pickled))
                     rooms[int(room)][0].send(pickled)
                     print("sent the forwarded request")
@@ -201,7 +201,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # do something with the room
                 room = command_body[1]
                 client = command_body[0][0]
-                game = command_body[2]
+                game_id = room
                 print("{} ({})".format(client, type(client)))
                 print("command body is {}".format(command_body))
                 print("appending client {} to room {}".format(client, room))
@@ -209,21 +209,26 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("rooms[{}]: {}".format(room, rooms[room]))
                 rooms[room][2].append(client_dict[rev_client_dict[client]][0])
                 client_dict[rev_client_dict[client]][2] = room
-                print("rooms[{}]: {}".format(room, rooms[room]))               
-                rev_client_dict[client].send(double_pickle(['join_accept', game]))
+                print("rooms[{}]: {}".format(room, rooms[room]))         
+                rev_client_dict[client].send(double_pickle(['join_accept', game_id]))
             elif command_type == 'reject_join':
                 print("join request was rejected")
                 rev_client_dict[command_body[0][0]].send(double_pickle(['join_reject', command_body]))
             elif command_type == 'leave_game':
                 print("player trying to leave game @TODO append to transcript")
-                client_id = int(command_body)
-                if client_id == self.my_id:
-                    print("client_id is {}".format(client_id))
-                    client = client_dict[rev_client_dict[client_id]]
-                    print("client is {}".format(client))
-                    room = client[2]
-                    print("room is {}".format(room))
-                    self.remove_player(client_id, rooms[room])
+                client_id = int(command_body[0])
+                connection = self.get_conn_from_client_id(client_id)
+                room_id = self.get_room_id_from_client_id(client_id)
+                username = client_dict[connection][1]
+                room = rooms[room_id]
+                if room[0] == connection:
+                    # print("client_id is {}".format(client_id))
+                    # client = client_dict[rev_client_dict[client_id]]
+                    # print("client is {}".format(client))
+                    # room = client[2]
+                    # print("room is {}".format(room))
+                    print("player {} is leaving in communications.py".format(username))
+                    self.remove_player(client_id, room)
                 else:
                     print("received leave command for wrong id")
             elif command_type == 'remove_player':
@@ -249,12 +254,21 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("@TODO end game, remove players")
                 # requester = command_body[0]
                 client_id = command_body[0]
-                room = command_body[1]
-                if rooms[room][0] == self.conn:
+                room = command_body[1] # game_id
+                connection = rev_client_dict[client_id]
+                if rooms[room][0] == connection:
                     room_member_copy = rooms[room][2]
                     for player in room_member_copy:
-                        self.remove_player(player, rooms[room])
-                    self.remove_player(client_id, rooms[room])
+                        if player != client_id:
+                            username = client_dict[rev_client_dict[player]][1]
+                            print("calling to remove other player {} on connection {}".format(username, player))
+                            self.remove_player(player, rooms[room], is_GM=False)
+                        else:
+                            print("not removing self yet")
+                    print("removing self")
+                    self.remove_player(client_id, rooms[room], is_GM=True)
+                    del rooms[room]
+                    print("rooms after end_game are {}".format(rooms))
 
             elif command_type == 'chat':
                 # for client in room
@@ -271,8 +285,11 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("player {} has requested action {}".format(command_body[0], command_body[1]))
                 rooms[client_dict[self.conn][2]][0].send(recievedData)
             elif command_type == 'update_game':
-                room = command_body[1].get_uniqueID()
-                if rooms[room][0] == self.conn:
+                # room = command_body[1].get_uniqueID()
+                client_id = command_body[0]
+                room = command_body[1]
+                connection = rev_client_dict[client_id]            
+                if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
                     self.broadcast(recievedData, room)
@@ -302,8 +319,14 @@ class DataReadServer(asyncore.dispatcher_with_send):
         #     i.send(double_pickle(update))
         #     updateWorld(recievedData)
         else: self.close()
-    def remove_player(self, client_id, room):
-        print("removing player from game @TODO append to transcript")
+    def remove_player(self, client_id, room, is_GM=False):
+        username = client_dict[rev_client_dict[client_id]][1]
+        print("removing player {} on connection {}".format(username, client_id))
+        if is_GM:
+            print("not sending remove message to GM")      
+        else:
+            print("sending the remove message to another player")
+            rev_client_dict[client_id].send(double_pickle(['removed', '']))
         client = client_dict[rev_client_dict[client_id]]
         room[2].remove(client_id)
         client[2] = None
@@ -314,21 +337,29 @@ class DataReadServer(asyncore.dispatcher_with_send):
         # # @TODO try/check if exists
         # rooms[room][2].remove(player)
         # print("done leaving game")
-        rev_client_dict[client_id].send(double_pickle(['removed', '']))
+    def get_conn_from_client_id(self, client_id):
+            connection = rev_client_dict[client_id]
+            return connection
+    
+    def get_room_id_from_client_id(self, client_id):
+        connection = self.get_conn_from_client_id(client_id)
+        room_id = client_dict[connection][2]
+        return room_id
+        
     def send_to_GM(self, message, room):
         pass
     def broadcast(self, pickled_message, room):
         print("broadcasting")
         for client in rooms[room][2]:
-            print("trying to send to client_id: {}".format(client))            
+            print("trying to send to client_id: {}".format(client))     
             connection = rev_client_dict[client]
-            if connection != self.conn:
+            if rooms[room][0] != connection:
                 print("sending to someone else")
                 connection.send(pickled_message)
             else:
                 print("not sending back to self")
 
-    
+
 
 def main():
     ConnectionBuilderServer(5000)

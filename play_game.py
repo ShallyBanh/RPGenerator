@@ -32,7 +32,8 @@ WINDOW_SIZE = (800, 600)
 MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 BUFFERSIZE = 4096
 client_id = None
-JOIN_FLAG = False
+PLAYER_JOIN_FLAG = False
+PLAYER_REJECTED_FLAG = False
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -46,6 +47,7 @@ surface = pygame.display.set_mode(WINDOW_SIZE)
 pygame.display.set_caption('RPGenerator')
 clock = pygame.time.Clock()
 dt = 1 / FPS
+CLI_MODE = False
 
 # Asynchronous communication setup
 general_async_port = 5000
@@ -140,9 +142,8 @@ def async_receive():
     global async_transcript
     global client_id    
     global game
-    global JOIN_FLAG
-    # global shared_var.REQUEST_RESPONSE_FLAG
-    # global MESSAGE_CONTENT
+    global PLAYER_JOIN_FLAG
+    global PLAYER_REJECTED_FLAG
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -153,117 +154,94 @@ def async_receive():
             if inm == general_async_connection:
                 print("equal to general connection")
                 # async_message = double_unpickle(receive_bundle(inm, BUFFERSIZE))
-                async_message = double_unpickle(inm.recv(BUFFERSIZE))
-                print("the async message is {}".format(async_message))
-                message_type = async_message[0]
-                message_content = async_message[1]
+                saved = inm.recv(BUFFERSIZE)
+                if len(saved) < 1:
+                    continue
+                messages = saved.split(b'q\x00.')
+                print(messages)
             # elif inm == voice_async_connection:
             #     print("equal to voice connection")
             #     async_message = double_unpickle(inm.recvfrom(BUFFERSIZE))
             else:
                 print("connection equality check did not work")
                 continue
-            
-            print("recieved something via select!")
-            if message_type == 'assign_id':
-                print("assigning client_id")
-                client_id = message_content
-                print("client_id is now {}".format(client_id))
-                # inm.send(double_pickle(['register_username', client.user.get_username]))
-            elif message_type == 'id update':
-                print("was id update")
-            elif message_type == 'start_game_accept':
-                print("game successfully started, update your game object and loop")
-            elif message_type == 'start_game_reject':
-                print("failed to start game")
-            elif message_type == "join_request":
-                if False:
-                    answer = input("join request from {}\ny/n?".format(message_content[0][1]))
-                    if answer.lower() in ["y", "yes"]:
-                        game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                        message_content.append(game)
-                        async_send(['accept_join', message_content])
-                    else:
-                        async_send(['reject_join', message_content])
-                else:
-                    shared_var.REQUEST_RESPONSE_FLAG = True
-                    shared_var.MESSAGE_CONTENT = message_content
-                    print("CHANGING THE FLAG")
-                    print(shared_var.MESSAGE_CONTENT)
-                    # OLDSURF = gameView.DISPLAYSURF.copy()
-                    # popupSurf = pygame.Surface((200,200))
-                    # popupSurf.fill(COLOR_BLACK)
-                    # x = gameView.DISPLAYSIZE[0]/2-popupSurf.get_width()
-                    # y = gameView.DISPLAYSIZE[1]/2-popupSurf.get_height()
-                    # x = x+gameView.MAPOFFSET[0]
-                    # y = y+gameView.MAPOFFSET[1]
 
-                    # gameView.DISPLAYSURF.blit(popupSurf, (x,y))  
-                    # surf, tpos = ptext.draw("join request from {}\ny/n?".format(message_content[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
-                    # surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=gameView.FONTSIZE, width = 200)
-                    # join_request_timeout = 40
-                    # start = time.time()
-                    # running = True
-                    # while(time.time()-start < join_request_timeout and running):  
-                    #     for event in pygame.event.get():
-                    #         if event.type == QUIT:
-                    #             pygame.quit()
-                    #             sys.exit()
-                    #         elif event.type == KEYDOWN:   
-                    #             if event.key == K_y:
-                    #                 # send the request yes
-                    #                 game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                    #                 message_content.append(game)
-                    #                 async_send(['accept_join', message_content])
-                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                    #                 running = False
-                    #             elif event.key == K_n:
-                    #                 # send the request no
-                    #                 async_send(['reject_join', message_content])
-                    #                 gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                    #                 running = False
-                    #     pygame.display.flip()
-                    # if not running or time.time()-start >= join_request_timeout:
-                    #     # send the request no
-                    #     async_send(['reject_join', message_content])
-                    #     gameView.DISPLAYSURF.blit(OLDSURF, (0,0))
-                    #     pygame.display.flip()
-            elif message_type == 'join_accept':
-                print("join request accepted!")
-                JOIN_FLAG = True
-                game = message_content
-                print("game is currently {}".format(game.get_name()))
-                print("with transcript\n{}".format(game.transcript))
-            elif message_type == 'join_invalid':
-                print("there is no active game with that id")
-            elif message_type == 'join_reject':
-                # get the game
-                print("join request rejected")
-            elif message_type == 'removed':
-                print("you have been removed @TODO")
-                game = None
-            elif message_type == 'request_action':
-                print("@TODO action request flag and handle")
-            elif message_type == 'update_game':
-                print("updating game")
-                game = message_content[0]
-            # elif message_type == 'action_reject':
-            #     print("action rejected, restore previous/apply sent version")
-            elif message_type == 'chat':
-                async_transcript += "\n" + message_content
-                print("chat message received! transcript is now: \n{}".format(async_transcript))
-                # playerid = message_content
-                # print(playerid)
-            # elif message_type
-            elif message_type == 'voice':
-                print("got a voice message!\t{}".format(message_content))
-            if message_type == 'player locations':
-                print("was player locations")
-                # async_message.pop(0)
-                # minions = []
-                # for minion in async_message:
-                #     if minion[0] != playerid:
-                #         minions.append(Minion(minion[1], minion[2], minion[0]))
+            for saved in messages:
+                if len(saved) < 1:
+                    continue
+                async_message = double_unpickle(saved+b'q\x00.')
+                print("the async message is {}".format(async_message))
+                message_type = async_message[0]
+                message_content = async_message[1]
+                
+                print("recieved something via select!")
+                if message_type == 'assign_id':
+                    print("assigning client_id")
+                    client_id = message_content
+                    print("client_id is now {}".format(client_id))
+                    # inm.send(double_pickle(['register_username', client.user.get_username]))
+                elif message_type == 'id update':
+                    print("was id update")
+                elif message_type == 'start_game_accept':
+                    print("game successfully started, update your game object and loop")
+                elif message_type == 'start_game_reject':
+                    print("failed to start game")
+                elif message_type == "join_request":
+                    if CLI_MODE:
+                        answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                        if answer.lower() in ["y", "yes"]:
+                            game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                            # message_content.append(game.get_uniqueID())
+                            async_send(['accept_join', message_content])
+                        else:
+                            async_send(['reject_join', message_content])
+                    else:
+                        shared_var.JOIN_REQUEST_FLAG = True
+                        shared_var.MESSAGE_CONTENT = message_content
+                        # print("CHANGING THE FLAG")
+                        # print(shared_var.MESSAGE_CONTENT)
+                elif message_type == 'join_accept':
+                    print("join request accepted!")
+                    PLAYER_JOIN_FLAG = True
+                    game_id = message_content
+                    # print("game is currently {}".format(game.get_name()))
+                    # print("with transcript\n{}".format(game.transcript))
+                elif message_type == 'join_invalid':
+                    print("there is no active game with that id")
+                    PLAYER_REJECTED_FLAG = True
+                elif message_type == 'join_reject':
+                    # get the game
+                    PLAYER_REJECTED_FLAG = True
+                    print("join request rejected")
+                elif message_type == 'removed':
+                    print("setting gm leaves flag is set true")
+                    shared_var.GM_LEAVES_FLAG = True
+                    game = None
+                elif message_type == 'request_action':
+                    print("@TODO action request flag and handle")
+                elif message_type == 'update_game':
+                    print("updating game")
+                    # game = message_content[0]
+                    shared_var.UPDATE_GAME_FLAG = True
+                    # gameObj = client.get_game_from_room_number(game.get_uniqueID())
+                    # game = jsonpickle.decode(gameObj)
+                # elif message_type == 'action_reject':
+                #     print("action rejected, restore previous/apply sent version")
+                elif message_type == 'chat':
+                    async_transcript += "\n" + message_content
+                    print("chat message received! transcript is now: \n{}".format(async_transcript))
+                    # playerid = message_content
+                    # print(playerid)
+                # elif message_type
+                elif message_type == 'voice':
+                    print("got a voice message!\t{}".format(message_content))
+                if message_type == 'player locations':
+                    print("was player locations")
+                    # async_message.pop(0)
+                    # minions = []
+                    # for minion in async_message:
+                    #     if minion[0] != playerid:
+                    #         minions.append(Minion(minion[1], minion[2], minion[0]))
         # except Exception as e:
         #     print(e)
 
@@ -906,7 +884,8 @@ def recover_account_credentials(username, code, password):
     return
 
 def enter_room(room_number):
-    global JOIN_FLAG
+    global PLAYER_JOIN_FLAG
+    global PLAYER_REJECTED_FLAG
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))
     if len(gameObj) == 0:
@@ -914,16 +893,20 @@ def enter_room(room_number):
         return
     game = jsonpickle.decode(gameObj[0][0])
     if game.GM.get_username()==client.user.get_username():
-        async_send(['start_game', [game]])
-        gameView.main(client, game, True)
+        async_send(['start_game', [game.get_uniqueID()]])
+        gameView.main(client, game, client_id, True)
     else:
-        join_request_timeout = 60
+        join_request_timeout = 30
         start = time.time()
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
-            if JOIN_FLAG:
-                gameView.main(client, game, False)
-                JOIN_FLAG = False
+            if PLAYER_JOIN_FLAG:
+                # game = client.get_game_from_room_number(game_id)
+                gameView.main(client, game, client_id, False)
+                PLAYER_JOIN_FLAG = False
+                break
+            elif PLAYER_REJECTED_FLAG:
+                PLAYER_REJECTED_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
@@ -945,8 +928,8 @@ def create_room(gameName, ruleset_object, width, height):
     game.GM = client.user
     pygame.display.set_mode((1300, 750))
     client.create_game(jsonpickle.encode(game), gameName, currentUsername)
-    async_send(['start_game', [game]])
-    gameView.main(client, game, True, ruleset_object)
+    async_send(['start_game', [game.get_uniqueID()]])
+    gameView.main(client, game, client_id, True, ruleset_object)
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
 

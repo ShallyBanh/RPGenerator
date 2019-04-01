@@ -27,6 +27,26 @@ class GameView:
         self.load_pictures()
         return
 
+    def leave_game(self, full_exit=True):
+        # TODO CALL THE ASYNC REQUEST?!
+        if GM_STATUS:
+            print("trying to end game")
+            end_game_message = "GM {} ended the game session".format(client.user.get_username())
+            game.append_transcript(end_game_message)
+            client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+            async_send(['chat', [client_id, end_game_message]])
+            async_send(['end_game', [client_id, game.get_uniqueID()]])
+        else:
+            print("player leaving game")
+            leave_game_message = "{} left the game".format(client.user.get_username())
+            game.append_transcript(leave_game_message)
+            async_send(['chat', [client_id, leave_game_message]])
+            async_send(['leave_game', [client_id]])
+        if full_exit:
+            pygame.quit()
+            sys.exit()
+        return
+
     def offset_blit(self,x,y):
         return (x+MAPOFFSET[0],y+MAPOFFSET[1])
 
@@ -144,8 +164,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -154,7 +173,7 @@ class GameView:
                         my_entity = GAMEVIEW.which_entity(x, y)
                         if result == "point":
                             return Point(x,y)
-                        elif my_entity is not None and my_entity.get_type() == result:
+                        elif my_entity is not None and my_entity.is_of_type(result):
                             return my_entity
         return
 
@@ -183,45 +202,99 @@ class GameView:
 
     # GM FUNCTIONS ------------------------------------------------------------------------------------------------
     def join_request_popup(self):
-        print("IM IN THE POPUP")
+        print("IM IN THE JOIN REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popupSurf = pygame.Surface((200,200))
         popupSurf.fill(COLOR_BLACK)
-        x = DISPLAYSIZE[0]/2-popupSurf.get_width()
-        y = DISPLAYSIZE[1]/2-popupSurf.get_height()
-        x = x+MAPOFFSET[0]
-        y = y+MAPOFFSET[1]
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
 
         DISPLAYSURF.blit(popupSurf, (x,y))  
         surf, tpos = ptext.draw("join request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        pygame.display.flip()
+
         join_request_timeout = 40
         start = time.time()
         running = True
         while(time.time()-start < join_request_timeout and running):  
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
                         # send the request yes
                         game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
-                        shared_var.MESSAGE_CONTENT.append(game)
+                        # shared_var.MESSAGE_CONTENT.append(game.get_uniqueID())
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
-                        DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
                     elif event.key == K_n:
                         # send the request no
                         async_send(['reject_join', shared_var.MESSAGE_CONTENT])
-                        DISPLAYSURF.blit(OLDSURF, (0,0))
                         running = False
-            pygame.display.flip()
         if running:
             # send the request no
             async_send(['reject_join', shared_var.MESSAGE_CONTENT])
-            DISPLAYSURF.blit(OLDSURF, (0,0))
-            pygame.display.flip()
+        DISPLAYSURF.blit(OLDSURF, (0,0))
+        pygame.display.flip()
+        return
+
+    def gm_leaves_room_popup(self):
+        print("IM IN THE LEAVE ROOM POPUP")
+        # popupSurf = pygame.Surface((200,200))
+        # popupSurf.fill(COLOR_BLACK)
+        # x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        # y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
+
+        # DISPLAYSURF.blit(popupSurf, (x,y))  
+        # ptext.draw("The GM left the room! Closing in 8seconds.", (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        # pygame.display.update()
+
+        # time.sleep(5)
+
+        # join_request_timeout = 5
+        # start = time.time()
+        # while(time.time()-start < join_request_timeout):  
+        #     pass
+        shared_var.GM_LEAVES_FLAG = False
+        return
+
+    def action_request_popup(self):
+        print("IM IN THE ACTION REQUEST POPUP")
+        OLDSURF = DISPLAYSURF.copy()
+        popupSurf = pygame.Surface((200,200))
+        popupSurf.fill(COLOR_BLACK)
+        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
+        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
+        
+        DISPLAYSURF.blit(popupSurf, (x,y))  
+        surf, tpos = ptext.draw("Action request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        pygame.display.flip()
+
+        join_request_timeout = 60
+        start = time.time()
+        running = True
+        while(time.time()-start < join_request_timeout and running):  
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.leave_game()
+                elif event.type == KEYDOWN:   
+                    if event.key == K_y:
+                        # send the request yes
+                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        # shared_var.MESSAGE_CONTENT.append(game)
+                        async_send(['accept_join', shared_var.MESSAGE_CONTENT])
+                        running = False
+                    elif event.key == K_n:
+                        # send the request no
+                        async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+                        running = False
+        if running:
+            # send the request no
+            async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+        DISPLAYSURF.blit(OLDSURF, (0,0))
+        pygame.display.flip()
         return
 
     def toggle_fog(self):
@@ -232,8 +305,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -272,8 +344,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -338,7 +409,7 @@ class GameView:
             input_type = None
             input_image_filename = None
         
-        display_string = "Type Options: " + ", ".join(TYPES_OF_ENTITIES) + "\nImage Options: "
+        display_string = "Type Options: " + ", ".join(CONCRETE_TYPES_OF_ENTITIES) + "\nImage Options: "
         display_string += self._images_string()
         ptext.draw(display_string, (tpos[0], self._y_coordinate(surf_image, tpos_image)), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE,  width = game.map.width*game.map.tilesize)
         
@@ -356,8 +427,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -389,7 +459,7 @@ class GameView:
                         selected_image_filename = input_image_filename.text.rstrip()
                         if selected_image_filename not in self.images:
                             selected_image_filename = "default-image.png"
-                        if selected_type in TYPES_OF_ENTITIES:
+                        if selected_type in CONCRETE_TYPES_OF_ENTITIES:
                             blit_input = False
                             self.clear_bottom_info()
                             self.display_message("Please select tile you would like to place this " + selected_name)
@@ -427,8 +497,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if saved_entity is None:
                         mousepos = pygame.mouse.get_pos()
@@ -499,8 +568,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     mousepos = pygame.mouse.get_pos()
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -548,8 +616,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if event.button == 3:
                         chat_input_box.text = clipboard.paste()
@@ -610,8 +677,7 @@ class GameView:
         while RUNNING:    
             for event in pygame.event.get():
                 if event.type == QUIT:
-                    pygame.quit()
-                    sys.exit()
+                    self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     pass
                 elif event.type == KEYDOWN:   
@@ -883,28 +949,24 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "a": {"name": "Add Asset", "function": GAMEVIEW.add_asset},
               "d": {"name": "Delete Entity", "function": GAMEVIEW.delete_entity},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
-              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
-              "h": {"name": "Show this help screen", "function": GAMEVIEW.GM_help_screen}
-              }
-PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
-                  "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
-                 }
+              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
+PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
 DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
 FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
 # -----------------------------------------------------------------------------------------------------------------------
 
-def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
+def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global RULE_ENACTOR
     global game
     global GM_STATUS
     global client
-    # global shared_var.REQUEST_RESPONSE_FLAG
-    # global MESSAGE_CONTENT
+    global client_id
 
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
+    client_id = clientID
 
     GAMEVIEW.load_pictures_from_database()
     
@@ -936,20 +998,39 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
     TYPES_OF_ENTITIES = []
     for entity_type in RULE_ENACTOR.entity_types:
         TYPES_OF_ENTITIES.append(entity_type.get_type())
+    global CONCRETE_TYPES_OF_ENTITIES
+    CONCRETE_TYPES_OF_ENTITIES = []
+    for entity_type in RULE_ENACTOR.concrete_entity_types:
+        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
 
     RUNNING = True
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
-        if shared_var.REQUEST_RESPONSE_FLAG:
-            print("in the main trying to do the loop")
+        if shared_var.JOIN_REQUEST_FLAG:
+            print("in the main trying to do the join loop")
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.join_request_popup()
-            shared_var.REQUEST_RESPONSE_FLAG = False
+            shared_var.JOIN_REQUEST_FLAG = False
+        if shared_var.ACTION_REQUEST_FLAG:
+            print("in the main trying to do the action loop")
+            print(shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.action_request_popup()
+            shared_var.ACTION_REQUEST_FLAG = False
+        if shared_var.GM_LEAVES_FLAG:
+            print("GM LEFT THE ROOM")
+            GAMEVIEW.gm_leaves_room_popup()
+            shared_var.GM_LEAVES_FLAG = False
+            return
+        if shared_var.UPDATE_GAME_FLAG:
+            gameObj = client.get_game_from_room_number(game.get_uniqueID())
+            game = jsonpickle.decode(gameObj[0][0])
+            shared_var.UPDATE_GAME_FLAG = False
+            GAMEVIEW.blit_entire_map()
+            pygame.display.flip()
         for event in pygame.event.get():
             if event.type == QUIT:
-                pygame.quit()
-                sys.exit()
+                GAMEVIEW.leave_game()
             elif event.type == MOUSEBUTTONDOWN:
                 mousepos = pygame.mouse.get_pos()
                 mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
@@ -964,14 +1045,10 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
                             result = RULE_ENACTOR.perform_action(action_requested, my_entity)
-                            if result == "point":
-                                point = GAMEVIEW.action_sequence(result)
-                                # point = Point(x,y)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, point)
-                            elif result in TYPES_OF_ENTITIES:
-                                # select an entity OF THAT SAME TYPE 
-                                targeted_entity = GAMEVIEW.action_sequence(result)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, targeted_entity)
+                            if result == "point" or result in TYPES_OF_ENTITIES:
+                                item = GAMEVIEW.action_sequence(result)
+                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, item)
+                            # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                             GAMEVIEW.clear_bottom_info()
                             GAMEVIEW.GM_help_screen()
                             my_entity = None
@@ -1018,6 +1095,7 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
             elif event.type == KEYDOWN:   
                 if event.key == K_ESCAPE:
                     # TODO ALERT FRIENDS THAT THEY HAVE EXITED
+                    GAMEVIEW.leave_game(False)
                     RUNNING = False
                 elif GM_STATUS and event.unicode in GM_HOTKEYS and not chat_input_box.active:
                     if my_entity is not None:
@@ -1029,7 +1107,8 @@ def main(clientObj, gameObj, gmOrPlayer = True, validatorObj = None):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
-                    # TODO ENSURE THAT WE SEND THIS OUT TO EVERYONE
+                    client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                    async_send(["update_game", [client_id, game.get_uniqueID()]])
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()

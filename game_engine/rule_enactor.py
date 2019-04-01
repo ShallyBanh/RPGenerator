@@ -22,6 +22,7 @@ class RuleEnactor:
 	def __init__(self):
 		self.selected_item = None
 		self.entity_types = []
+		self.concrete_entity_types = []
 		# key: (x,y), value: entity
 		self.all_created_entities = {}
 		
@@ -40,7 +41,7 @@ class RuleEnactor:
 			raise Exception("An entity already exists at this location")
 			return None
 		newEntity = None
-		for e in self.entity_types:
+		for e in self.concrete_entity_types:
 			if e.is_of_type(entityType):
 				newEntity = copy.deepcopy(e)
 				break
@@ -75,6 +76,10 @@ class RuleEnactor:
 	def parse_validator(self, validator):
 		self.relationships = validator.get_relationships()
 		self.entity_types = validator.get_entities()
+		for e in self.entity_types:
+			if not e.get_is_template():
+				self.concrete_entity_types.append(e)
+				
 		
 	def add_new_relationship(self, relationship):
 		self.relationships.append(relationship)

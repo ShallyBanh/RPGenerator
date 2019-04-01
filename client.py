@@ -206,7 +206,7 @@ class Client():
         return data
 
     def get_game_from_room_number(self, gameId):
-        print("[client] [get_game_from_room_number] attempting to get a game blob from the game id")  
+        print("[client] [get_game_from_room_number] attempting to get a game blob from the {}".format(gameId))  
         payload = {'gameId': gameId}      
         response = requests.post("{}/get_game_from_room_number".format(self.URL), params=payload)
         data = json.loads(response.text)
