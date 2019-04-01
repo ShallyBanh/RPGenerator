@@ -7,7 +7,7 @@ from shutil import copyfile
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
 from game_engine.game import Game
-from game_engine.rule_enactor import RuleEnactor
+from game_engine.game.rule_enactor import RuleEnactor
 from rule_interpreter.models.validator import _Validator
 from rule_interpreter.models.attribute import Attribute
 from rule_interpreter.models.entity import Entity
@@ -63,8 +63,8 @@ class GameView:
 
     def check_entity_fit(self, width, height, x, y, entity):
         # in the case of moving where entity already is
-        if (x, y) in RULE_ENACTOR.all_created_entities:
-            if RULE_ENACTOR.all_created_entities[(x, y)] == entity: # is it itself
+        if (x, y) in game.ruleset_copy.all_created_entities:
+            if game.ruleset_copy.all_created_entities[(x, y)] == entity: # is it itself
                 return True
             else: # another entity is there
                 return False
@@ -147,7 +147,7 @@ class GameView:
         return 
 
     def which_entity(self, x, y):
-        for key, e in RULE_ENACTOR.all_created_entities.items():
+        for key, e in game.ruleset_copy.all_created_entities.items():
             if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
@@ -192,7 +192,7 @@ class GameView:
             self.blit_texture(texture)
 
         # put all the entities on the map
-        for location, entity in RULE_ENACTOR.all_created_entities.items():
+        for location, entity in game.ruleset_copy.all_created_entities.items():
             entity_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
             DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
         
@@ -434,13 +434,13 @@ class GameView:
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                     x, y = GAMEVIEW.which_tile(mousepos)
                     if len(selected_type)>0 and x != -1 and y != -1 and self.which_entity(x,y) is None:
-                        entity = RULE_ENACTOR.add_new_entity(selected_type, selected_name, x, y)
+                        entity = game.ruleset_copy.add_new_entity(selected_type, selected_name, x, y)
                         if GAMEVIEW.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
                             entity.set_image_filename(selected_image_filename)
                             texture_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
                             DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
                         else:
-                            RULE_ENACTOR.remove_entity(entity)
+                            game.ruleset_copy.remove_entity(entity)
                         selected_name = ""
                         selected_type = ""
                         selected_image_filename = ""
@@ -532,16 +532,16 @@ class GameView:
                                 type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
                                 if type_of_attr == bool:
                                     if new_value.lower() == "true":
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, True)
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, True)
                                     elif new_value.lower() == "false":
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, False)
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, False)
                                 elif type_of_attr == float:
                                     try:
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, float(new_value))
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, float(new_value))
                                     except Exception as e:
                                         pass
                                 elif type_of_attr == str:
-                                    RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, new_value)
+                                    game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, new_value)
                             self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                         saved_entity = None
                         input_name.text = ""
@@ -593,7 +593,7 @@ class GameView:
                             return
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
-                            RULE_ENACTOR.remove_entity(saved_entity)
+                            game.ruleset_copy.remove_entity(saved_entity)
                             if (saved_entity.x,saved_entity.y) in game.map.textures:
                                 self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
                             else:
@@ -689,7 +689,7 @@ class GameView:
                         if len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
-                            result = RULE_ENACTOR.roll_dice(d_string)
+                            result = game.ruleset_copy.roll_dice(d_string)
                             if result is None:
                                 result = "ERROR: IMPROPER ENTRY"
                             surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -920,7 +920,7 @@ class Transcript:
 # ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
 game = Game()
-RULE_ENACTOR = RuleEnactor()
+game.ruleset_copy = RuleEnactor()
 GAMEVIEW = GameView()
 pygame.init()
 # GENERAL COLORS AND ITEMS
@@ -958,7 +958,6 @@ FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 # -----------------------------------------------------------------------------------------------------------------------
 
 def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
-    global RULE_ENACTOR
     global game
     global GM_STATUS
     global client
@@ -972,11 +971,11 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     GAMEVIEW.load_pictures_from_database()
     
     if validatorObj is not None:
-        RULE_ENACTOR.parse_validator(validatorObj)
-        game.set_ruleset_copy(RULE_ENACTOR)
+        game.ruleset_copy.parse_validator(validatorObj)
+        game.set_ruleset_copy(game.ruleset_copy)
         client.update_game(int(game.get_uniqueID()), jsonpickle.encode(game))
-    else:
-        RULE_ENACTOR = game.get_ruleset_copy()
+    # else:
+    #     game.ruleset_copy = game.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
@@ -997,11 +996,11 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     global TYPES_OF_ENTITIES
     TYPES_OF_ENTITIES = []
-    for entity_type in RULE_ENACTOR.entity_types:
+    for entity_type in game.ruleset_copy.entity_types:
         TYPES_OF_ENTITIES.append(entity_type.get_type())
     global CONCRETE_TYPES_OF_ENTITIES
     CONCRETE_TYPES_OF_ENTITIES = []
-    for entity_type in RULE_ENACTOR.concrete_entity_types:
+    for entity_type in game.ruleset_copy.concrete_entity_types:
         CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
 
     RUNNING = True
@@ -1025,13 +1024,13 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             return
         if shared_var.UPDATE_GAME_FLAG:
             print("UPDATE GAME FLAG WAS SET, GETTING GAME")
-            print("rule enactor before copy {}".format(RULE_ENACTOR))
-            RULE_ENACTOR = game.ruleset_copy()
-            print("rule enactor after copy {}".format(RULE_ENACTOR))
-            print("entities before update are: {}".format(game.rule_enactor.all_created_entities.items()))
+            # print("rule enactor before copy {}".format(game.ruleset_copy))
+            # game.ruleset_copy = game.ruleset_copy()
+            # print("rule enactor after copy {}".format(game.ruleset_copy))
+            # print("entities before update are: {}".format(game.game.ruleset_copy.all_created_entities.items()))
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
             game = jsonpickle.decode(gameObj[0][0])
-            print("entities after update are: {}".format(game.rule_enactor.all_created_entities.items()))
+            # print("entities after update are: {}".format(game.game.ruleset_copy.all_created_entities.items()))
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
@@ -1051,10 +1050,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             action_requested = "Move"
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
-                            result = RULE_ENACTOR.perform_action(action_requested, my_entity)
+                            result = game.ruleset_copy.perform_action(action_requested, my_entity)
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, item)
+                                result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
                             GAMEVIEW.clear_bottom_info()
                             GAMEVIEW.GM_help_screen()
                             my_entity = None
@@ -1082,7 +1081,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
 
-                        my_entity = RULE_ENACTOR.move_entity(my_entity, (x,y))
+                        my_entity = game.ruleset_copy.move_entity(my_entity, (x,y))
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
@@ -1177,9 +1176,9 @@ if __name__ == "__main__":
     template.add_action(fireball_action)
             
     validator.add_entity(template)
-    RULE_ENACTOR.parse_validator(validator)
+    game.ruleset_copy.parse_validator(validator)
 
-    entity = RULE_ENACTOR.add_new_entity("entity", "Andrew", 3, 7)
+    entity = game.ruleset_copy.add_new_entity("entity", "Andrew", 3, 7)
     entity.set_image_filename("default-image.png")
     ###### Rule Validation TEST END #######
 
