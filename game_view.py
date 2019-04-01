@@ -1031,6 +1031,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             game = jsonpickle.decode(gameObj)
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
+            pygame.display.flip()
         for event in pygame.event.get():
             if event.type == QUIT:
                 GAMEVIEW.leave_game()
@@ -1110,6 +1111,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
+                    client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
                     async_send(["update_game", [client_id, game.get_uniqueID()]])
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
