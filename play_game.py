@@ -220,7 +220,10 @@ def async_receive():
                     print("@TODO action request flag and handle")
                 elif message_type == 'update_game':
                     print("updating game")
-                    game = message_content[0]
+                    # game = message_content[0]
+                    shared_var.UPDATE_GAME_FLAG = True
+                    # gameObj = client.get_game_from_room_number(game.get_uniqueID())
+                    # game = jsonpickle.decode(gameObj)
                 # elif message_type == 'action_reject':
                 #     print("action rejected, restore previous/apply sent version")
                 elif message_type == 'chat':

@@ -256,7 +256,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     for player in room_member_copy:
                         if player != client_id:
                             username = client_dict[rev_client_dict[player]][1]
-                            print("calling to remove other player {} on connection {}".format(username, player))                  
+                            print("calling to remove other player {} on connection {}".format(username, player))
                             self.remove_player(player, rooms[room], is_GM=False)
                         else:
                             print("not removing self yet")
@@ -280,7 +280,8 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("player {} has requested action {}".format(command_body[0], command_body[1]))
                 rooms[client_dict[self.conn][2]][0].send(recievedData)
             elif command_type == 'update_game':
-                room = command_body[1].get_uniqueID()
+                # room = command_body[1].get_uniqueID()
+                room = command_body[0]
                 if rooms[room][0] == self.conn:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
@@ -334,7 +335,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
     def broadcast(self, pickled_message, room):
         print("broadcasting")
         for client in rooms[room][2]:
-            print("trying to send to client_id: {}".format(client))            
+            print("trying to send to client_id: {}".format(client))     
             connection = rev_client_dict[client]
             if connection != self.conn:
                 print("sending to someone else")
@@ -342,7 +343,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
             else:
                 print("not sending back to self")
 
-    
+
 
 def main():
     ConnectionBuilderServer(5000)
