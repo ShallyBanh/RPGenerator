@@ -909,7 +909,6 @@ def enter_room(room_number):
     global JOIN_FLAG
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))
-
     if len(gameObj) == 0:
         pygame.display.set_mode(WINDOW_SIZE)
         return
