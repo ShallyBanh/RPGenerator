@@ -899,6 +899,7 @@ def enter_room(room_number):
                 PLAYER_JOIN_FLAG = False
                 break
             elif PLAYER_REJECTED_FLAG:
+                PLAYER_REJECTED_FLAG = False
                 break
     surface = pygame.display.set_mode(WINDOW_SIZE)
     return
