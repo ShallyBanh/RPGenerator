@@ -12,6 +12,7 @@ from game_engine.game import Game
 from game_engine.map import Map
 import game_view as gameView
 import shared_var
+import signal
 
 # Import pygameMenu
 import pygameMenu
@@ -34,6 +35,7 @@ BUFFERSIZE = 4096
 client_id = None
 PLAYER_JOIN_FLAG = False
 PLAYER_REJECTED_FLAG = False
+game = None
 
 # -----------------------------------------------------------------------------
 # Init pygame
@@ -102,6 +104,7 @@ def async_send(async_message):
     # register_command = ['register_client']
 
 def async_command_loop():
+    global game
     global client_id
     global async_transcript
     while True:
@@ -886,6 +889,7 @@ def recover_account_credentials(username, code, password):
 def enter_room(room_number):
     global PLAYER_JOIN_FLAG
     global PLAYER_REJECTED_FLAG
+    global game
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))
     if len(gameObj) == 0:
@@ -949,6 +953,18 @@ def main_background():
     :return: None
     """
     surface.fill(COLOR_BACKGROUND)
+
+def signal_handler(sig, frame):
+    global client_id
+    global game
+
+    leave_message = "{} left the game".format(currentUsername)
+    game.append_transcript(leave_message)
+    async_send(['chat', [client_id, leave_message]])
+    async_send(['leave_game', [client_id]])
+    print('You pressed Ctrl+C!')
+    
+    sys.exit(0)
 
 # -----------------------------------------------------------------------------
 # OPTION MENU
@@ -1019,6 +1035,7 @@ main_menu = pygameMenu.Menu(surface,
 main_menu.add_option('Login', account_login_view)
 main_menu.add_option('About', about_menu)
 main_menu.add_option('Quit', PYGAME_MENU_EXIT)
+signal.signal(signal.SIGINT, signal_handler)
 
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
