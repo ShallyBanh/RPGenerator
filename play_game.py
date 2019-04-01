@@ -19,6 +19,7 @@ import pygameMenu
 from pygameMenu.locals import *
 # PYGAMEMENU_TEXT_NEWLINE
 
+# -----------------------------------------------------------------------------
 # Global variables
 ABOUT = ['RPGenerator {0}'.format("V1.0.0"),
          'Author: {0}'.format("2019-Group-04")]
@@ -28,16 +29,19 @@ COLOR_BLACK = (0, 0, 0)
 COLOR_WHITE = (255, 255, 255)
 COLOR_RED = (255, 0, 0)
 FPS = 30.0
-MENU_BACKGROUND_COLOR = (228, 55, 36)
+# MENU_BACKGROUND_COLOR = (228, 55, 36)
+MENU_BACKGROUND_COLOR = (21,156,208)
 WINDOW_SIZE = (800, 600)
-MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
+# MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
+MY_FONT = pygame.font.SysFont('arial', 40)
 BUFFERSIZE = 4096
 client_id = None
-PLAYER_JOIN_FLAG = False
-PLAYER_REJECTED_FLAG = False
 game = None
 
-# -----------------------------------------------------------------------------
+# FLAGS
+PLAYER_JOIN_FLAG = False
+PLAYER_REJECTED_FLAG = False
+
 # Init pygame
 pygame.init()
 os.environ['SDL_VIDEO_CENTERED'] = '1'
