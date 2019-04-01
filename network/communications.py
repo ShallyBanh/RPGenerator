@@ -313,7 +313,8 @@ class DataReadServer(asyncore.dispatcher_with_send):
         else: self.close()
     def remove_player(self, client_id, room):
         username = client_dict[rev_client_dict[client_id]][1]
-        print("calling to remove other player {} on connection {}".format(username, client_id))       
+        print("removing player {} on connection {}".format(username, client_id))
+        rev_client_dict[client_id].send(double_pickle(['removed', '']))            
         client = client_dict[rev_client_dict[client_id]]
         room[2].remove(client_id)
         client[2] = None
@@ -324,7 +325,6 @@ class DataReadServer(asyncore.dispatcher_with_send):
         # # @TODO try/check if exists
         # rooms[room][2].remove(player)
         # print("done leaving game")
-        rev_client_dict[client_id].send(double_pickle(['removed', '']))
     def send_to_GM(self, message, room):
         pass
     def broadcast(self, pickled_message, room):
