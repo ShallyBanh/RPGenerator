@@ -1,6 +1,6 @@
+import copy
 from action import Action
 from size import Size
-
 from validator import Validator 
 
 class Entity:
@@ -26,8 +26,8 @@ class Entity:
         self._isInheritedFrom = inheritedFrom
         if inheritedFrom is not None:
             if inheritedFrom.get_is_template():
-                self._inherited_actions = self._isInheritedFrom.get_actions()
-                self._inherited_attributes = self._isInheritedFrom.get_attributes()
+                self._inherited_actions = copy.deepcopy(self._isInheritedFrom.get_actions())
+                self._inherited_attributes = copy.deepcopy(self._isInheritedFrom.get_attributes())
             else:
                 raise Exception("Given parent entity is not a template entity.")
         self.x = x
@@ -69,7 +69,7 @@ class Entity:
         
     def add_action(self, action):
         self._self_actions.append(action)
-		
+        
     def update_action(self, oldIdx, action):
         self._self_actions[oldIdx].set_action_name(action.get_action_name())
         self._self_actions[oldIdx].set_rule_content(action.get_rule_content())
@@ -135,8 +135,8 @@ class Entity:
     def set_inherited_from(self, parentEntity):
         if parentEntity.get_is_template():
             self._isInheritedFrom = parentEntity
-            self._inherited_actions = parentEntity.get_actions()
-            self._inherited_attributes = parentEntity.get_attributes()
+            self._inherited_actions = copy.deepcopy(parentEntity.get_actions())
+            self._inherited_attributes = copy.deepcopy(parentEntity.get_attributes())
         else:
             raise Exception("Given parent entity is not a template entity.")
             
