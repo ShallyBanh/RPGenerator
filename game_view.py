@@ -1027,8 +1027,14 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             shared_var.GM_LEAVES_FLAG = False
             return
         if shared_var.UPDATE_GAME_FLAG:
+            print("UPDATE GAME FLAG WAS SET, GETTING GAME")
+            print("rule enactor before copy {}".format(RULE_ENACTOR))
+            RULE_ENACTOR = game.ruleset_copy()
+            print("rule enactor after copy {}".format(RULE_ENACTOR))
+            print("entities before update are: {}".format(game.rule_enactor.all_created_entities.items()))
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
             game = jsonpickle.decode(gameObj[0][0])
+            print("entities after update are: {}".format(game.rule_enactor.all_created_entities.items()))
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
@@ -1057,7 +1063,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             my_entity = None
                             print(result)
                             if GM_STATUS:
-                                self.send_update_to_all()
+                                GAMEVIEW.send_update_to_all()
                             else:
                                 # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
@@ -1082,7 +1088,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                         if GM_STATUS:
-                            self.send_update_to_all()
+                            GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                     # wipe signals
