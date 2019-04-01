@@ -1110,7 +1110,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.GM_help_screen()
-                    async_send(["update_game",[game.get_uniqueID()]])
+                    async_send(["update_game", [client_id, game.get_uniqueID()]])
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()

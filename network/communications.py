@@ -281,8 +281,10 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 rooms[client_dict[self.conn][2]][0].send(recievedData)
             elif command_type == 'update_game':
                 # room = command_body[1].get_uniqueID()
-                room = command_body[0]
-                if rooms[room][0] == self.conn:
+                client_id = command_body[0]
+                room = command_body[1]
+                connection = rev_client_dict[client_id]
+                if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
                     self.broadcast(recievedData, room)
