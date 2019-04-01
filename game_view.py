@@ -1005,6 +1005,9 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     for entity_type in game.ruleset_copy.concrete_entity_types:
         CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
 
+    print(TYPES_OF_ENTITIES)
+    print(CONCRETE_TYPES_OF_ENTITIES)
+
     RUNNING = True
     while RUNNING:   
         if GM_STATUS:
@@ -1051,6 +1054,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
                             result = game.ruleset_copy.perform_action(action_requested, my_entity)
+                            print(TYPES_OF_ENTITIES)
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
