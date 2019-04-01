@@ -225,7 +225,7 @@ class GameView:
                     if event.key == K_y:
                         # send the request yes
                         game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
-                        shared_var.MESSAGE_CONTENT.append(game)
+                        # shared_var.MESSAGE_CONTENT.append(game.get_uniqueID())
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         running = False
                     elif event.key == K_n:
@@ -283,7 +283,7 @@ class GameView:
                     if event.key == K_y:
                         # send the request yes
                         game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
-                        shared_var.MESSAGE_CONTENT.append(game)
+                        # shared_var.MESSAGE_CONTENT.append(game)
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         running = False
                     elif event.key == K_n:
