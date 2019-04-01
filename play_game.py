@@ -881,6 +881,7 @@ def recover_account_credentials(username, code, password):
 
 def enter_room(room_number):
     global PLAYER_JOIN_FLAG
+    global PLAYER_REJECTED_FLAG
     pygame.display.set_mode((1300, 750))
     gameObj = client.get_game_from_room_number(int(room_number))[0]
     game = jsonpickle.decode(gameObj)
