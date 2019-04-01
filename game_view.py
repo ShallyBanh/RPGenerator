@@ -1024,8 +1024,14 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             shared_var.GM_LEAVES_FLAG = False
             return
         if shared_var.UPDATE_GAME_FLAG:
+            print("UPDATE GAME FLAG WAS SET, GETTING GAME")
+            print("rule enactor before copy {}".format(RULE_ENACTOR))
+            RULE_ENACTOR = game.ruleset_copy()
+            print("rule enactor after copy {}".format(RULE_ENACTOR))
+            print("entities before update are: {}".format(game.rule_enactor.all_created_entities.items()))
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
             game = jsonpickle.decode(gameObj[0][0])
+            print("entities after update are: {}".format(game.rule_enactor.all_created_entities.items()))
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
