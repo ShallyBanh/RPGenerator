@@ -949,12 +949,8 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "a": {"name": "Add Asset", "function": GAMEVIEW.add_asset},
               "d": {"name": "Delete Entity", "function": GAMEVIEW.delete_entity},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
-              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
-              "h": {"name": "Show this help screen", "function": GAMEVIEW.GM_help_screen}
-              }
-PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice},
-                  "h": {"name": "Show this help screen", "function": GAMEVIEW.PLAYER_help_screen}
-                 }
+              "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
+PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
 DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
 FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
