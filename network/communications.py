@@ -217,13 +217,18 @@ class DataReadServer(asyncore.dispatcher_with_send):
             elif command_type == 'leave_game':
                 print("player trying to leave game @TODO append to transcript")
                 client_id = int(command_body[0])
-                if client_id == self.my_id:
-                    print("client_id is {}".format(client_id))
-                    client = client_dict[rev_client_dict[client_id]]
-                    print("client is {}".format(client))
-                    room = client[2]
-                    print("room is {}".format(room))
-                    self.remove_player(client_id, rooms[room])
+                connection = self.get_conn_from_client_id(client_id)
+                room_id = self.get_room_id_from_client_id(client_id)
+                username = client_dict[connection][1]
+                room = rooms[room_id]
+                if room[0] == connection:
+                    # print("client_id is {}".format(client_id))
+                    # client = client_dict[rev_client_dict[client_id]]
+                    # print("client is {}".format(client))
+                    # room = client[2]
+                    # print("room is {}".format(room))
+                    print("player {} is leaving in communications.py".format(username))
+                    self.remove_player(client_id, room)
                 else:
                     print("received leave command for wrong id")
             elif command_type == 'remove_player':
@@ -332,6 +337,15 @@ class DataReadServer(asyncore.dispatcher_with_send):
         # # @TODO try/check if exists
         # rooms[room][2].remove(player)
         # print("done leaving game")
+    def get_conn_from_client_id(self, client_id):
+            connection = rev_client_dict[client_id]
+            return connection
+    
+    def get_room_id_from_client_id(self, client_id):
+        connection = self.get_conn_from_client_id(client_id)
+        room_id = client_dict[connection][2]
+        return room_id
+        
     def send_to_GM(self, message, room):
         pass
     def broadcast(self, pickled_message, room):
