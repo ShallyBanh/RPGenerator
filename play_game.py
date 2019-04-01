@@ -221,7 +221,8 @@ def async_receive():
                     shared_var.GM_LEAVES_FLAG = True
                     game = None
                 elif message_type == 'request_action':
-                    print("@TODO action request flag and handle")
+                    print("action request flag and handle")
+                    shared_var.ACTION_REQUEST_FLAG = True
                 elif message_type == 'update_game':
                     print("updating game")
                     # game = message_content[0]
