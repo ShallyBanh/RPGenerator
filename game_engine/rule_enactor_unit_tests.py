@@ -53,11 +53,11 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.move_entity(self.actor, (1, 1))
 		self.assertEqual(self.actor.x, 1)
 		self.assertEqual(self.actor.y, 1)
-		self.assertTrue((1,1) in self.enactor.all_created_entities)
+		self.assertTrue(str((1,1)) in self.enactor.all_created_entities)
 		self.enactor.move_entity(self.actor, (0, 0))
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, 0)
-		self.assertTrue((0,0) in self.enactor.all_created_entities)
+		self.assertTrue(str((0,0)) in self.enactor.all_created_entities)
 		
 	def test_target(self):
 		rule = "target guy\n"
