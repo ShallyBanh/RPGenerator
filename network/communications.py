@@ -282,8 +282,13 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 pickled_message = double_pickle(['chat', message])
                 self.broadcast(pickled_message, room)
             elif command_type == 'request_action':
-                print("player {} has requested action {}".format(command_body[0], command_body[1]))
-                rooms[client_dict[self.conn][2]][0].send(recievedData)
+                client_id = command_body[0]
+                requested_action = command_body[2]
+                connection = self.get_conn_from_client_id(client_id)
+                username = client_dict[connection][1]
+                room_id = self.get_room_id_from_client_id(client_id)
+                print("player {} ({}) has requested action {}\nforwarding to GM for room {}".format(username, client_id, requested_action, room_id))
+                rooms[room_id][0].send(recievedData)
             elif command_type == 'update_game':
                 # room = command_body[1].get_uniqueID()
                 client_id = command_body[0]
