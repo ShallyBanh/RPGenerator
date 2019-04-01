@@ -283,7 +283,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # room = command_body[1].get_uniqueID()
                 client_id = command_body[0]
                 room = command_body[1]
-                connection = rev_client_dict[client_id]
+                connection = rev_client_dict[client_id]            
                 if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
@@ -339,7 +339,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
         for client in rooms[room][2]:
             print("trying to send to client_id: {}".format(client))     
             connection = rev_client_dict[client]
-            if connection != self.conn:
+            if rooms[room][0] != connection:
                 print("sending to someone else")
                 connection.send(pickled_message)
             else:
