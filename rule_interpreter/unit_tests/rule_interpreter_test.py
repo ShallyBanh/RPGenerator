@@ -16,8 +16,10 @@ class TestValidator(unittest.TestCase):
         goblin = Entity("steve", "goblin", 1, 1, "no", None)
         testAttribute = Attribute("hp", 1)
         testAttribute2 = Attribute("cool", 2)
+        testAttribute3 = Attribute("strength", 3)
         goblin.add_attribute(testAttribute)
         goblin.add_attribute(testAttribute2)
+        goblin.add_attribute(testAttribute3)
         testAction = Action("Attack", "target goblin:\n if goblin.hp > 2 then 2")
         goblin.add_action(testAction)
         goblin.add_status("Dodge")
@@ -194,6 +196,12 @@ class TestValidator(unittest.TestCase):
     def test_andrews_test_21(self):
         self.assertTrue(self.parser.is_valid_rule("target point:\n if all entity within(3,3) of target and d20 > entity.hp then reduce entity.hp by 6d6"))
 
+    def test_andrews_test_22(self):
+        self.assertTrue(self.parser.is_valid_rule("target Parent:\n reduce target.HP by self.hp"))
+
+    def test_andrews_test_23(self):
+        self.assertTrue(self.parser.is_valid_rule("target goblin:\nif target.hp < self.Strength + d20 then reduce target.HP by 1d4 + self.Strength"))
+
 if __name__ == '__main__':
     unittest.main()
  
@@ -202,9 +210,11 @@ if __name__ == '__main__':
     # goblin = Entity("steve", "goblin", 1, 1, "no", None)
     # testAttribute = Attribute("hp", 1)
     # goblin.add_attribute(testAttribute)
+    # testAttribute = Attribute("strength", 1)
+    # goblin.add_attribute(testAttribute)
     # testAction = Action("Attack", "target goblin:\n if goblin.hp > 2 then 2")
     # goblin.add_action(testAction)
     # goblin.add_status("Dodge")
     # Validator().add_entity(goblin)
 
-    # print(parser.is_valid_rule("""target self:\n add status \"Dodge\" to self\n remove status \"Dodge\" from self\n if target.statuses has \"Dodge\" then reduce target.hp by 100"""))
+    # print(parser.is_valid_rule("""target goblin:\nif target.hp < self.Strength + d20 then reduce target.HP by 1d4 + self.Strength"""))
