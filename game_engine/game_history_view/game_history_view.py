@@ -56,7 +56,7 @@ class GameHistoryView:
                     for joinIdx in range(len(self._gameHistoryPositionList)):
                         x1 = int(self._gameHistoryPositionList[joinIdx][0])
                         y1 = int(self._gameHistoryPositionList[joinIdx][1])
-                        if x in range(x1, x1 + 100) and y in range(y1, y1+20):
+                        if x in range(x1, x1 + 135) and y in range(y1, y1+20):
                             return self._gameHistoryList[joinIdx][0], self._gameHistoryList[joinIdx][1]
                             # currentEntityName = entities[moreIdx]
 
