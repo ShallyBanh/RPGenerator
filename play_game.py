@@ -157,7 +157,7 @@ def async_receive():
                 saved = inm.recv(BUFFERSIZE)
                 if len(saved) < 1:
                     continue
-                messages = saved.split("q\x00.")
+                messages = saved.split(b'q\x00.')
                 print(messages)
             # elif inm == voice_async_connection:
             #     print("equal to voice connection")
@@ -167,7 +167,9 @@ def async_receive():
                 continue
 
             for saved in messages:
-                async_message = double_unpickle(saved)
+                if len(saved) < 1:
+                    continue
+                async_message = double_unpickle(saved+b'q\x00.')
                 print("the async message is {}".format(async_message))
                 message_type = async_message[0]
                 message_content = async_message[1]
