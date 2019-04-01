@@ -157,81 +157,85 @@ def async_receive():
                 saved = inm.recv(BUFFERSIZE)
                 if len(saved) < 1:
                     continue
-                async_message = double_unpickle(saved)
-                print("the async message is {}".format(async_message))
-                message_type = async_message[0]
-                message_content = async_message[1]
+                messages = saved.split("q\x00.")
+                print(messages)
             # elif inm == voice_async_connection:
             #     print("equal to voice connection")
             #     async_message = double_unpickle(inm.recvfrom(BUFFERSIZE))
             else:
                 print("connection equality check did not work")
                 continue
-            
-            print("recieved something via select!")
-            if message_type == 'assign_id':
-                print("assigning client_id")
-                client_id = message_content
-                print("client_id is now {}".format(client_id))
-                # inm.send(double_pickle(['register_username', client.user.get_username]))
-            elif message_type == 'id update':
-                print("was id update")
-            elif message_type == 'start_game_accept':
-                print("game successfully started, update your game object and loop")
-            elif message_type == 'start_game_reject':
-                print("failed to start game")
-            elif message_type == "join_request":
-                if CLI_MODE:
-                    answer = input("join request from {}\ny/n?".format(message_content[0][1]))
-                    if answer.lower() in ["y", "yes"]:
-                        game.append_transcript("player {} joined the game".format(message_content[0][1]))
-                        # message_content.append(game.get_uniqueID())
-                        async_send(['accept_join', message_content])
+
+            for saved in messages:
+                async_message = double_unpickle(saved)
+                print("the async message is {}".format(async_message))
+                message_type = async_message[0]
+                message_content = async_message[1]
+                
+                print("recieved something via select!")
+                if message_type == 'assign_id':
+                    print("assigning client_id")
+                    client_id = message_content
+                    print("client_id is now {}".format(client_id))
+                    # inm.send(double_pickle(['register_username', client.user.get_username]))
+                elif message_type == 'id update':
+                    print("was id update")
+                elif message_type == 'start_game_accept':
+                    print("game successfully started, update your game object and loop")
+                elif message_type == 'start_game_reject':
+                    print("failed to start game")
+                elif message_type == "join_request":
+                    if CLI_MODE:
+                        answer = input("join request from {}\ny/n?".format(message_content[0][1]))
+                        if answer.lower() in ["y", "yes"]:
+                            game.append_transcript("player {} joined the game".format(message_content[0][1]))
+                            # message_content.append(game.get_uniqueID())
+                            async_send(['accept_join', message_content])
+                        else:
+                            async_send(['reject_join', message_content])
                     else:
-                        async_send(['reject_join', message_content])
-                else:
-                    shared_var.JOIN_REQUEST_FLAG = True
-                    shared_var.MESSAGE_CONTENT = message_content
-                    # print("CHANGING THE FLAG")
-                    # print(shared_var.MESSAGE_CONTENT)
-            elif message_type == 'join_accept':
-                print("join request accepted!")
-                PLAYER_JOIN_FLAG = True
-                game_id = message_content
-                # print("game is currently {}".format(game.get_name()))
-                # print("with transcript\n{}".format(game.transcript))
-            elif message_type == 'join_invalid':
-                print("there is no active game with that id")
-            elif message_type == 'join_reject':
-                # get the game
-                PLAYER_REJECTED_FLAG = True
-                print("join request rejected")
-            elif message_type == 'removed':
-                print("setting gm leaves flag is set true")
-                shared_var.GM_LEAVES_FLAG = True
-                game = None
-            elif message_type == 'request_action':
-                print("@TODO action request flag and handle")
-            elif message_type == 'update_game':
-                print("updating game")
-                game = message_content[0]
-            # elif message_type == 'action_reject':
-            #     print("action rejected, restore previous/apply sent version")
-            elif message_type == 'chat':
-                async_transcript += "\n" + message_content
-                print("chat message received! transcript is now: \n{}".format(async_transcript))
-                # playerid = message_content
-                # print(playerid)
-            # elif message_type
-            elif message_type == 'voice':
-                print("got a voice message!\t{}".format(message_content))
-            if message_type == 'player locations':
-                print("was player locations")
-                # async_message.pop(0)
-                # minions = []
-                # for minion in async_message:
-                #     if minion[0] != playerid:
-                #         minions.append(Minion(minion[1], minion[2], minion[0]))
+                        shared_var.JOIN_REQUEST_FLAG = True
+                        shared_var.MESSAGE_CONTENT = message_content
+                        # print("CHANGING THE FLAG")
+                        # print(shared_var.MESSAGE_CONTENT)
+                elif message_type == 'join_accept':
+                    print("join request accepted!")
+                    PLAYER_JOIN_FLAG = True
+                    game_id = message_content
+                    # print("game is currently {}".format(game.get_name()))
+                    # print("with transcript\n{}".format(game.transcript))
+                elif message_type == 'join_invalid':
+                    print("there is no active game with that id")
+                elif message_type == 'join_reject':
+                    # get the game
+                    PLAYER_REJECTED_FLAG = True
+                    print("join request rejected")
+                elif message_type == 'removed':
+                    print("setting gm leaves flag is set true")
+                    shared_var.GM_LEAVES_FLAG = True
+                    game = None
+                elif message_type == 'request_action':
+                    print("@TODO action request flag and handle")
+                elif message_type == 'update_game':
+                    print("updating game")
+                    game = message_content[0]
+                # elif message_type == 'action_reject':
+                #     print("action rejected, restore previous/apply sent version")
+                elif message_type == 'chat':
+                    async_transcript += "\n" + message_content
+                    print("chat message received! transcript is now: \n{}".format(async_transcript))
+                    # playerid = message_content
+                    # print(playerid)
+                # elif message_type
+                elif message_type == 'voice':
+                    print("got a voice message!\t{}".format(message_content))
+                if message_type == 'player locations':
+                    print("was player locations")
+                    # async_message.pop(0)
+                    # minions = []
+                    # for minion in async_message:
+                    #     if minion[0] != playerid:
+                    #         minions.append(Minion(minion[1], minion[2], minion[0]))
         # except Exception as e:
         #     print(e)
 
