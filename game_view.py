@@ -232,12 +232,10 @@ class GameView:
                         # shared_var.MESSAGE_CONTENT.append(game.get_uniqueID())
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         running = False
-                        break
                     elif event.key == K_n:
                         # send the request no
                         async_send(['reject_join', shared_var.MESSAGE_CONTENT])
                         running = False
-                        break
         if running:
             # send the request no
             async_send(['reject_join', shared_var.MESSAGE_CONTENT])
@@ -291,12 +289,10 @@ class GameView:
                         game = jsonpickle.decode(gameObj[0][0])
                         game.append_transcript("player {} did an action".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
-                        break
                     elif event.key == K_n:
                         # send the request no
                         game.append_transcript("player {} action rejected".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
-                        break
         
         DISPLAYSURF.blit(OLDSURF, (0,0))
         # whether timed out or the GM responded, send the GM's game to everyone
@@ -1011,29 +1007,28 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
-            if shared_var.JOIN_REQUEST_FLAG:
-                print("JOIN REQUEST FLAG")
-                print(shared_var.MESSAGE_CONTENT)
-                GAMEVIEW.join_request_popup()
-                shared_var.JOIN_REQUEST_FLAG = False
-            if shared_var.ACTION_REQUEST_FLAG:
-                print("ACTION REQUEST FLAG")
-                print(shared_var.MESSAGE_CONTENT)
-                GAMEVIEW.action_request_popup()
-                shared_var.ACTION_REQUEST_FLAG = False
-        else:
-            if shared_var.GM_LEAVES_FLAG:
-                print("GM LEFT THE ROOM")
-                GAMEVIEW.gm_leaves_room_popup()
-                shared_var.GM_LEAVES_FLAG = False
-                return
-            if shared_var.UPDATE_GAME_FLAG:
-                print("GM UPDATED THE GAME, GETTING GAME")
-                gameObj = client.get_game_from_room_number(game.get_uniqueID())
-                game = jsonpickle.decode(gameObj[0][0])
-                shared_var.UPDATE_GAME_FLAG = False
-                GAMEVIEW.blit_entire_map()
-                pygame.display.flip()
+        if shared_var.JOIN_REQUEST_FLAG:
+            print("JOIN REQUEST FLAG")
+            print(shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.join_request_popup()
+            shared_var.JOIN_REQUEST_FLAG = False
+        if shared_var.ACTION_REQUEST_FLAG:
+            print("ACTION REQUEST FLAG")
+            print(shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.action_request_popup()
+            shared_var.ACTION_REQUEST_FLAG = False
+        if shared_var.GM_LEAVES_FLAG:
+            print("GM LEFT THE ROOM")
+            GAMEVIEW.gm_leaves_room_popup()
+            shared_var.GM_LEAVES_FLAG = False
+            return
+        if shared_var.UPDATE_GAME_FLAG:
+            print("GM UPDATED THE GAME, GETTING GAME")
+            gameObj = client.get_game_from_room_number(game.get_uniqueID())
+            game = jsonpickle.decode(gameObj[0][0])
+            shared_var.UPDATE_GAME_FLAG = False
+            GAMEVIEW.blit_entire_map()
+            pygame.display.flip()
 
         # start the loop that handles the events
         for event in pygame.event.get():
