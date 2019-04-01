@@ -264,6 +264,7 @@ class GameView:
         return
 
     def action_request_popup(self):
+        global game
         print("IM IN THE ACTION REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popupSurf = pygame.Surface((200,200))
