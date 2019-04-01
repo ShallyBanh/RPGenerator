@@ -27,7 +27,12 @@ class RelationshipCreationView:
         self._currentlySelectedInputIdx = 0
         self._fontsize = fontsize
 
-    def main(self):
+    def main(self, relationshipName, ruleContent):
+        if relationshipName != "" and ruleContent != "":
+            self._allInputList[0] = relationshipName
+            self._rule = ruleContent
+            #editing mode
+
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
 
         pygame.init()
@@ -97,7 +102,7 @@ class RelationshipCreationView:
                         return None, None
                     
                     if x in range (1010, 1050) and y in range (290, 320):
-                        rule_input = RuleInputView(self._fontsize).main()
+                        rule_input = RuleInputView(self._fontsize).main(self._rule )
                         if rule_input is not None:
                             self._rule = rule_input
 
