@@ -279,6 +279,7 @@ class GameView:
         join_request_timeout = 40
         start = time.time()
         running = True
+        print(shared_var.MESSAGE_CONTENT)
         while(time.time()-start < join_request_timeout and running):  
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -1077,13 +1078,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                                     GAMEVIEW.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
-                        print("IN GAMEVIEW")
-                        print(game.ruleset_copy.all_created_entities)
-                        print(my_entity)
-                        print(my_entity.x)
-                        print(my_entity.y)
-                        print(x)
-                        print(y)
+                        
+                        result = client.user.get_username() + " moved " + my_entity.get_name() + " from " + str((my_entity.x, my_entity.y)) 
                         my_entity = game.ruleset_copy.move_entity(my_entity, (x,y))
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
@@ -1094,6 +1090,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                             # TODO APPEND TO TRANSCRIPT
                             client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                            result += " to " + str((my_entity.x, my_entity.y)) 
                             async_send(["request_action", [client_id, game.get_uniqueID(), result]]) 
                     # wipe signals
                     action_requested = ""
