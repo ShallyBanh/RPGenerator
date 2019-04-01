@@ -17,8 +17,8 @@ class EntityCreationView:
         self._heightInput = ""
         self._isTemplateInput = ""
         self._inheritanceInput = ""
-        self._submitButtonImg = pygame.image.load('img/submit.png')
-        self._arrowImg = pygame.image.load('img/arrow.png')
+        self._submitButtonImg = pygame.image.load('images/buttons/submit.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
         self._playing = True
         self._invalidSubmission = False
         self._currentlySelectedColorList = ["#553300", "#553300", "#553300", "#553300", "#553300", "#553300"]

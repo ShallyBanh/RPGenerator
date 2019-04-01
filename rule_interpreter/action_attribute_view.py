@@ -13,17 +13,17 @@ from entity_creation_view import EntityCreationView
 
 class AttributeActionCreationView:
     def __init__(self, currentEntityType, fontsize):
-        self._submitButtonImg = pygame.image.load('img/submit.png')
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
+        self._submitButtonImg = pygame.image.load('images/buttons/submit.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
         self._playing = True
         self._invalidSubmission = False
         self._action_view = False
         self._attribute_view = False
         self._currentEntityType = currentEntityType
         self._fontsize = fontsize
-        self._editButtonImage = pygame.image.load('img/editButtonSmall.png')
-        self._editButtonImageLarge = pygame.image.load('img/editButton.png')
+        self._editButtonImage = pygame.image.load('images/buttons/editButtonSmall.png')
+        self._editButtonImageLarge = pygame.image.load('images/buttons/editButton.png')
         self._editActionList = []
         self._editAttributeList = []
 

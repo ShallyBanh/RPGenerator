@@ -9,12 +9,12 @@ import pyautogui
 
 class GameHistoryView:
     def __init__(self, username, client, fontsize):
-        self._joinButtonImage = pygame.image.load('img/joinButton.png')
+        self._joinButtonImage = pygame.image.load('images/buttons/joinButton.png')
         self._playing = True
         #contains a tuples with room code and status
         self._gameHistoryList = []
         self._gameHistoryPositionList =[]
-        self._arrowImg = pygame.image.load('img/arrow.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
         self._client = client
         self._username = username
         self._fontsize = fontsize
@@ -56,7 +56,7 @@ class GameHistoryView:
                     for joinIdx in range(len(self._gameHistoryPositionList)):
                         x1 = int(self._gameHistoryPositionList[joinIdx][0])
                         y1 = int(self._gameHistoryPositionList[joinIdx][1])
-                        if x in range(x1, x1 + 200) and y in range(y1, y1+60):
+                        if x in range(x1, x1 + 100) and y in range(y1, y1+20):
                             return self._gameHistoryList[joinIdx][0], self._gameHistoryList[joinIdx][1]
                             # currentEntityName = entities[moreIdx]
 

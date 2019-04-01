@@ -19,13 +19,13 @@ import jsonpickle
 
 class RulesetCreationEditView:
     def __init__(self, username, client, fontsize):
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
         self._moreButtonList = []
         self._moreButtonRelationshipList = []
         self._database = Database("database.db")
-        self._moreImage = pygame.image.load('img/moreButton.png')
-        self._saveButtonImage = pygame.image.load('img/saveButton.png')
+        self._moreImage = pygame.image.load('images/buttons/moreButton.png')
+        self._saveButtonImage = pygame.image.load('images/buttons/saveButton.png')
         self._currentlySelected = False
         self._newRuleset = False
         self._entity_view = False

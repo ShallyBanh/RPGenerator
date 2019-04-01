@@ -17,10 +17,10 @@ from client import Client
 
 class RulesetView:
     def __init__(self, username, client, fontsize):
-        self._submitButtonImg = pygame.image.load("img/submit.png")
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
-        self._editButton = pygame.image.load('img/editButton.png')
+        self._submitButtonImg = pygame.image.load("images/buttons/submit.png")
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
+        self._editButton = pygame.image.load('images/buttons/editButton.png')
         self._editButtonList = []
         self._playing = True
         self._edit_ruleset_view = False
