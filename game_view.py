@@ -63,8 +63,8 @@ class GameView:
 
     def check_entity_fit(self, width, height, x, y, entity):
         # in the case of moving where entity already is
-        if (x, y) in game.ruleset_copy.all_created_entities:
-            if game.ruleset_copy.all_created_entities[(x, y)] == entity: # is it itself
+        if str((x, y)) in game.ruleset_copy.all_created_entities:
+            if game.ruleset_copy.all_created_entities[str((x, y))] == entity: # is it itself
                 return True
             else: # another entity is there
                 return False
