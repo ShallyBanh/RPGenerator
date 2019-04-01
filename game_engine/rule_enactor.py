@@ -37,7 +37,7 @@ class RuleEnactor:
 		
 	def add_new_entity(self, entityType, name = "", x = 0, y = 0):
 		#self.all_created_entities.append(entity)
-		if (x,y) in self.all_created_entities.keys():
+		if str((x,y)) in self.all_created_entities.keys():
 			raise Exception("An entity already exists at this location")
 			return None
 		newEntity = None
@@ -50,7 +50,7 @@ class RuleEnactor:
 		newEntity.x = x
 		newEntity.y = y
 		newEntity.set_name(name)
-		self.all_created_entities[(newEntity.x,newEntity.y)] = newEntity
+		self.all_created_entities[str((newEntity.x,newEntity.y))] = newEntity
 		return newEntity
 		
 	def move_entity(self, entity, new_xy_tuple):
@@ -61,16 +61,16 @@ class RuleEnactor:
 		print(entity.y)
 		print(new_xy_tuple[0])
 		print(new_xy_tuple[1])
-		del self.all_created_entities[(entity.x, entity.y)]
+		del self.all_created_entities[str((entity.x, entity.y))]
 		entity.x = new_xy_tuple[0]
 		entity.y = new_xy_tuple[1]
-		self.all_created_entities[new_xy_tuple] = entity
+		self.all_created_entities[str(new_xy_tuple)] = entity
 		return entity
 		
 	def remove_entity(self, entity):
 		x = entity.x
 		y = entity.y
-		del self.all_created_entities[(x,y)]
+		del self.all_created_entities[str((x,y))]
 		
 	def modify_attribute(self, entity, attributeName, attributeValue):
 		entity.get_attribute(attributeName).set_attribute_value(attributeValue)
