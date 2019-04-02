@@ -153,6 +153,8 @@ def async_receive():
     global game
     global PLAYER_JOIN_FLAG
     global PLAYER_REJECTED_FLAG
+    global CHAT_FLAG
+    global CHAT_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -228,6 +230,7 @@ def async_receive():
                     game = None
                 elif message_type == 'request_action':
                     print("action request flag and handle")
+                    shared_var.MESSAGE_CONTENT = message_content
                     shared_var.ACTION_REQUEST_FLAG = True
                 elif message_type == 'asset_added':
                     print("asset added, alert players to pull")
@@ -242,6 +245,8 @@ def async_receive():
                 # elif message_type == 'action_reject':
                 #     print("action rejected, restore previous/apply sent version")
                 elif message_type == 'chat':
+                    shared_var.CHAT_CONTENT.append(message_content)
+                    shared_var.CHAT_FLAG = True
                     async_transcript += "\n" + message_content
                     print("chat message received! transcript is now: \n{}".format(async_transcript))
                     # playerid = message_content
@@ -803,9 +808,9 @@ def create_new_game_view():
                         error_surface = True
                         error_str = "Width and Height both need to be numbers"
                         break
-                    if int(inputList[2]) < 2 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
+                    if int(inputList[2]) < 10 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
                         error_surface = True
-                        error_str = "Min width and height are 2. Max height is 10 and max width is 18"
+                        error_str = "Min width is 10 and height are 5. Max height is 10 and max width is 10"
                         break
 
                     allRulesets = client.load_existing_rulesets(currentUsername)

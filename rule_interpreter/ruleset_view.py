@@ -17,10 +17,10 @@ from client import Client
 
 class RulesetView:
     def __init__(self, username, client, fontsize):
-        self._submitButtonImg = pygame.image.load("img/submit.png")
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
-        self._editButton = pygame.image.load('img/editButton.png')
+        self._submitButtonImg = pygame.image.load("images/buttons/submit.png")
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
+        self._editButton = pygame.image.load('images/buttons/editButton.png')
         self._editButtonList = []
         self._playing = True
         self._edit_ruleset_view = False
@@ -42,15 +42,15 @@ class RulesetView:
         sx, sy = 1300, 750
         screen = pygame.display.set_mode((sx, sy))
         pygame.display.set_caption("Rulesets")
-        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Existing Rulesets", midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
-        buttonrects = [pygame.Rect((50, 150, 1100, 550))]
+        buttonrects = [pygame.Rect((50, 150, 1200, 550))]
         textSizes = [(50, 100)]
         buttonnames = ["Rulesets"]
 
         while self._playing:
             screen.fill((0, 50, 50))
-            screen.blit(self._plusImage,(1110, 110))
+            screen.blit(self._plusImage,(1210, 110))
             screen.blit(self._arrowImg,(10, 10))
             clickpos = None
             events = pygame.event.get()
@@ -63,7 +63,7 @@ class RulesetView:
                 elif event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                     clickpos = event.pos
                     x, y = clickpos
-                    if x in range(1110, 1150) and y in range(110, 140):
+                    if x in range(1210, 1250) and y in range(110, 140):
                         validator = RulesetCreationEditView( self._username, self._client, self._fontsize).main("")
                         if validator is not None:
                             return validator
@@ -96,8 +96,8 @@ class RulesetView:
             self._rulesetPositionList = []
             for ruleIdx in range(len(self._rulesetList)):
                 ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
-                screen.blit(self._editButton,(900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
-                self._rulesetPositionList.append((900, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
+                screen.blit(self._editButton,(1000, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
+                self._rulesetPositionList.append((1000, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
             ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=35)
             
             screen.blit(*titleargs)

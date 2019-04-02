@@ -180,7 +180,6 @@ class SyntaxParser(object):
         #split actions by connector and since there is only and to connect actions
         # actions = re.split(r'(?:and )|[\n]+', content)
         actions = content.split('and')
-
         for actionStatement in actions:
             # we are adding or removing statuses
             actionStatement = actionStatement.strip()
@@ -217,11 +216,18 @@ class SyntaxParser(object):
         actions = [x for x in actions if x]
 
         target = targetName
+        target2 = targetName
         if actions[1].find(".") != self._cannotFindSubstring:
             dotSplitter = actions[1].find(".")
             ourObject = actions[1][:dotSplitter].strip()
             if ourObject.lower() == "target" or ourObject.lower() == "self":
                 target = ourObject.lower()
+        
+        if actions[3].find(".") != self._cannotFindSubstring:
+            dotSplitter = actions[3].find(".")
+            ourObject = actions[3][:dotSplitter].strip()
+            if ourObject.lower() == "target" or ourObject.lower() == "self":
+                target2 = ourObject.lower()
         
         if len(actions) < 4:
             return False
@@ -249,13 +255,13 @@ class SyntaxParser(object):
             if actions[3].strip() not in self._variables_list and actions[3].strip() not in entityNames and actions[3].strip() != "target":
                 self._variables_list.append(actions[3].strip())
 
-            return self.validate_object(actions[3].strip(), targetName)
+            return self.validate_object(actions[3].strip(), target2)
         
         else:
             if actions[2].strip() not in self._specialConnectives:
                 return False
         
-            return self.validate_object(actions[1].strip(), target) and self.validate_object(actions[3].strip(), targetName)
+            return self.validate_object(actions[1].strip(), target) and self.validate_object(actions[3].strip(), target2)
     
     def is_valid_status_action(self, content, targetName):
         """
@@ -341,7 +347,7 @@ class SyntaxParser(object):
         arithmeticConnectiveIndicies = self.get_arithmetic_connective(content)
         currentConnectiveIndex = 0
         if self.validate_connective_order(andOrConnectiveIndicies, regularConnectiveIndicies) == False:
-            #print("wrong connective order")
+            # print("wrong connective order")
             return False
         
         for i in range(len(regularConnectiveIndicies)):
@@ -374,16 +380,36 @@ class SyntaxParser(object):
                             arithmeticSymbolSplitter = rightHandSide.find(arithmeticSymbol)
                             rhs = rightHandSide[:arithmeticSymbolSplitter].strip()
                             lhs = rightHandSide[arithmeticSymbolSplitter + 1:].strip()
+                            targetr = target
+                            targetl = target
+                            
+                            if rhs.find("self") != self._cannotFindSubstring:
+                                targetr = "self"
+                            elif rhs.find("target") != self._cannotFindSubstring:
+                                targetr = "target"
+                            
+                            if lhs.find("self") != self._cannotFindSubstring:
+                                targetl = "self"
+                            elif lhs.find("target") != self._cannotFindSubstring:
+                                targetl = "target"
+                            
+                            if leftHandSide.find("self") != self._cannotFindSubstring:
+                                target = "self"
+                            elif leftHandSide.find("target") != self._cannotFindSubstring:
+                                target = "target"
 
                             # print("rhs")
                             # print(rhs)
                             # print("rhs validate")
-                            # print(self.validate_object(rhs, target))
+                            # print(self.validate_object(rhs, targetr))
                             # print("lhs")
                             # print(lhs)
                             # print("lhs validate")
-                            # print(self.validate_object(lhs, target))
-                            if self.validate_object(leftHandSide, target) == False or self.validate_object(lhs, target) == False or self.validate_object(rhs, target) == False:
+                            # print(self.validate_object(lhs, targetl))
+                            # print("lefthand side")
+                            # print(leftHandSide)
+                            # print(self.validate_object(leftHandSide, target))
+                            if self.validate_object(leftHandSide, target) == False or self.validate_object(lhs, targetl) == False or self.validate_object(rhs, targetr) == False:
                                 return False
                 else:
                     lhsTarget = target
