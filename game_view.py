@@ -113,24 +113,28 @@ class GameView:
     def remove_previous_popup(self):
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
-    def load_pictures_from_database(self, asset=None):
+    def load_pictures_from_database(self, asset_name=None):
         # Grab all pictures located in database and put into tmp folder
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
         direc = os.getcwd() + "/tmp/"
         arr = []
-        if asset:
-            arr = client.get_asset(game.GM.get_username(), asset)    
+        if asset_name:
+            arr = client.get_asset(game.GM.get_username(), asset_name)    
         else:
             arr = client.get_assets(game.GM.get_username(), game.get_assets())
 
         try:
+            print(arr)
             for asset in arr:
+                print(asset)
                 decoded_image = base64.b64decode(asset[1])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
+            print("ITEM WAS NOT PROPERLY GRABBED")
             print(e)
+
         self.load_pictures()
         return 
 
