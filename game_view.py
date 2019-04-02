@@ -1068,6 +1068,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
+                            game.append_transcript(result)
                             GAMEVIEW.help_screen(GM_STATUS)
                             my_entity = None
                             print(result)
@@ -1096,16 +1097,18 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         
                         result = client.user.get_username() + " moved " + my_entity.get_name() + " from " + str((my_entity.x, my_entity.y)) 
                         my_entity = game.ruleset_copy.move_entity(my_entity, (x,y))
+                        result += " to " + str((my_entity.x, my_entity.y)) 
+                        game.append_transcript(result)
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
+                        
                         if GM_STATUS:
                             GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                             # TODO APPEND TO TRANSCRIPT
                             client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
-                            result += " to " + str((my_entity.x, my_entity.y)) 
                             async_send(["request_action", [client_id, game.get_uniqueID(), result]]) 
                     # wipe signals
                     action_requested = ""
