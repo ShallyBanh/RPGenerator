@@ -227,6 +227,10 @@ def async_receive():
                 elif message_type == 'request_action':
                     print("action request flag and handle")
                     shared_var.ACTION_REQUEST_FLAG = True
+                elif message_type == 'asset_added':
+                    print("asset added, alert players to pull")
+                    shared_var.MESSAGE_CONTENT = message_content[1]
+                    shared_var.ASSET_ADDED_FLAG = True
                 elif message_type == 'update_game':
                     print("updating game")
                     # game = message_content[0]
