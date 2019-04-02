@@ -482,12 +482,15 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 		validator.add_entity(template)
 		isCorrect = True
-		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n", template)
-		isCorrect &= self.enactor.validate_rule(validator, "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n", template)
+		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8", template)
+		isCorrect &= self.enactor.validate_rule(validator, "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6", template)
 		self.assertTrue(isCorrect)
 		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nrol ta.HP by 1d8\n", template)
 		isCorrect &= self.enactor.validate_rule(validator, "YYYYYYYEEEEEEEEEEEEEEEETTTTTTTTTTTTTTT", template)
 		self.assertTrue(not isCorrect)
+		# isCorrect = True
+		# isCorrect &= self.enactor.validate_rule(validator, "interrupt entity.Action if target.statuses has \"Dodge\":\nincrease target.HP by 10", template)
+		
 		
 	def Bianca_test_case(self):
 		enactor = rule_enactor.RuleEnactor()

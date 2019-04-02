@@ -38,7 +38,7 @@ class Entity:
         return self._type
 
     def set_type(self, typeToSet):
-        self._type = typeToSet
+        self._type = typeToSet.lower()
     
     def get_name(self):
         return self._name

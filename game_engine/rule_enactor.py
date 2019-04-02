@@ -54,7 +54,7 @@ class RuleEnactor:
 					target = Point(1,1)
 					result = test_rule_enactor.perform_action_given_target(action, acting_entity, target)
 				else:
-					target = test_rule_enactor.add_new_entity(targetType)
+					target = test_rule_enactor.add_test_entity(targetType, "target", 99,99)
 					result = test_rule_enactor.perform_action_given_target(action, acting_entity, target)
 				return "was performed on" in result
 			elif acting_entity is None:
@@ -62,25 +62,47 @@ class RuleEnactor:
 				relationship = Relationship(relationshipName, ruleContent)
 				interrupting_entity_type = relationship.get_action_and_entity_interrupted()[0]
 				interrupting_action_name = relationship.get_action_and_entity_interrupted()[1]
-				acting_entity = test_rule_enactor.add_new_entity(interrupting_entity_type)
+				acting_entity = test_rule_enactor.add_test_entity(interrupting_entity_type, "actor", 88,88)
 				action_to_interrupt = None
+				target = None
+				types = []
+				for entity in self.entity_types:
+					types.append(entity.get_type())
 				for action in acting_entity.get_actions():
-					if action.get_name() == interrupting_action_name:
+					if action.get_action_name() == interrupting_action_name:
 						action_to_interrupt = action
 						break
 				result = test_rule_enactor.perform_action(action_to_interrupt, acting_entity)
 				if result == 'point':
 					target = Point(1,1)
-					result = test_rule_enactor.perform_action_given_target(action_to_interrupt, acting_entity, target)
-				for entity in self.entity_types:
-					if entity.get_type() == result:
-						target = test_rule_enactor.add_new_entity(result)
-						result = test_rule_enactor.perform_action_given_target(action_to_interrupt, acting_entity, target)
-				return "was interrupted by" in result
-		except:
+				elif result in types:
+					target = test_rule_enactor.add_test_entity(result, "target", 100,100)
+				else:
+					target = acting_entity
+				self.explicitly_perform_relationship(relationship, acting_entity, target)
+				self._evaluate_line(relationship.get_interrupt_condition())
+				return True
+		except Exception as e:
 			return False
-		print("made it to the end...")
 		return False
+		
+	def add_test_entity(self, entityType, name = "", x = 0, y = 0):
+		#self.all_created_entities.append(entity)
+		if str((x,y)) in self.all_created_entities.keys():
+			raise Exception("An entity already exists at this location")
+			return None
+		newEntity = None
+		for e in self.entity_types:
+			if e.is_of_type(entityType):
+				newEntity = copy.deepcopy(e)
+				break
+		if newEntity is None:
+			return None
+		newEntity.x = x
+		newEntity.y = y
+		newEntity.set_name(name)
+		self.all_created_entities[str((newEntity.x,newEntity.y))] = newEntity
+		return newEntity
 		
 	def add_new_entity(self, entityType, name = "", x = 0, y = 0):
 		#self.all_created_entities.append(entity)
@@ -91,8 +113,10 @@ class RuleEnactor:
 		for e in self.concrete_entity_types:
 			if e.is_of_type(entityType):
 				newEntity = copy.deepcopy(e)
+				print("Created entity.")
 				break
 		if newEntity is None:
+			print("Failed to create entity.")
 			return None
 		newEntity.x = x
 		newEntity.y = y
@@ -144,6 +168,13 @@ class RuleEnactor:
 			return self.perform_action_given_target(action, acting_entity, acting_entity)
 		else:
 			return target
+			
+	def explicitly_perform_relationship(self, relationship, acting_entity, target_entity):
+		self.acting_entity = acting_entity
+		self.target_of_action = target_entity
+		interrupt_lines = relationship.get_interrupt_behaviour().splitlines()
+		for line in interrupt_lines:
+			self._evaluate_line(line)
 	
 	def perform_action_given_target(self, action, acting_entity, target_entity):
 		self.acting_entity = acting_entity

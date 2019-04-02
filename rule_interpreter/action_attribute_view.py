@@ -60,7 +60,7 @@ class AttributeActionCreationView:
             events = pygame.event.get()
             
             if self._action_view == True:
-                actionName, rule = ActionCreationView(self._fontsize).main()
+                actionName, rule = ActionCreationView(self._fontsize, entity).main()
                 if actionName is not None:
                     actionNames.append(actionName)
                     entityIdx = Validator().get_entity_idx(self._currentEntityType)
@@ -107,7 +107,7 @@ class AttributeActionCreationView:
                             action = Validator().get_entities()[entityIdx].get_actions()[joinIdx]
                             actionName = action.get_action_name()
                             ruleContent = action.get_rule_content()
-                            newActionName, rule = ActionCreationView(self._fontsize).main(actionName, ruleContent)
+                            newActionName, rule = ActionCreationView(self._fontsize, entity).main(actionName, ruleContent)
                             if newActionName is None or rule is None:
                                 break
                             actionNames[joinIdx] = newActionName

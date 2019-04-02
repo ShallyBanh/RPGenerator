@@ -9,9 +9,12 @@ from models.syntax_parser import SyntaxParser
 import pygame
 import ptext
 import pygame.locals as pl
+sys.path.append('../game_engine')
+from rule_enactor import RuleEnactor
+
 
 class RuleInputView:
-    def __init__(self, fontsize):
+    def __init__(self, fontsize, entity=None):
         self._user_input = ""
         self._submitButtonImg = pygame.image.load('img/submit.png')
         self._checkmark = pygame.image.load('img/checkmark.png')
@@ -23,7 +26,9 @@ class RuleInputView:
         self._unvalid = False
         self._valid = False
         self._fontsize = fontsize
-        self._parser = SyntaxParser()
+        # self._parser = SyntaxParser()
+        self._parser = RuleEnactor()
+        self._entity = entity
 
     def main(self, ruleContent = ""): 
         if ruleContent != "":
@@ -53,7 +58,7 @@ class RuleInputView:
                         x, y = pygame.mouse.get_pos()
                         self._currentlySelected = False
                         if x in range(1100,1300) and y in range(600,750):
-                            if self._parser.is_valid_rule(self._user_input, Validator()) == True:
+                            if self._parser.validate_rule(Validator(), self._user_input, self._entity) == True:
                                 self._valid = True
                                 return self._user_input
                             else:
