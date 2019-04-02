@@ -280,7 +280,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 room_id = self.get_room_id_from_client_id(client_id)
                 print("room {}".format(room_id))
                 pickled_message = double_pickle(['chat', message])
-                self.broadcast(pickled_message, room_id, True, client_id)
+                self.broadcast(pickled_message, room_id, client_id)
             elif command_type == 'request_action':
                 client_id = command_body[0]
                 requested_action = command_body[2]
@@ -297,7 +297,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
-                    self.broadcast(recievedData, room)
+                    self.broadcast(recievedData, room, client_id)
                 else:
                     print("a non-GM player tried to update the game")
             elif command_type == 'asset_added':
@@ -306,7 +306,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 connection = rev_client_dict[client_id]
                 if rooms[room_id][0] == connection:
                     print("GM added an asset, broadcasting notice to others")                          
-                    self.broadcast(recievedData, room_id)
+                    self.broadcast(recievedData, room_id, client_id)
                 else:
                     print("a non-GM player said they added an asset")
 
@@ -363,23 +363,29 @@ class DataReadServer(asyncore.dispatcher_with_send):
         
     def send_to_GM(self, message, room):
         pass
-    def broadcast(self, pickled_message, room, chatting=False, client_num = 0):
+    def broadcast(self, pickled_message, room, client_id):
         print("broadcasting")
         for client in rooms[room][2]:
-            print("trying to send to client_id: {}".format(client))     
+            print("trying to send to client_id: {}".format(client))
             connection = rev_client_dict[client]
-            if chatting:
-                if client_num != connection:
-                    print("sending to someone else")
-                    connection.send(pickled_message)
-                else:
-                    print("not sending back to self")
+            if client != client_id:
+                print("sending to someone else")
+                connection.send(pickled_message)
             else:
-                if rooms[room][client_num] != connection:
-                    print("sending to someone else")
-                    connection.send(pickled_message)
-                else:
-                    print("not sending back to self")
+                print("not sending back to self")
+
+            # if chatting:
+            #     if client != client_num:
+            #         print("sending to someone else")
+            #         connection.send(pickled_message)
+            #     else:
+            #         print("not sending back to self")
+            # else:
+            #     if rooms[room][0] != connection:
+            #         print("sending to someone else")
+            #         connection.send(pickled_message)
+            #     else:
+            #         print("not sending back to self")
 
 
 
