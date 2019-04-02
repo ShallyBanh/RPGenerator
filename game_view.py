@@ -120,12 +120,14 @@ class GameView:
         direc = os.getcwd() + "/tmp/"
         arr = []
         if asset_name:
-            arr = client.get_asset(game.GM.get_username(), asset_name)    
+            arr = client.get_assets(game.GM.get_username(), [asset_name])    
         else:
             arr = client.get_assets(game.GM.get_username(), game.get_assets())
 
         try:
             for asset in arr:
+                print(asset[0])
+                print(asset[1])
                 decoded_image = base64.b64decode(asset[1][0])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
