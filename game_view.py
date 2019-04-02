@@ -276,8 +276,8 @@ class GameView:
         print(shared_var.MESSAGE_CONTENT)
         while(time.time()-start < join_request_timeout and running): 
             DISPLAYSURF.blit(popup, (0,0))  
-            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][2]), (600, 300), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
-            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][3]), (600, 375), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[2]), (600, 300), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[3]), (600, 375), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
             pygame.display.flip() 
             for event in pygame.event.get():
                 if event.type == QUIT:
@@ -286,11 +286,11 @@ class GameView:
                     if event.key == K_y:
                         gameObj = client.get_game_from_room_number(game.get_uniqueID())
                         game = jsonpickle.decode(gameObj[0][0])
-                        game.append_transcript("player {} did an action".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        game.append_transcript("player {} did an action: {}".format(shared_var.MESSAGE_CONTENT[3]))
                         running = False
                     elif event.key == K_n:
                         # send the request no
-                        game.append_transcript("player {} action rejected".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        game.append_transcript("player {} action rejected".format(shared_var.MESSAGE_CONTENT[2]))
                         running = False
         
         DISPLAYSURF.blit(OLDSURF, (0,0))
