@@ -106,7 +106,7 @@ class GameView:
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
         # entity information to display on the left
-        ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        ptext.draw(str(entity), (5, 100), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
         return (popupSurf.get_width(), popupSurf.get_height()), (x,y)
 
@@ -983,7 +983,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
-    ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    ptext.draw("Game Id: {}".format(game.uniqueID), (5, 0), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    ptext.draw("Game Name: {}".format(game.name), (5, 35), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
     GAMEVIEW.blit_entire_map()
 
