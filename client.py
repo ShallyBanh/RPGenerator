@@ -131,11 +131,7 @@ class Client():
         print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
         if response.status_code == 200:
             data = json.loads(response.text)
-            print("appending the asset name to return value in get_asset")
-            asset_with_name = (asset_name, data['assets'][0])
-            print("returning asset with name {}".format(asset_with_name[0]))
-            print("returning asset {}".format(asset_with_name[1]))
-            return asset_with_name
+            return data['assets']
         else:
             print("status was not 200")
             return -1
@@ -144,7 +140,7 @@ class Client():
         print("[client] [get_assets] getting {}'s assets {}".format(username, asset_list))
         assets = []
         for asset in asset_list:
-            data = self.get_asset(username, asset)
+            data = get_asset(username, asset)
             if data != -1:
                 assets.append(data)
         print("returning the assets: {}".format(assets))
