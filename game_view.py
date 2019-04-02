@@ -126,8 +126,8 @@ class GameView:
 
         try:
             for asset in arr:
-                print(asset[0])
-                print(asset[1])
+                # print(asset[0])
+                # print(asset[1])
                 decoded_image = base64.b64decode(asset[1][0])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
@@ -375,12 +375,13 @@ class GameView:
                         if text in self.images:
                             self.clear_bottom_info()
                             blit_input = False
-                            self.display_message("Please select tile you would like to place this texture")
                             selected_image = text
                 add_texture_box.handle_event(event)
             if blit_input:
                 add_texture_box.wipe()
                 add_texture_box.draw()
+            else:
+                self.display_message("Please select tile you would like to place this texture")
             pygame.display.flip()            
 
         return
@@ -466,7 +467,6 @@ class GameView:
                         if selected_type in CONCRETE_TYPES_OF_ENTITIES:
                             blit_input = False
                             self.clear_bottom_info()
-                            self.display_message("Please select tile you would like to place this " + selected_name)
                         else:
                             input_name.text = ""
                             input_type.text = ""
@@ -482,6 +482,8 @@ class GameView:
                 input_type.draw()
                 input_image_filename.wipe()
                 input_image_filename.draw()
+            else:
+                self.display_message("Please select tile you would like to place this " + selected_name)
             pygame.display.flip()  
 
         return
@@ -665,6 +667,9 @@ class GameView:
     def remove_player(self):
         self.clear_bottom_info()
         self.display_message("_Remove Player_\n")
+
+
+
         return
 
     def roll_dice(self):
