@@ -1010,7 +1010,6 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     RUNNING = True
     while RUNNING:   
-        GAMEVIEW.action_request_popup()
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
         if shared_var.JOIN_REQUEST_FLAG:
