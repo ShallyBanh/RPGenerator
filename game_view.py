@@ -1081,7 +1081,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                                 # TODO APPEND TO TRANSCRIPT
                                 client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
-                                async_send(["request_action", [client_id, game.get_uniqueID(), result]])    
+                                async_send(["request_action", [client_id, game.get_uniqueID(), client.user.get_username(), result]])    
                         print(action_requested)
                     else:
                         my_entity = None
@@ -1112,7 +1112,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
                             # TODO APPEND TO TRANSCRIPT
                             client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
-                            async_send(["request_action", [client_id, game.get_uniqueID(), result]]) 
+                            async_send(["request_action", [client_id, game.get_uniqueID(), client.user.get_username(), result]]) 
                     # wipe signals
                     action_requested = ""
                     my_entity = None
