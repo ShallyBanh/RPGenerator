@@ -268,21 +268,17 @@ class GameView:
         global game
         print("IM IN THE ACTION REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
-        popupSurf = pygame.Surface((200,200))
-        popupSurf.fill(COLOR_BLACK)
-        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
-        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
-        
-        DISPLAYSURF.blit(popupSurf, (x,y))  
-        surf, tpos = ptext.draw("Action request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-        pygame.display.flip()
+        popup = pygame.image.load("images/menu/actionRequestPopup.png").convert_alpha()
 
         join_request_timeout = 40
         start = time.time()
         running = True
         print(shared_var.MESSAGE_CONTENT)
-        while(time.time()-start < join_request_timeout and running):  
+        while(time.time()-start < join_request_timeout and running): 
+            DISPLAYSURF.blit(popup, (0,0))  
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][2]), (600, 300), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][3]), (600, 375), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
+            pygame.display.flip() 
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.leave_game()
@@ -1014,6 +1010,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     RUNNING = True
     while RUNNING:   
+        GAMEVIEW.action_request_popup()
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
         if shared_var.JOIN_REQUEST_FLAG:
