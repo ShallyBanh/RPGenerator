@@ -35,6 +35,53 @@ class RuleEnactor:
 		self.current_action = None
 		self.interrupting_relationship = None
 		
+	def validate_rule(self, validator, ruleContent, acting_entity=None):
+		actionName = "myAction"
+		relationshipName = "myRelationship"
+		try:
+			test_rule_enactor = RuleEnactor()
+			test_rule_enactor.parse_validator(validator)
+			if acting_entity is not None:
+				acting_entity = copy.deepcopy(acting_entity)
+				# this means its an action
+				action = Action(actionName, ruleContent)
+				acting_entity.add_action(action)
+				targetType = action.get_target_type()
+				result = ""
+				if targetType == 'self':
+					result = test_rule_enactor.perform_action(action, acting_entity)
+				elif targetType == 'point':
+					target = Point(1,1)
+					result = test_rule_enactor.perform_action_given_target(action, acting_entity, target)
+				else:
+					target = test_rule_enactor.add_new_entity(targetType)
+					result = test_rule_enactor.perform_action_given_target(action, acting_entity, target)
+				return "was performed on" in result
+			elif acting_entity is None:
+				# this means its a relationship
+				relationship = Relationship(relationshipName, ruleContent)
+				interrupting_entity_type = relationship.get_action_and_entity_interrupted()[0]
+				interrupting_action_name = relationship.get_action_and_entity_interrupted()[1]
+				acting_entity = test_rule_enactor.add_new_entity(interrupting_entity_type)
+				action_to_interrupt = None
+				for action in acting_entity.get_actions():
+					if action.get_name() == interrupting_action_name:
+						action_to_interrupt = action
+						break
+				result = test_rule_enactor.perform_action(action_to_interrupt, acting_entity)
+				if result == 'point':
+					target = Point(1,1)
+					result = test_rule_enactor.perform_action_given_target(action_to_interrupt, acting_entity, target)
+				for entity in self.entity_types:
+					if entity.get_type() == result:
+						target = test_rule_enactor.add_new_entity(result)
+						result = test_rule_enactor.perform_action_given_target(action_to_interrupt, acting_entity, target)
+				return "was interrupted by" in result
+		except:
+			return False
+		print("made it to the end...")
+		return False
+		
 	def add_new_entity(self, entityType, name = "", x = 0, y = 0):
 		#self.all_created_entities.append(entity)
 		if str((x,y)) in self.all_created_entities.keys():
@@ -52,7 +99,7 @@ class RuleEnactor:
 		newEntity.set_name(name)
 		self.all_created_entities[str((newEntity.x,newEntity.y))] = newEntity
 		return newEntity
-		
+
 	def move_entity(self, entity, new_xy_tuple):
 		del self.all_created_entities[str((entity.x, entity.y))]
 		entity.x = new_xy_tuple[0]

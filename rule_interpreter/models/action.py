@@ -23,6 +23,9 @@ class Action:
     def get_target_line(self):
         return self._targetLine
 
+    def get_target_type(self):
+        return self.get_target_line().strip().strip(':').split()[1]
+
     def get_action_behaviour(self):
         return self._actionBehaviour
 
