@@ -12,8 +12,8 @@ import pygame_textinput
 class AttributeCreationView:
 
     def __init__(self, fontsize):
-        self._submitButtonImg = pygame.image.load('img/submit.png')
-        self._arrowImg = pygame.image.load('img/arrow.png')
+        self._submitButtonImg = pygame.image.load('images/buttons/submit.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
         self._playing = True
         self._invalidSubmission = False
         self._currentlySelectedColorList = ["#553300", "#553300", "#553300"]
@@ -36,7 +36,7 @@ class AttributeCreationView:
         textSizes = [(50, 100 + 155 * j) for j in range(2)]
         buttonnames = ["Attribute Name", "Attribute Value"]
 
-        titleargs = ptext.draw("Attribute Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Attribute Creation", midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None
