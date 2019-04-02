@@ -31,6 +31,7 @@ COLOR_RED = (255, 0, 0)
 FPS = 30.0
 # MENU_BACKGROUND_COLOR = (228, 55, 36)
 MENU_BACKGROUND_COLOR = (21,156,208)
+MENU_TITLE_COLOR = (68, 68, 68)
 WINDOW_SIZE = (800, 600)
 # MY_FONT = pygame.font.Font(pygameMenu.fonts.FONT_FRANCHISE, 40)
 MY_FONT = pygame.font.SysFont('arial', 40)
@@ -227,6 +228,10 @@ def async_receive():
                 elif message_type == 'request_action':
                     print("action request flag and handle")
                     shared_var.ACTION_REQUEST_FLAG = True
+                elif message_type == 'asset_added':
+                    print("asset added, alert players to pull")
+                    shared_var.MESSAGE_CONTENT = message_content[1]
+                    shared_var.ASSET_ADDED_FLAG = True
                 elif message_type == 'update_game':
                     print("updating game")
                     # game = message_content[0]
@@ -977,11 +982,12 @@ def signal_handler(sig, frame):
 # OPTION MENU
 option_menu = pygameMenu.Menu(surface,
                             bgfun=main_background,
-                            color_selected=COLOR_WHITE,
+                            color_selected=COLOR_BLACK,
                             font=pygameMenu.fonts.FONT_BEBAS,
-                            font_color=COLOR_BLACK,
+                            font_color=COLOR_WHITE,
                             font_size=30,
                             menu_alpha=100,
+                            menu_color_title=MENU_TITLE_COLOR,
                             menu_color=MENU_BACKGROUND_COLOR,
                             menu_height=int(WINDOW_SIZE[1] * 0.6),
                             menu_width=int(WINDOW_SIZE[0] * 0.6),
@@ -1025,11 +1031,12 @@ about_menu.add_option('Return to main menu', PYGAME_MENU_BACK)
 # MAIN MENU
 main_menu = pygameMenu.Menu(surface,
                             bgfun=main_background,
-                            color_selected=COLOR_WHITE,
+                            color_selected=COLOR_BLACK,
                             font=pygameMenu.fonts.FONT_BEBAS,
-                            font_color=COLOR_BLACK,
+                            font_color=COLOR_WHITE,
                             font_size=30,
                             menu_alpha=100,
+                            menu_color_title=MENU_TITLE_COLOR,
                             menu_color=MENU_BACKGROUND_COLOR,
                             menu_height=int(WINDOW_SIZE[1] * 0.6),
                             menu_width=int(WINDOW_SIZE[0] * 0.6),
