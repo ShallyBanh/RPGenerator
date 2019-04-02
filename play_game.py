@@ -243,7 +243,7 @@ def async_receive():
                 # elif message_type == 'action_reject':
                 #     print("action rejected, restore previous/apply sent version")
                 elif message_type == 'chat':
-                    shared_var.CHAT_CONTENT.append(message_content[1])
+                    shared_var.CHAT_CONTENT.append(message_content)
                     shared_var.CHAT_FLAG = True
                     async_transcript += "\n" + message_content
                     print("chat message received! transcript is now: \n{}".format(async_transcript))
