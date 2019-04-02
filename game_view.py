@@ -113,24 +113,26 @@ class GameView:
     def remove_previous_popup(self):
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
-    def load_pictures_from_database(self, asset=None):
+    def load_pictures_from_database(self, asset_name=None):
         # Grab all pictures located in database and put into tmp folder
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
         direc = os.getcwd() + "/tmp/"
         arr = []
-        if asset:
-            arr = client.get_asset(game.GM.get_username(), asset)    
+        if asset_name:
+            arr = client.get_asset(game.GM.get_username(), asset_name)    
         else:
             arr = client.get_assets(game.GM.get_username(), game.get_assets())
 
         try:
             for asset in arr:
-                decoded_image = base64.b64decode(asset[1])        
+                decoded_image = base64.b64decode(asset[1][0])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
+            print("ITEM WAS NOT PROPERLY GRABBED")
             print(e)
+
         self.load_pictures()
         return 
 
@@ -1029,7 +1031,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             return
         if shared_var.ASSET_ADDED_FLAG:
             print("GM ADDED AN ASSEET")
-            GAMEVIEW.load_pictures_from_database(asset, shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.load_pictures_from_database(shared_var.MESSAGE_CONTENT)
             shared_var.ASSET_ADDED_FLAG = False
         if shared_var.UPDATE_GAME_FLAG:
             print("GM UPDATED THE GAME, GETTING GAME")

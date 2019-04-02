@@ -304,7 +304,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 client_id = command_body[0]
                 room_id = self.get_room_id_from_client_id(client_id)
                 connection = rev_client_dict[client_id]
-                if rooms[room][0] == connection:
+                if rooms[room_id][0] == connection:
                     print("GM added an asset, broadcasting notice to others")                          
                     self.broadcast(recievedData, room_id)
                 else:
