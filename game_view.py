@@ -209,14 +209,14 @@ class GameView:
         print("IM IN THE JOIN REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popup = pygame.image.load("images/menu/joinRequestPopup2.png").convert_alpha()
-        DISPLAYSURF.blit(popup, (0,0))  
-        ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][1]), (610, 325), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 100)
-        pygame.display.flip()
 
         join_request_timeout = 40
         start = time.time()
         running = True
-        while(time.time()-start < join_request_timeout and running):  
+        while(time.time()-start < join_request_timeout and running):
+            DISPLAYSURF.blit(popup, (0,0))  
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][1]), (610, 325), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 100)
+            pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.leave_game()
