@@ -140,7 +140,7 @@ class Client():
         print("[client] [get_assets] getting {}'s assets {}".format(username, asset_list))
         assets = []
         for asset in asset_list:
-            data = get_asset(username, asset)
+            data = self.get_asset(username, asset)
             if data != -1:
                 assets.append(data)
         print("returning the assets: {}".format(assets))
