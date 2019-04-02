@@ -144,7 +144,7 @@ class Entity:
         isParentType = False
         if self._isInheritedFrom is not None:
             isParentType = self._isInheritedFrom.is_of_type(type)
-        return type == self.get_type() or isParentType
+        return type.lower() == self.get_type().lower() or isParentType
     
     def set_is_inherited_from(self, isInheritance):
         self._isInheritedFrom = isInheritance
