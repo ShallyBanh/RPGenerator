@@ -136,21 +136,29 @@ class Client():
             print("status was not 200")
             return -1
 
-    def get_assets(self, username):
-        print("[client] [get_assets] attempting to get_assets with username = {}".format(username))        
-        payload = {'username': username}
-        response = requests.post("{}/get_assets".format(self.URL), params=payload)
-        # print("[client] [get_assets] response was {}/{}/{}".format(response, response.status_code, response.text))       
-        # @TODO why does this one end up a different type even though the code is exactly the same
-        # if type(response) == requests.models.Response:
-        #     response = str(response.text)
-        print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
-        if response.status_code == 200:
-            data = json.loads(response.text)
-            return data['assets']
-        else:
-            print("status was not 200")
-            return -1
+    def get_assets(self, username, asset_list):
+        print("[client] [get_assets] getting {}'s assets {}".format(username, asset_list))
+        assets = []
+        for asset in asset_list:
+            data = get_asset(username, asset)
+            if data != -1:
+                assets.append(data)
+        print("returning the assets: {}".format(assets))
+        return assets
+
+        # payload = {'username': username}
+        # response = requests.post("{}/get_assets".format(self.URL), params=payload)
+        # # print("[client] [get_assets] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        # # @TODO why does this one end up a different type even though the code is exactly the same
+        # # if type(response) == requests.models.Response:
+        # #     response = str(response.text)
+        # print("response.status_code: {} ({})".format(response.status_code, type(response.status_code)))
+        # if response.status_code == 200:
+        #     data = json.loads(response.text)
+        #     return data['assets']
+        # else:
+        #     print("status was not 200")
+        #     return -1
 
     def reset_database(self):
         """ WARNING: for test purposes only, @TODO remove """

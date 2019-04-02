@@ -293,13 +293,23 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # room = command_body[1].get_uniqueID()
                 client_id = command_body[0]
                 room = command_body[1]
-                connection = rev_client_dict[client_id]            
+                connection = rev_client_dict[client_id]      
                 if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
                     self.broadcast(recievedData, room)
                 else:
                     print("a non-GM player tried to update the game")
+            elif command_type == 'asset_added':
+                client_id = command_body[0]
+                room_id = self.get_room_id_from_client_id(client_id)
+                connection = rev_client_dict[client_id]
+                if rooms[room][0] == connection:
+                    print("GM added an asset, broadcasting notice to others")                          
+                    self.broadcast(recievedData, room_id)
+                else:
+                    print("a non-GM player said they added an asset")
+
             # elif command_type == 'action_approved':
             #     print("@TODO action_approved, broadcast game object")
             # elif command_type == 'action_rejected':
