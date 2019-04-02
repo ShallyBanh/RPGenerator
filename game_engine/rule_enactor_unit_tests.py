@@ -196,7 +196,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.y, 1)
 		
 		entity1 = self.enactor.add_new_entity("entity","test1",15,0)
-		self.enactor.add_new_entity(entity1)
+		# self.enactor.add_new_entity(entity1)
 		rule = "target test1\n move target 5 towards self\nmove self 10 towards target"
 		action = Action(self.action_name, rule)
 		self.enactor.perform_action_given_target(action, self.actor, entity1)

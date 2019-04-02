@@ -113,7 +113,7 @@ class RuleEnactor:
 		for e in self.concrete_entity_types:
 			if e.is_of_type(entityType):
 				newEntity = copy.deepcopy(e)
-				print("Created entity.")
+				# print("Created entity.")
 				break
 		if newEntity is None:
 			print("Failed to create entity.")
