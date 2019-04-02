@@ -121,7 +121,7 @@ class Client():
         return 0 if (response.status_code == 200) else -1
 
     def get_asset(self, username, asset_name):
-        print("[client] [get_asset] attempting to get_asset with username,asset_name = {},{}".format(username))        
+        print("[client] [get_asset] attempting to get_asset with username,asset_name = {},{}".format(username, asset_name))        
         payload = {'username': username, 'asset_name': asset_name}
         response = requests.post("{}/get_asset".format(self.URL), params=payload)
         print("[client] [get_asset] response was {}/{}/{}".format(response, response.status_code, response.text))       
