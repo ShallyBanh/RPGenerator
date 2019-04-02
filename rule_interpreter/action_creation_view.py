@@ -13,7 +13,7 @@ from rule_input_view import RuleInputView
 
 
 class ActionCreationView:
-    def __init__(self, fontsize):
+    def __init__(self, fontsize, entity):
         self._rule = ""
         self._submitButtonImg = pygame.image.load('images/buttons/submit.png')
         self._arrowImg = pygame.image.load('images/buttons/arrow.png')
@@ -26,6 +26,7 @@ class ActionCreationView:
         self._currentlySelectedInputIdx = 0
         self._fontsize = fontsize
         self._errorStr = ""
+        self._entity = entity
 
     def main(self, actionName = "", rule = ""):
         ptext.FONT_NAME_TEMPLATE = "fonts/%s.ttf"
@@ -104,7 +105,7 @@ class ActionCreationView:
                         return None, None
                     
                     if x in range (1010, 1050) and y in range (290, 320):
-                        rule_input = RuleInputView(self._fontsize).main(self._rule)
+                        rule_input = RuleInputView(self._fontsize, self._entity).main(self._rule)
                         if rule_input is not None:
                             self._rule = rule_input
 

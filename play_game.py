@@ -5,6 +5,7 @@ from random import randrange
 from client import Client
 sys.path.append('rule_interpreter/')
 sys.path.append('rule_interpreter/models')
+sys.path.append('game_engine/')
 from rule_interpreter.models import *
 from rule_interpreter.ruleset_view import RulesetView
 from game_engine.game_history_view.game_history_view import GameHistoryView
