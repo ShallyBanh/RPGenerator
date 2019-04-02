@@ -92,7 +92,7 @@ class AttributeActionCreationView:
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                         return None, None, None
-                    if x in range(70,200) and y in range(600,650):
+                    if x in range(57,240) and y in range(640,690):
                         entityTuple = EntityCreationView(self._fontsize).main(currentEntity)
                         if entityTuple[0] is not None:
                             Validator().update_entity(entityIdx, entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4])
@@ -152,7 +152,7 @@ class AttributeActionCreationView:
 
             if entity != -1:
                 ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=20)
-                screen.blit(self._editButtonImageLarge,(70, 600))
+                screen.blit(self._editButtonImageLarge,(57, 640))
 
             pygame.display.flip()
 

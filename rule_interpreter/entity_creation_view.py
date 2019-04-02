@@ -55,7 +55,7 @@ class EntityCreationView:
         textSizes = [(50, 100), (50, 100 + 155 * 1), (50, 100 + 155 * 2), (50, 100 + 155 * 3), (600, 100)]
         buttonnames = ["Entity Type", "Width", "Height", "Is Template?", "Is Inherited From?"]
         size = ""
-        titleargs = ptext.draw("Entity Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Entity Creation", midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None

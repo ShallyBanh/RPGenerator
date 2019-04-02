@@ -44,7 +44,7 @@ class RelationshipCreationView:
         buttonrects = [pygame.Rect((50, 150, 1000, 70)), pygame.Rect((50, 325, 1000, 350))]
         textSizes = [(50, 100 + 170 * j) for j in range(2)]
         buttonnames = ["Relationship Name", "Relationship"]
-        titleargs = ptext.draw("Relationship Creation", midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+        titleargs = ptext.draw("Relationship Creation", midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             clickpos = None
