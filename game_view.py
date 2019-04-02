@@ -126,7 +126,7 @@ class GameView:
 
         try:
             for asset in arr:
-                decoded_image = base64.b64decode(asset)        
+                decoded_image = base64.b64decode(asset[1])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
