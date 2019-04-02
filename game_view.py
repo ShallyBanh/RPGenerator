@@ -63,8 +63,8 @@ class GameView:
 
     def check_entity_fit(self, width, height, x, y, entity):
         # in the case of moving where entity already is
-        if (x, y) in RULE_ENACTOR.all_created_entities:
-            if RULE_ENACTOR.all_created_entities[(x, y)] == entity: # is it itself
+        if str((x, y)) in game.ruleset_copy.all_created_entities:
+            if game.ruleset_copy.all_created_entities[str((x, y))] == entity: # is it itself
                 return True
             else: # another entity is there
                 return False
@@ -113,20 +113,26 @@ class GameView:
     def remove_previous_popup(self):
         DISPLAYSURF.blit(OLDSURF, (0,0))
 
-    def load_pictures_from_database(self):
+    def load_pictures_from_database(self, asset_name=None):
         # Grab all pictures located in database and put into tmp folder
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
         direc = os.getcwd() + "/tmp/"
         arr = []
-        arr = client.get_assets(game.GM.get_username())
+        if asset_name:
+            arr = client.get_asset(game.GM.get_username(), asset_name)    
+        else:
+            arr = client.get_assets(game.GM.get_username(), game.get_assets())
+
         try:
             for asset in arr:
-                decoded_image = base64.b64decode(asset[1])        
+                decoded_image = base64.b64decode(asset[1][0])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
+            print("ITEM WAS NOT PROPERLY GRABBED")
             print(e)
+
         self.load_pictures()
         return 
 
@@ -147,7 +153,7 @@ class GameView:
         return 
 
     def which_entity(self, x, y):
-        for key, e in RULE_ENACTOR.all_created_entities.items():
+        for key, e in game.ruleset_copy.all_created_entities.items():
             if x in range(e.x,e.x+e.size.get_width()) and y in range(e.y,e.y+e.size.get_height()):
                 return e
         return None
@@ -192,7 +198,7 @@ class GameView:
             self.blit_texture(texture)
 
         # put all the entities on the map
-        for location, entity in RULE_ENACTOR.all_created_entities.items():
+        for location, entity in game.ruleset_copy.all_created_entities.items():
             entity_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
             DISPLAYSURF.blit(entity_image, self.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
         
@@ -208,20 +214,15 @@ class GameView:
     def join_request_popup(self):
         print("IM IN THE JOIN REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
-        popupSurf = pygame.Surface((200,200))
-        popupSurf.fill(COLOR_BLACK)
-        x = DISPLAYSIZE[0]/2-popupSurf.get_width()+MAPOFFSET[0]
-        y = DISPLAYSIZE[1]/2-popupSurf.get_height()+MAPOFFSET[1]
-
-        DISPLAYSURF.blit(popupSurf, (x,y))  
-        surf, tpos = ptext.draw("join request from {}\ny/n?".format(shared_var.MESSAGE_CONTENT[0][1]), (x+5,y+5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-        surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
-        pygame.display.flip()
+        popup = pygame.image.load("images/menu/joinRequestPopup2.png").convert_alpha()
 
         join_request_timeout = 40
         start = time.time()
         running = True
-        while(time.time()-start < join_request_timeout and running):  
+        while(time.time()-start < join_request_timeout and running):
+            DISPLAYSURF.blit(popup, (0,0))  
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[0][1]), (610, 325), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 100)
+            pygame.display.flip()
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.leave_game()
@@ -264,6 +265,7 @@ class GameView:
         return
 
     def action_request_popup(self):
+        global game
         print("IM IN THE ACTION REQUEST POPUP")
         OLDSURF = DISPLAYSURF.copy()
         popupSurf = pygame.Surface((200,200))
@@ -276,28 +278,29 @@ class GameView:
         surf, tpos = ptext.draw("Press y to accept and n to reject", (x+5,y+5+surf.get_height()+2), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
         pygame.display.flip()
 
-        join_request_timeout = 60
+        join_request_timeout = 40
         start = time.time()
         running = True
+        print(shared_var.MESSAGE_CONTENT)
         while(time.time()-start < join_request_timeout and running):  
             for event in pygame.event.get():
                 if event.type == QUIT:
                     self.leave_game()
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
-                        # send the request yes
-                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
-                        # shared_var.MESSAGE_CONTENT.append(game)
-                        async_send(['accept_join', shared_var.MESSAGE_CONTENT])
+                        gameObj = client.get_game_from_room_number(game.get_uniqueID())
+                        game = jsonpickle.decode(gameObj[0][0])
+                        game.append_transcript("player {} did an action".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
                     elif event.key == K_n:
                         # send the request no
-                        async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+                        game.append_transcript("player {} action rejected".format(shared_var.MESSAGE_CONTENT[0][1]))
                         running = False
-        if running:
-            # send the request no
-            async_send(['reject_join', shared_var.MESSAGE_CONTENT])
+        
         DISPLAYSURF.blit(OLDSURF, (0,0))
+        # whether timed out or the GM responded, send the GM's game to everyone
+        self.blit_entire_map()
+        self.send_update_to_all()
         pygame.display.flip()
         return
 
@@ -339,7 +342,7 @@ class GameView:
         self.clear_bottom_info()
         self.display_message(display_string, "*")
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
+        add_texture_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -370,17 +373,16 @@ class GameView:
                             self.clear_bottom_info()
                             return
                     elif event.key == K_RETURN:
-                        text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = add_texture_box.text.rstrip()
                         if text in self.images:
                             self.clear_bottom_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
                             selected_image = text
-                text = chat_input_box.handle_event(event)
+                add_texture_box.handle_event(event)
             if blit_input:
-                chat_input_box.wipe()
-                chat_input_box.draw()
+                add_texture_box.wipe()
+                add_texture_box.draw()
             pygame.display.flip()            
 
         return
@@ -437,13 +439,13 @@ class GameView:
                     mousepos = (mousepos[0]-MAPOFFSET[0],mousepos[1]-MAPOFFSET[1])
                     x, y = GAMEVIEW.which_tile(mousepos)
                     if len(selected_type)>0 and x != -1 and y != -1 and self.which_entity(x,y) is None:
-                        entity = RULE_ENACTOR.add_new_entity(selected_type, selected_name, x, y)
+                        entity = game.ruleset_copy.add_new_entity(selected_type, selected_name, x, y)
                         if GAMEVIEW.check_entity_fit(entity.size.get_width(), entity.size.get_height(), x, y, entity):
                             entity.set_image_filename(selected_image_filename)
                             texture_image = pygame.transform.scale(self.images[entity.get_image_filename()], (entity.size.get_width()*game.map.tilesize,entity.size.get_height()*game.map.tilesize))
                             DISPLAYSURF.blit(texture_image, GAMEVIEW.offset_blit(entity.y*game.map.tilesize, entity.x*game.map.tilesize))
                         else:
-                            RULE_ENACTOR.remove_entity(entity)
+                            game.ruleset_copy.remove_entity(entity)
                         selected_name = ""
                         selected_type = ""
                         selected_image_filename = ""
@@ -535,16 +537,16 @@ class GameView:
                                 type_of_attr = saved_entity.get_attribute(modifying_attr).get_attribute_type()
                                 if type_of_attr == bool:
                                     if new_value.lower() == "true":
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, True)
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, True)
                                     elif new_value.lower() == "false":
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, False)
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, False)
                                 elif type_of_attr == float:
                                     try:
-                                        RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, float(new_value))
+                                        game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, float(new_value))
                                     except Exception as e:
                                         pass
                                 elif type_of_attr == str:
-                                    RULE_ENACTOR.modify_attribute(saved_entity, modifying_attr, new_value)
+                                    game.ruleset_copy.modify_attribute(saved_entity, modifying_attr, new_value)
                             self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                         saved_entity = None
                         input_name.text = ""
@@ -596,7 +598,7 @@ class GameView:
                             return
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
-                            RULE_ENACTOR.remove_entity(saved_entity)
+                            game.ruleset_copy.remove_entity(saved_entity)
                             if (saved_entity.x,saved_entity.y) in game.map.textures:
                                 self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
                             else:
@@ -613,7 +615,7 @@ class GameView:
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 300, 32, DISPLAYSURF)
+        add_asset_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 300, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -623,14 +625,13 @@ class GameView:
                     self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if event.button == 3:
-                        chat_input_box.text = clipboard.paste()
+                        add_asset_box.text = clipboard.paste()
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
                         return
                     elif event.key == K_RETURN:
-                        text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = add_asset_box.text.rstrip()
                         if os.path.isfile(text):
                             if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_bottom_info()
@@ -648,14 +649,17 @@ class GameView:
                                     photo = f.read()
                                 encoded_image = base64.b64encode(photo)
                                 client.add_asset(client.user.get_username(), filename, encoded_image)
+                                game.add_asset(filename)
+                                # send request to everyone to grab this asset
+                                async_send(["asset_added",[client_id, filename]])
                                 self.clear_bottom_info()
                                 self.display_message("_FILE ADDED_\n"+general_message)
                         else: 
                             self.clear_bottom_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
-                text = chat_input_box.handle_event(event)
-            chat_input_box.wipe()
-            chat_input_box.draw()
+                add_asset_box.handle_event(event)
+            add_asset_box.wipe()
+            add_asset_box.draw()
             pygame.display.flip()  
 
         return
@@ -692,7 +696,7 @@ class GameView:
                         if len(d_roll.text)>0:
                             pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
                             d_string = number_of.text + "d" + d_roll.text
-                            result = RULE_ENACTOR.roll_dice(d_string)
+                            result = game.ruleset_copy.roll_dice(d_string)
                             if result is None:
                                 result = "ERROR: IMPROPER ENTRY"
                             surf, tpos = ptext.draw(d_string +" = "+ str(result), (MAPOFFSET[0] + 10, game.map.tilesize*game.map.height + surf.get_height() + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
@@ -716,21 +720,19 @@ class GameView:
         pygame.draw.rect(DISPLAYSURF, COLOR_BLACK, myrect, 0)
         return
 
-    def GM_help_screen(self):
+    def help_screen(self, status):
         self.clear_bottom_info()
         # blit hotkey information
-        info = "_GM HOTKEYS:_\n"
-        for key, pair in GM_HOTKEYS.items():
+        if status:
+            info = "_GM HOTKEYS:_\n"
+            hotkeys = GM_HOTKEYS
+        else:
+            info = "_PLAYER HOTKEYS:_\n"
+            hotkeys = PLAYER_HOTKEYS
+        
+        for key, pair in hotkeys.items():
             info += key + ": " + pair["name"] + "\n"
-        self.display_message(info)
-        return
 
-    def PLAYER_help_screen(self):
-        self.clear_bottom_info()
-        # blit hotkey information
-        info = "_PLAYER HOTKEYS:_\n"
-        for key, pair in PLAYER_HOTKEYS.items():
-            info += key + ": " + pair["name"] + "\n"
         self.display_message(info)
         return
 
@@ -783,7 +785,7 @@ class InputBox:
         self.screen = screen
         self.client = client
 
-    def handle_event(self, event, transcript=""):
+    def handle_event(self, event, chatting=False):
         if event.type == MOUSEBUTTONDOWN:
             # If the user clicked on the chat_input_box rect.
             if self.rect.collidepoint(event.pos):
@@ -796,11 +798,11 @@ class InputBox:
         if event.type == KEYDOWN:
             if self.active:
                 if event.key == K_RETURN:
-                    # append to the transcript view
                     if len(self.text) > 0:
-                        if self.client is not None:
-                            transcript += self.client.user.get_username() + ": "
-                        transcript += str(self.text) + "\n"
+                        if chatting:
+                            my_message = self.client.user.get_username() + ": " + str(self.text)
+                            game.append_transcript(my_message)
+                            async_send(['chat', [client_id, my_message]])
                         self.text = ""
                         self.remove_old_block()
                 elif event.key == K_BACKSPACE:
@@ -811,7 +813,7 @@ class InputBox:
                 else:
                     self.text += event.unicode
 
-        return transcript
+        return
 
     def remove_old_block(self):
         self.rect.h += 5
@@ -912,10 +914,13 @@ class Transcript:
         # if not down:
             while (tmp_surface.get_height() < self.rect.h):
                 # add to top of string last part of whole transcript before it
-                beforehand = self.transcript.split(self.transcript_in_view,1)[0]
-                first_line = beforehand.split("\n")[-2]
-                self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
-                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
+                try:
+                    beforehand = self.transcript.split(self.transcript_in_view,1)[0]
+                    first_line = beforehand.split("\n")[-2]
+                    self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
+                    tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
+                except Exception as e:
+                    break
         while (tmp_surface.get_height() > self.rect.h):
             self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
@@ -923,7 +928,6 @@ class Transcript:
 # ------------------------------------------------------------------------------------------------------------
 # GLOBAL VAR
 game = Game()
-RULE_ENACTOR = RuleEnactor()
 GAMEVIEW = GameView()
 pygame.init()
 # GENERAL COLORS AND ITEMS
@@ -931,7 +935,10 @@ RESOLUTION_SCALING = 1600
 if platform.system() == "Darwin":
     res = subprocess.check_output(["system_profiler","SPDisplaysDataType"])
     res_val = str(res).split("Resolution")[1].split("\\n")[0].split("x")[1].split()[0]
-    FONTSIZE = int(30*int(res_val)/RESOLUTION_SCALING)
+    res_val = int(res_val)
+    if res_val < 800: 
+        res_val = 800 #added for other computers being too small in res
+    FONTSIZE = int(30*res_val/RESOLUTION_SCALING)
 elif platform.system() == "Windows":
     FONTSIZE = int(30*pyautogui.size()[1]/RESOLUTION_SCALING)
 FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
@@ -961,7 +968,6 @@ FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 # -----------------------------------------------------------------------------------------------------------------------
 
 def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
-    global RULE_ENACTOR
     global game
     global GM_STATUS
     global client
@@ -975,11 +981,10 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     GAMEVIEW.load_pictures_from_database()
     
     if validatorObj is not None:
-        RULE_ENACTOR.parse_validator(validatorObj)
-        game.set_ruleset_copy(RULE_ENACTOR)
+        game.ruleset_copy = RuleEnactor()
+        game.ruleset_copy.parse_validator(validatorObj)
+        game.set_ruleset_copy(game.ruleset_copy)
         client.update_game(int(game.get_uniqueID()), jsonpickle.encode(game))
-    else:
-        RULE_ENACTOR = game.get_ruleset_copy()
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
@@ -987,11 +992,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     ptext.draw("Game Name: {}".format(game.name), (5, 35), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
     GAMEVIEW.blit_entire_map()
-
-    if GM_STATUS:
-        GAMEVIEW.GM_help_screen()
-    else:
-        GAMEVIEW.PLAYER_help_screen()
+    GAMEVIEW.help_screen(GM_STATUS)
 
     my_entity = None
     chat_input_box = InputBox(MAPOFFSET[0]+game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-200, 200, 32, DISPLAYSURF, client = client)
@@ -1001,24 +1002,27 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     global TYPES_OF_ENTITIES
     TYPES_OF_ENTITIES = []
-    for entity_type in RULE_ENACTOR.entity_types:
+    for entity_type in game.ruleset_copy.entity_types:
         TYPES_OF_ENTITIES.append(entity_type.get_type())
     global CONCRETE_TYPES_OF_ENTITIES
     CONCRETE_TYPES_OF_ENTITIES = []
-    for entity_type in RULE_ENACTOR.concrete_entity_types:
+    for entity_type in game.ruleset_copy.concrete_entity_types:
         CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
+
+    print(TYPES_OF_ENTITIES)
+    print(CONCRETE_TYPES_OF_ENTITIES)
 
     RUNNING = True
     while RUNNING:   
         if GM_STATUS:
             GAMEVIEW.update_fog_GM() 
         if shared_var.JOIN_REQUEST_FLAG:
-            print("in the main trying to do the join loop")
+            print("JOIN REQUEST FLAG")
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.join_request_popup()
             shared_var.JOIN_REQUEST_FLAG = False
         if shared_var.ACTION_REQUEST_FLAG:
-            print("in the main trying to do the action loop")
+            print("ACTION REQUEST FLAG")
             print(shared_var.MESSAGE_CONTENT)
             GAMEVIEW.action_request_popup()
             shared_var.ACTION_REQUEST_FLAG = False
@@ -1027,12 +1031,26 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             GAMEVIEW.gm_leaves_room_popup()
             shared_var.GM_LEAVES_FLAG = False
             return
+        if shared_var.ASSET_ADDED_FLAG:
+            print("GM ADDED AN ASSEET")
+            GAMEVIEW.load_pictures_from_database(shared_var.MESSAGE_CONTENT)
+            shared_var.ASSET_ADDED_FLAG = False
         if shared_var.UPDATE_GAME_FLAG:
+            print("GM UPDATED THE GAME, GETTING GAME")
             gameObj = client.get_game_from_room_number(game.get_uniqueID())
             game = jsonpickle.decode(gameObj[0][0])
+            print(game.ruleset_copy.all_created_entities)
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
+        if shared_var.CHAT_FLAG:
+            for chat in shared_var.CHAT_CONTENT:
+                print("chat from CHAT_CONTENT: {}".format(chat))
+                game.append_transcript(chat)
+            shared_var.CHAT_CONTENT = []
+            shared_var.CHAT_FLAG = False
+
+        # start the loop that handles the events
         for event in pygame.event.get():
             if event.type == QUIT:
                 GAMEVIEW.leave_game()
@@ -1049,19 +1067,22 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             action_requested = "Move"
                         else:
                             action_requested = my_entity.get_actions()[option_selected-1]
-                            result = RULE_ENACTOR.perform_action(action_requested, my_entity)
+                            result = game.ruleset_copy.perform_action(action_requested, my_entity)
+                            print(TYPES_OF_ENTITIES)
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
-                                result = RULE_ENACTOR.perform_action_given_target(action_requested, my_entity, item)
-                            GAMEVIEW.clear_bottom_info()
-                            GAMEVIEW.GM_help_screen()
+                                result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
+                            game.append_transcript(result)
+                            GAMEVIEW.help_screen(GM_STATUS)
                             my_entity = None
                             print(result)
                             if GM_STATUS:
-                                self.send_update_to_all()
+                                GAMEVIEW.send_update_to_all()
                             else:
-                                # TODO PASS INFORMATION TO GM AND APPEND TO TRANSCRIPT
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
+                                # TODO APPEND TO TRANSCRIPT
+                                client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                                async_send(["request_action", [client_id, game.get_uniqueID(), result]])    
                         print(action_requested)
                     else:
                         my_entity = None
@@ -1077,15 +1098,22 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                                     GAMEVIEW.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
-
-                        my_entity = RULE_ENACTOR.move_entity(my_entity, (x,y))
+                        
+                        result = client.user.get_username() + " moved " + my_entity.get_name() + " from " + str((my_entity.x, my_entity.y)) 
+                        my_entity = game.ruleset_copy.move_entity(my_entity, (x,y))
+                        result += " to " + str((my_entity.x, my_entity.y)) 
+                        game.append_transcript(result)
                         # blit entity to it
                         my_entity_image = pygame.transform.scale(GAMEVIEW.images[my_entity.get_image_filename()], (my_entity.size.get_width()*game.map.tilesize,my_entity.size.get_height()*game.map.tilesize))
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
+                        
                         if GM_STATUS:
-                            self.send_update_to_all()
+                            GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
+                            # TODO APPEND TO TRANSCRIPT
+                            client.update_game(game.get_uniqueID(), jsonpickle.encode(game))
+                            async_send(["request_action", [client_id, game.get_uniqueID(), result]]) 
                     # wipe signals
                     action_requested = ""
                     my_entity = None
@@ -1113,16 +1141,17 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         pygame.display.flip()
                     print(GM_HOTKEYS[event.unicode]["name"])
                     GM_HOTKEYS[event.unicode]["function"]()
-                    GAMEVIEW.GM_help_screen()
-                    GAMEVIEW.send_update_to_all()
+                    GAMEVIEW.help_screen(GM_STATUS)
+                    if GM_HOTKEYS[event.unicode]["name"] != "Add Asset":
+                        GAMEVIEW.send_update_to_all()
                 elif not GM_STATUS and event.unicode in PLAYER_HOTKEYS and not chat_input_box.active:
                     print(PLAYER_HOTKEYS[event.unicode]["name"])
                     PLAYER_HOTKEYS[event.unicode]["function"]()
-                    GAMEVIEW.PLAYER_help_screen()
+                    GAMEVIEW.help_screen(GM_STATUS)
             # input box handling + transcript update
-            transcript = chat_input_box.handle_event(event, history.transcript)
+            chat_input_box.handle_event(event,True)
             history.handle_event(event)
-            history.update(transcript)
+            history.update(game.transcript)
             # transcript = chat_input_box.handle_event(event, transcript)
 
         # chat commands
@@ -1170,9 +1199,9 @@ if __name__ == "__main__":
     template.add_action(fireball_action)
             
     validator.add_entity(template)
-    RULE_ENACTOR.parse_validator(validator)
+    game.ruleset_copy.parse_validator(validator)
 
-    entity = RULE_ENACTOR.add_new_entity("entity", "Andrew", 3, 7)
+    entity = game.ruleset_copy.add_new_entity("entity", "Andrew", 3, 7)
     entity.set_image_filename("default-image.png")
     ###### Rule Validation TEST END #######
 

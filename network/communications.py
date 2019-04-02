@@ -277,24 +277,39 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("{} ({})".format(client_id, type(client_id)))
                 message = command_body[1]
                 print("message: {}".format(message))
-                room = client_dict[rev_client_dict[client_id]][2]
-                print("room {}".format(room))
+                room_id = self.get_room_id_from_client_id(client_id)
+                print("room {}".format(room_id))
                 pickled_message = double_pickle(['chat', message])
-                self.broadcast(pickled_message, room)
+                self.broadcast(pickled_message, room_id, client_id)
             elif command_type == 'request_action':
-                print("player {} has requested action {}".format(command_body[0], command_body[1]))
-                rooms[client_dict[self.conn][2]][0].send(recievedData)
+                client_id = command_body[0]
+                requested_action = command_body[2]
+                connection = self.get_conn_from_client_id(client_id)
+                username = client_dict[connection][1]
+                room_id = self.get_room_id_from_client_id(client_id)
+                print("player {} ({}) has requested action {}\nforwarding to GM for room {}".format(username, client_id, requested_action, room_id))
+                rooms[room_id][0].send(recievedData)
             elif command_type == 'update_game':
                 # room = command_body[1].get_uniqueID()
                 client_id = command_body[0]
                 room = command_body[1]
-                connection = rev_client_dict[client_id]            
+                connection = rev_client_dict[client_id]      
                 if rooms[room][0] == connection:
                     print("GM has updated the game")
                     # pickled_message = double_pickle(['update_game', message])
-                    self.broadcast(recievedData, room)
+                    self.broadcast(recievedData, room, client_id)
                 else:
                     print("a non-GM player tried to update the game")
+            elif command_type == 'asset_added':
+                client_id = command_body[0]
+                room_id = self.get_room_id_from_client_id(client_id)
+                connection = rev_client_dict[client_id]
+                if rooms[room_id][0] == connection:
+                    print("GM added an asset, broadcasting notice to others")                          
+                    self.broadcast(recievedData, room_id, client_id)
+                else:
+                    print("a non-GM player said they added an asset")
+
             # elif command_type == 'action_approved':
             #     print("@TODO action_approved, broadcast game object")
             # elif command_type == 'action_rejected':
@@ -348,16 +363,29 @@ class DataReadServer(asyncore.dispatcher_with_send):
         
     def send_to_GM(self, message, room):
         pass
-    def broadcast(self, pickled_message, room):
+    def broadcast(self, pickled_message, room, client_id):
         print("broadcasting")
         for client in rooms[room][2]:
-            print("trying to send to client_id: {}".format(client))     
+            print("trying to send to client_id: {}".format(client))
             connection = rev_client_dict[client]
-            if rooms[room][0] != connection:
+            if client != client_id:
                 print("sending to someone else")
                 connection.send(pickled_message)
             else:
                 print("not sending back to self")
+
+            # if chatting:
+            #     if client != client_num:
+            #         print("sending to someone else")
+            #         connection.send(pickled_message)
+            #     else:
+            #         print("not sending back to self")
+            # else:
+            #     if rooms[room][0] != connection:
+            #         print("sending to someone else")
+            #         connection.send(pickled_message)
+            #     else:
+            #         print("not sending back to self")
 
 
 

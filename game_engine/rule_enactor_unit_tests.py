@@ -53,11 +53,11 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.move_entity(self.actor, (1, 1))
 		self.assertEqual(self.actor.x, 1)
 		self.assertEqual(self.actor.y, 1)
-		self.assertTrue((1,1) in self.enactor.all_created_entities)
+		self.assertTrue(str((1,1)) in self.enactor.all_created_entities)
 		self.enactor.move_entity(self.actor, (0, 0))
 		self.assertEqual(self.actor.x, 0)
 		self.assertEqual(self.actor.y, 0)
-		self.assertTrue((0,0) in self.enactor.all_created_entities)
+		self.assertTrue(str((0,0)) in self.enactor.all_created_entities)
 		
 	def test_target(self):
 		rule = "target guy\n"
@@ -470,6 +470,24 @@ class TestRuleInterpreter(unittest.TestCase):
 		
 		self.assertTrue(child.is_of_type("kid"))
 		self.assertTrue(child.is_of_type("parent"))
+		
+	def test_validation_method(self):
+		validator = _Validator()
+		isTemplate = False
+		hp_time = Attribute("HP", 10)
+		ac_time = Attribute("AC", 5)
+		template = Entity("", "entity", 1, 1, isTemplate, None)
+		template.add_attribute(hp_time)
+		template.add_attribute(ac_time)
+		
+		validator.add_entity(template)
+		isCorrect = True
+		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n", template)
+		isCorrect &= self.enactor.validate_rule(validator, "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n", template)
+		self.assertTrue(isCorrect)
+		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nrol ta.HP by 1d8\n", template)
+		isCorrect &= self.enactor.validate_rule(validator, "YYYYYYYEEEEEEEEEEEEEEEETTTTTTTTTTTTTTT", template)
+		self.assertTrue(not isCorrect)
 		
 	def Bianca_test_case(self):
 		enactor = rule_enactor.RuleEnactor()

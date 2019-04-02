@@ -30,5 +30,9 @@ class Relationship:
     def get_interrupt_line(self):
         return self._interruptLine
         
+    def get_action_and_entity_interrupted(self):
+        entity_dot_actionname = self.get_interrupt_line().split()[1]
+        return entity_dot_actionname.split('.')
+        
     def get_interrupt_behaviour(self):
         return self._interruptBehaviour
