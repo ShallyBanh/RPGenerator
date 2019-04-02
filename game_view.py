@@ -277,7 +277,7 @@ class GameView:
         while(time.time()-start < join_request_timeout and running): 
             DISPLAYSURF.blit(popup, (0,0))  
             ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[2]), (600, 300), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
-            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[3]), (600, 375), sysfontname="arial", color=COLOR_WHITE, fontsize=24, width = 250)
+            ptext.draw("{}".format(shared_var.MESSAGE_CONTENT[3]), (505, 365), sysfontname="arial", color=COLOR_WHITE, fontsize=20, width = 300)
             pygame.display.flip() 
             for event in pygame.event.get():
                 if event.type == QUIT:
