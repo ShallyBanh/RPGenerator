@@ -286,7 +286,7 @@ class GameView:
                     if event.key == K_y:
                         gameObj = client.get_game_from_room_number(game.get_uniqueID())
                         game = jsonpickle.decode(gameObj[0][0])
-                        game.append_transcript("player {} did an action: {}".format(shared_var.MESSAGE_CONTENT[3]))
+                        game.append_transcript("player {} did an action: {}".format(shared_var.MESSAGE_CONTENT[2], shared_var.MESSAGE_CONTENT[3]))
                         running = False
                     elif event.key == K_n:
                         # send the request no
