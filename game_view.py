@@ -1010,7 +1010,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     RUNNING = True
     while RUNNING:   
-        if GM_STATUS:
+        if GM_STATUS and my_entity is None:
             GAMEVIEW.update_fog_GM() 
         if shared_var.JOIN_REQUEST_FLAG:
             print("JOIN REQUEST FLAG")
