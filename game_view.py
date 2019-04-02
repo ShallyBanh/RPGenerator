@@ -1041,6 +1041,12 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             shared_var.UPDATE_GAME_FLAG = False
             GAMEVIEW.blit_entire_map()
             pygame.display.flip()
+        if shared_var.CHAT_FLAG:
+            for chat in shared_var.CHAT_CONTENT:
+                print("chat from CHAT_CONTENT: {}".format(chat))
+                game.append_transcript(chat)
+            shared_var.CHAT_CONTENT = []
+            shared_var.CHAT_FLAG = False
 
         # start the loop that handles the events
         for event in pygame.event.get():

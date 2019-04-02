@@ -277,10 +277,10 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 print("{} ({})".format(client_id, type(client_id)))
                 message = command_body[1]
                 print("message: {}".format(message))
-                room = client_dict[rev_client_dict[client_id]][2]
+                room_id = self.get_room_id_from_client_id(client_id)
                 print("room {}".format(room))
                 pickled_message = double_pickle(['chat', message])
-                self.broadcast(pickled_message, room)
+                self.broadcast(pickled_message, room_id)
             elif command_type == 'request_action':
                 client_id = command_body[0]
                 requested_action = command_body[2]

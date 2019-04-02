@@ -152,6 +152,8 @@ def async_receive():
     global game
     global PLAYER_JOIN_FLAG
     global PLAYER_REJECTED_FLAG
+    global CHAT_FLAG
+    global CHAT_CONTENT
     while True:
         ins, outs, ex = select.select([general_async_connection], [], [], 0)
         # ins, outs, ex = select.select([general_async_connection, voice_async_connection], [], [], 0)
@@ -241,6 +243,8 @@ def async_receive():
                 # elif message_type == 'action_reject':
                 #     print("action rejected, restore previous/apply sent version")
                 elif message_type == 'chat':
+                    shared_var.CHAT_CONTENT.append(message_content[1])
+                    shared_var.CHAT_FLAG = True
                     async_transcript += "\n" + message_content
                     print("chat message received! transcript is now: \n{}".format(async_transcript))
                     # playerid = message_content
