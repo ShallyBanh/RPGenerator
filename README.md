@@ -72,6 +72,13 @@ python3 play_game.py
 python3 play_game.py 204.209.76.191
 ```
 
+## RUNNING THE TEST SUITE
+In order to run our test suite. Run
+```
+./testsuite.sh
+```
+from the root of the directory
+
 ## WRITING RULES
 Rules are written in Actions and in Relationships. They determine the actions that are able to be taken by Entities, and how they interact.
 Every statement is ended by a new line. Indentation is ignored.
