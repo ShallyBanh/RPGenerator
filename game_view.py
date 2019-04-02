@@ -1029,7 +1029,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
             return
         if shared_var.ASSET_ADDED_FLAG:
             print("GM ADDED AN ASSEET")
-            GAMEVIEW.load_pictures_from_database(asset, shared_var.MESSAGE_CONTENT)
+            GAMEVIEW.load_pictures_from_database(shared_var.MESSAGE_CONTENT)
             shared_var.ASSET_ADDED_FLAG = False
         if shared_var.UPDATE_GAME_FLAG:
             print("GM UPDATED THE GAME, GETTING GAME")
