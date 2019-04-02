@@ -106,7 +106,7 @@ class GameView:
             DISPLAYSURF.blit(textSurf[i], self.offset_blit(x+2,y+(height*i)))
 
         # entity information to display on the left
-        ptext.draw(str(entity), (5, 5), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
+        ptext.draw(str(entity), (5, 100), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
         return (popupSurf.get_width(), popupSurf.get_height()), (x,y)
 
@@ -678,7 +678,7 @@ class GameView:
         surf, tpos = ptext.draw("d", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
         buf = tpos[0] + surf.get_width() + 10
         d_roll = InputBox(buf, game.map.tilesize*game.map.height, 50, 32, DISPLAYSURF)
-        ptext.draw("Max die: 100. Max sides: 120. Press ESC to exit this mode.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+        ptext.draw("Max die: 100. Max sides: 120. Press ESC to exit this mode.", (buf + 60, game.map.tilesize*game.map.height + 10), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width=game.map.width*game.map.tilesize*0.5)
         myrect = pygame.Rect(MAPOFFSET[0], game.map.tilesize*game.map.height + surf.get_height() + 10, game.map.width*game.map.tilesize, DISPLAYSURF.get_height()-(game.map.tilesize*game.map.height))
 
         RUNNING = True
@@ -988,7 +988,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
 
     # # START TO DISPLAY MAP
     DISPLAYSURF.fill(COLOR_BLACK)
-    ptext.draw("GameId: {}".format(game.uniqueID), (1200, 730), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    ptext.draw("Game Id: {}".format(game.uniqueID), (5, 0), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE)
+    ptext.draw("Game Name: {}".format(game.name), (5, 35), sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = 200)
 
     GAMEVIEW.blit_entire_map()
     GAMEVIEW.help_screen(GM_STATUS)

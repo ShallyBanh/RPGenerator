@@ -13,17 +13,17 @@ from entity_creation_view import EntityCreationView
 
 class AttributeActionCreationView:
     def __init__(self, currentEntityType, fontsize):
-        self._submitButtonImg = pygame.image.load('img/submit.png')
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
+        self._submitButtonImg = pygame.image.load('images/buttons/submit.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
         self._playing = True
         self._invalidSubmission = False
         self._action_view = False
         self._attribute_view = False
         self._currentEntityType = currentEntityType
         self._fontsize = fontsize
-        self._editButtonImage = pygame.image.load('img/editButtonSmall.png')
-        self._editButtonImageLarge = pygame.image.load('img/editButton.png')
+        self._editButtonImage = pygame.image.load('images/buttons/editButtonSmall.png')
+        self._editButtonImageLarge = pygame.image.load('images/buttons/editButton.png')
         self._editActionList = []
         self._editAttributeList = []
 
@@ -92,7 +92,7 @@ class AttributeActionCreationView:
                     if x in range(10,40) and y in range(10,40):
                         self._playing = False
                         return None, None, None
-                    if x in range(70,200) and y in range(600,650):
+                    if x in range(57,240) and y in range(640,690):
                         entityTuple = EntityCreationView(self._fontsize).main(currentEntity)
                         if entityTuple[0] is not None:
                             Validator().update_entity(entityIdx, entityTuple[0], entityTuple[1], entityTuple[2], entityTuple[3], entityTuple[4])
@@ -136,23 +136,25 @@ class AttributeActionCreationView:
                 ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=35)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
+            self._editActionList = []
             actionStr = ""
             for actionIdx in range(len(actionNames)):
                 actionStr += actionNames[actionIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 425 + actionIdx * 39))
                 self._editActionList.append((1000, 425 + actionIdx * 39))
-            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=30)
 
+            self._editAttributeList = []
             attributeStr = ""
             for attrIdx in range(len(attributes)):
                 attributeStr += attributes[attrIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 65 + attrIdx * 39))
                 self._editAttributeList.append((1000, 65 + attrIdx * 39))
-            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=30)
 
             if entity != -1:
                 ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=20)
-                screen.blit(self._editButtonImageLarge,(70, 600))
+                screen.blit(self._editButtonImageLarge,(57, 640))
 
             pygame.display.flip()
 

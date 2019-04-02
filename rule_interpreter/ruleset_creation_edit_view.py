@@ -19,13 +19,13 @@ import jsonpickle
 
 class RulesetCreationEditView:
     def __init__(self, username, client, fontsize):
-        self._arrowImg = pygame.image.load('img/arrow.png')
-        self._plusImage = pygame.image.load('img/plussign.png')
+        self._arrowImg = pygame.image.load('images/buttons/arrow.png')
+        self._plusImage = pygame.image.load('images/buttons/plussign.png')
         self._moreButtonList = []
         self._moreButtonRelationshipList = []
         self._database = Database("database.db")
-        self._moreImage = pygame.image.load('img/moreButton.png')
-        self._saveButtonImage = pygame.image.load('img/saveButton.png')
+        self._moreImage = pygame.image.load('images/buttons/moreButton.png')
+        self._saveButtonImage = pygame.image.load('images/buttons/saveButton.png')
         self._currentlySelected = False
         self._newRuleset = False
         self._entity_view = False
@@ -76,7 +76,7 @@ class RulesetCreationEditView:
         relationshipIdx = -1
 
         if self._newRuleset == False:
-            titleargs = ptext.draw("{}".format(rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+            titleargs = ptext.draw("{}".format(rulesetName), midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
         while self._playing:
             screen.fill((0, 50, 50))
@@ -146,6 +146,14 @@ class RulesetCreationEditView:
                         if self._newRuleset == False:
                             serializedValidator = jsonpickle.encode(Validator())
                             self._client.update_ruleset(self._username, self._rulesetName, serializedValidator)
+                        else:
+                            if self._rulesetName == "":
+                                self._invalidSubmission = True
+                            else:
+                                self._client.create_ruleset(self._username, self._rulesetName, serializedValidator)
+                                self._newRuleset = False
+                                if len(buttonrects) > 1:
+                                    buttonrects.pop()
                         return
                     if x in range(565, 600) and y in range(135, 175):
                         self._entity_view = True
@@ -165,19 +173,19 @@ class RulesetCreationEditView:
                                 if len(buttonrects) > 1:
                                     buttonrects.pop()
                                 
-                        titleargs = ptext.draw("{}".format(self._rulesetName), midtop=(sx/2, 10), owidth=1.2, color = "0x884400", gcolor="0x442200", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
+                        titleargs = ptext.draw("{}".format(self._rulesetName), midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
 
                     for moreIdx in range(len(self._moreButtonList)):
                         x1 = int(self._moreButtonList[moreIdx][0])
                         y1 = int(self._moreButtonList[moreIdx][1])
-                        if x in range(x1, x1 + 60) and y in range(y1, y1+30):
+                        if x in range(x1, x1 + 180) and y in range(y1, y1+30):
                             self._attribute_action_view = True
                             currentEntityName = self._entities[moreIdx]
                     
                     for moreIdx in range(len(self._moreButtonRelationshipList)):
                         x1 = int(self._moreButtonRelationshipList[moreIdx][0])
                         y1 = int(self._moreButtonRelationshipList[moreIdx][1])
-                        if x in range(x1, x1 + 60) and y in range(y1, y1+30):
+                        if x in range(x1, x1 + 180) and y in range(y1, y1+30):
                             self._relationship_view = True
                             relationshipIdx = moreIdx
                             currentRelationshipRule = Validator().get_relationships()[moreIdx].get_rule_content()
@@ -197,8 +205,8 @@ class RulesetCreationEditView:
             self._moreButtonList = []
             for entityIdx in range(len(self._entities)):
                 entites_str += self._entities[entityIdx] + "\n"
-                screen.blit(self._moreImage,(465, 210 + entityIdx * 30 + entityIdx*0.1*100))
-                self._moreButtonList.append((465, 210 + entityIdx * 30 + entityIdx*0.1*100))
+                screen.blit(self._moreImage,(420, 205 + entityIdx * 30 + entityIdx*0.12*100))
+                self._moreButtonList.append((420, 205 + entityIdx * 30 + entityIdx*0.12*100))
             ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=35)
 
 
