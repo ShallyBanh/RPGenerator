@@ -136,19 +136,21 @@ class AttributeActionCreationView:
                 ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=35)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
 
+            self._editActionList = []
             actionStr = ""
             for actionIdx in range(len(actionNames)):
                 actionStr += actionNames[actionIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 425 + actionIdx * 39))
                 self._editActionList.append((1000, 425 + actionIdx * 39))
-            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=30)
 
+            self._editAttributeList = []
             attributeStr = ""
             for attrIdx in range(len(attributes)):
                 attributeStr += attributes[attrIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 65 + attrIdx * 39))
                 self._editAttributeList.append((1000, 65 + attrIdx * 39))
-            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=30)
 
             if entity != -1:
                 ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=20)
