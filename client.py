@@ -132,8 +132,9 @@ class Client():
         if response.status_code == 200:
             data = json.loads(response.text)
             print("appending the asset name to return value in get_asset")
-            asset_with_name = [asset_name, data['assets']]
+            asset_with_name = (asset_name, data['assets'][0])
             print("returning asset with name {}".format(asset_with_name[0]))
+            print("returning asset {}".format(asset_with_name[1]))
             return asset_with_name
         else:
             print("status was not 200")
