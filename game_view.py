@@ -342,7 +342,7 @@ class GameView:
         self.clear_bottom_info()
         self.display_message(display_string, "*")
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
+        add_texture_box = InputBox(MAPOFFSET[0] + 200, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -373,17 +373,16 @@ class GameView:
                             self.clear_bottom_info()
                             return
                     elif event.key == K_RETURN:
-                        text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = add_texture_box.text.rstrip()
                         if text in self.images:
                             self.clear_bottom_info()
                             blit_input = False
                             self.display_message("Please select tile you would like to place this texture")
                             selected_image = text
-                text = chat_input_box.handle_event(event)
+                add_texture_box.handle_event(event)
             if blit_input:
-                chat_input_box.wipe()
-                chat_input_box.draw()
+                add_texture_box.wipe()
+                add_texture_box.draw()
             pygame.display.flip()            
 
         return
@@ -616,7 +615,7 @@ class GameView:
         if not os.path.exists("./tmp/"):
             os.makedirs('./tmp')
 
-        chat_input_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 300, 32, DISPLAYSURF)
+        add_asset_box = InputBox(MAPOFFSET[0] + 300, game.map.tilesize*game.map.height, game.map.tilesize*game.map.width - 300, 32, DISPLAYSURF)
 
         RUNNING = True
         text = ""
@@ -626,14 +625,13 @@ class GameView:
                     self.leave_game()
                 elif event.type == MOUSEBUTTONDOWN:
                     if event.button == 3:
-                        chat_input_box.text = clipboard.paste()
+                        add_asset_box.text = clipboard.paste()
                 elif event.type == KEYDOWN:   
                     if event.key == K_ESCAPE:
                         self.clear_bottom_info()
                         return
                     elif event.key == K_RETURN:
-                        text = chat_input_box.handle_event(event)
-                        text = text.rstrip()
+                        text = add_asset_box.text.rstrip()
                         if os.path.isfile(text):
                             if text.split(".")[-1] not in ["png", "jpg", "jpeg"]:
                                 self.clear_bottom_info()
@@ -659,9 +657,9 @@ class GameView:
                         else: 
                             self.clear_bottom_info()
                             self.display_message("_FILE DOES NOT EXIST_\n"+general_message)
-                text = chat_input_box.handle_event(event)
-            chat_input_box.wipe()
-            chat_input_box.draw()
+                add_asset_box.handle_event(event)
+            add_asset_box.wipe()
+            add_asset_box.draw()
             pygame.display.flip()  
 
         return
@@ -787,7 +785,7 @@ class InputBox:
         self.screen = screen
         self.client = client
 
-    def handle_event(self, event, transcript=""):
+    def handle_event(self, event, chatting=False):
         if event.type == MOUSEBUTTONDOWN:
             # If the user clicked on the chat_input_box rect.
             if self.rect.collidepoint(event.pos):
@@ -800,11 +798,11 @@ class InputBox:
         if event.type == KEYDOWN:
             if self.active:
                 if event.key == K_RETURN:
-                    # append to the transcript view
                     if len(self.text) > 0:
-                        if self.client is not None:
-                            transcript += self.client.user.get_username() + ": "
-                        transcript += str(self.text) + "\n"
+                        if chatting:
+                            my_message = self.client.user.get_username() + ": " + str(self.text)
+                            game.append_transcript(my_message)
+                            async_send(['chat', [client_id, my_message]])
                         self.text = ""
                         self.remove_old_block()
                 elif event.key == K_BACKSPACE:
@@ -815,7 +813,7 @@ class InputBox:
                 else:
                     self.text += event.unicode
 
-        return transcript
+        return
 
     def remove_old_block(self):
         self.rect.h += 5
@@ -1138,9 +1136,9 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                     PLAYER_HOTKEYS[event.unicode]["function"]()
                     GAMEVIEW.help_screen(GM_STATUS)
             # input box handling + transcript update
-            transcript = chat_input_box.handle_event(event, history.transcript)
+            chat_input_box.handle_event(event,True)
             history.handle_event(event)
-            history.update(transcript)
+            history.update(game.transcript)
             # transcript = chat_input_box.handle_event(event, transcript)
 
         # chat commands

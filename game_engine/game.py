@@ -75,7 +75,7 @@ class Game:
         return self.transcript
 
     def append_transcript(self, new_content):
-        self.transcript += "\n" + new_content
+        self.transcript += new_content + "\n"
 
     # def __str__(self):
     #     return self.get_name()+str(self.get_map())+self.get_GM().get_username()
