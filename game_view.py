@@ -125,10 +125,10 @@ class GameView:
             arr = client.get_assets(game.GM.get_username(), game.get_assets())
 
         try:
-            for i in range(0, len(arr), 2):
+            for asset in arr:
                 # print(asset)
-                decoded_image = base64.b64decode(arr[i+1][0])        
-                with open(direc+asset[i], 'wb') as recreated:
+                decoded_image = base64.b64decode(asset[1])        
+                with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
             print("ITEM WAS NOT PROPERLY GRABBED")
