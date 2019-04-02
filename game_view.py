@@ -914,10 +914,13 @@ class Transcript:
         # if not down:
             while (tmp_surface.get_height() < self.rect.h):
                 # add to top of string last part of whole transcript before it
-                beforehand = self.transcript.split(self.transcript_in_view,1)[0]
-                first_line = beforehand.split("\n")[-2]
-                self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
-                tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
+                try:
+                    beforehand = self.transcript.split(self.transcript_in_view,1)[0]
+                    first_line = beforehand.split("\n")[-2]
+                    self.transcript_in_view = first_line + "\n" + self.transcript_in_view 
+                    tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
+                except Exception as e:
+                    break
         while (tmp_surface.get_height() > self.rect.h):
             self.transcript_in_view = self.transcript_in_view.split("\n",1)[-1]
             tmp_surface = ptext.getsurf(self.transcript_in_view, sysfontname="arial", color=COLOR_WHITE, fontsize=FONTSIZE, width = self.rect.w)
