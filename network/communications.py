@@ -280,7 +280,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 room_id = self.get_room_id_from_client_id(client_id)
                 print("room {}".format(room_id))
                 pickled_message = double_pickle(['chat', message])
-                self.broadcast(pickled_message, room_id)
+                self.broadcast(pickled_message, room_id, True, client_id)
             elif command_type == 'request_action':
                 client_id = command_body[0]
                 requested_action = command_body[2]
@@ -363,16 +363,23 @@ class DataReadServer(asyncore.dispatcher_with_send):
         
     def send_to_GM(self, message, room):
         pass
-    def broadcast(self, pickled_message, room):
+    def broadcast(self, pickled_message, room, chatting=False, client_num = 0):
         print("broadcasting")
         for client in rooms[room][2]:
             print("trying to send to client_id: {}".format(client))     
             connection = rev_client_dict[client]
-            if rooms[room][0] != connection:
-                print("sending to someone else")
-                connection.send(pickled_message)
+            if chatting:
+                if client_num != connection:
+                    print("sending to someone else")
+                    connection.send(pickled_message)
+                else:
+                    print("not sending back to self")
             else:
-                print("not sending back to self")
+                if rooms[room][client_num] != connection:
+                    print("sending to someone else")
+                    connection.send(pickled_message)
+                else:
+                    print("not sending back to self")
 
 
 
