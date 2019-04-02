@@ -125,10 +125,8 @@ class GameView:
             arr = client.get_assets(game.GM.get_username(), game.get_assets())
 
         try:
-            print(arr)
             for asset in arr:
-                print(asset)
-                decoded_image = base64.b64decode(asset[1])        
+                decoded_image = base64.b64decode(asset)        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
         except Exception as e:
