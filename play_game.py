@@ -1,5 +1,7 @@
 # Import pygame and libraries
-import sys, os, pygame, pygame_textinput, threading, time, select, socket, pickle, ptext, jsonpickle
+import sys, os, pygame, threading, time, select, socket, pickle, jsonpickle
+import text_manipulation.pygame_textinput as pygame_textinput
+import text_manipulation.ptext as ptext
 from pygame.locals import *
 from random import randrange
 from client import Client

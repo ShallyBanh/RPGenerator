@@ -7,9 +7,9 @@ from models.attribute import Attribute
 from models.entity import Entity
 from models.relationship import Relationship
 import pygame
-import ptext
+import text_manipulation.ptext as ptext
+import text_manipulation.pygame_textinput as pygame_textinput
 import pygame.locals as pl
-import pygame_textinput
 from rule_input_view import RuleInputView
 
 

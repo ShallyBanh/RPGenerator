@@ -4,7 +4,7 @@ import pygame
 import pickle
 # sys.path.append('../../account')
 # from database import Database
-import ptext
+import text_manipulation.ptext as ptext
 import pyautogui
 
 class GameHistoryView:

@@ -1,4 +1,5 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui, time, platform, subprocess, clipboard, jsonpickle
+import pygame, sys, random, os, math, re, pyautogui, time, platform, subprocess, clipboard, jsonpickle
+import text_manipulation.ptext as ptext
 import base64, PIL.Image
 from pygame.locals import *
 from game_engine.map import Map
