@@ -231,7 +231,9 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
                         # send the request yes
-                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        player_name = shared_var.MESSAGE_CONTENT[0][1]
+                        PLAYER_LIST.append(player_name)
+                        game.append_transcript("player {} joined the game".format(player_name))
                         # shared_var.MESSAGE_CONTENT.append(game.get_uniqueID())
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         running = False
@@ -666,9 +668,46 @@ class GameView:
     
     def remove_player(self):
         self.clear_bottom_info()
-        self.display_message("_Remove Player_\n")
+        surf, tpos = self.display_message("_Remove Player:_ \n")
 
+        remove_player_box = InputBox(MAPOFFSET[0] + 200, tpos[1], game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
 
+        RUNNING = True
+        selected_player = None
+        blit_input = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.leave_game()
+                elif event.type == MOUSEBUTTONDOWN:
+                    pass
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.clear_bottom_info()
+                        return
+                    elif event.key == K_RETURN and selected_player is None:
+                        text = remove_player_box.text.rstrip()
+                        if text in PLAYER_LIST:
+                            self.clear_bottom_info()
+                            blit_input = False
+                            selected_player = text
+                    elif event.key == K_y and selected_player:
+                        async_send(["remove_player", selected_player])
+                        game.append_transcript("GM removed: {}".format(selected_player))
+                        self.send_update_to_all()
+                        PLAYER_LIST.remove(selected_player)
+                        selected_player = None
+                        blit_input = True
+                    elif event.key == K_n and selected_player:
+                        selected_player = None
+                        blit_input = True
+                remove_player_box.handle_event(event)
+            if blit_input:
+                remove_player_box.wipe()
+                remove_player_box.draw()
+            else:
+                self.display_message("Are you sure you wish to remove this player? Press Y to confirm, or N to cancel.")
+            pygame.display.flip()   
 
         return
 
@@ -965,6 +1004,7 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
               "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
 PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
+PLAYER_LIST = []
 DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
 FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
@@ -975,11 +1015,13 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global GM_STATUS
     global client
     global client_id
+    global PLAYER_LIST
 
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
     client_id = clientID
+    PLAYER_LIST = []
 
     GAMEVIEW.load_pictures_from_database()
     
