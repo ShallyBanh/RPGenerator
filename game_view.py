@@ -1142,8 +1142,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         # remove old image and replace with generic block, then cover with texture if there are any       
                         for i in range(0,my_entity.size.get_width()):
                             for j in range(0,my_entity.size.get_height()):
-                                if (my_entity.x+j, my_entity.y+i) in game.map.textures:
-                                    GAMEVIEW.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
+                                if str((my_entity.x+j, my_entity.y+i)) in game.map.textures:
+                                    GAMEVIEW.blit_texture(game.map.textures[str((my_entity.x+j, my_entity.y+i))])
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
                         
@@ -1156,6 +1156,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                         
                         if GM_STATUS:
+                            # GAMEVIEW.blit_entire_map()
                             GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
