@@ -79,6 +79,14 @@ In order to run our test suite. Run
 ```
 from the root of the directory
 
+# PLAYING THE GAME
+
+## CREATING AN ACCOUNT
+On the main screen, click on "Create Account" and create an account. After doing so, you will be brought back to the login screen, and will need to log in to your account.
+
+## SETTING UP A GAME
+To start a game, first create a ruleset, as detailed below. Then, create a game session with a chosen name, ruleset, width, and height. Once in the game, you will be able to see the game ID displayed on the screen. Distribute this ID to friends in order to have them join the game using the Join Game menu option. You can rejoin any previously created game by looking at the Game History View and selecting "Join" on the desired game.
+
 ## WRITING RULES
 Rules are written in Actions and in Relationships. They determine the actions that are able to be taken by Entities, and how they interact.
 Every statement is ended by a new line. Indentation is ignored.
@@ -132,8 +140,8 @@ The following types of statements can be used to write a rule:
 | {variable or entity attribute} = {variable, number, or entity attribute}|x = 5, or target.hp = 8, or target.|sets a given variable or entity attribute to the value given. |
 | {variable, entity attribute, or number} == {variable, entity attribute, or number}|entity.hp == 5 or 5 == 8|Returns a true or false value (conditional) for whether the given values are equal. |
 | {variable, entity attribute, or number} equals {variable, entity attribute, or number}|entity.hp equals 5 or 5 equals0 8|Returns a true or false value (conditional) for whether the given values are equal. |
-| {variable, entity attribute, or number} < {variable, entity attribute, or number}|5 < 8 or entity.hp { 100|returns a true or false value whether the first number is less than the second number|
-| {variable, entity attribute, or number} > {variable, entity attribute, or number}|5 > 8 or entity.hp } 100|returns a true or false value whether the first number is greater than the second number|
+| {variable, entity attribute, or number} < {variable, entity attribute, or number}|5 < 8 or entity.hp < 100|returns a true or false value whether the first number is less than the second number|
+| {variable, entity attribute, or number} > {variable, entity attribute, or number}|5 > 8 or entity.hp > 100|returns a true or false value whether the first number is greater than the second number|
 | {variable, entity attribute, or number} less than {variable, entity attribute, or number}|5 less than 8 or entity.hp less than 100|returns a true or false value whether the first number is less than the second number|
 | {variable, entity attribute, or number} greater than {variable, entity attribute, or number}|5 greater than 8 or entity.hp greater than 100|returns a true or false value whether the first number is greater than the second number|
 | {variable, entity attribute, or number} * {variable, entity attribute, or number}|5 * 4 or entity.hp * 6|Returns the result of the two given values multiplied together.|
@@ -142,8 +150,8 @@ The following types of statements can be used to write a rule:
 | {variable or entity attribute} -= {variable, entity attribute, or number}| x -= 4, or entity.hp -= 5|Subtracts the given value from the variable or entity attribute and sets it to the result|
 | {variable or entity attribute} *= {variable, entity attribute, or number}| x *= 4, or entity.hp *= 5|Multiplies the given variable or entity attribute by the given factor and sets it to the result|
 | {variable or entity attribute} /= {variable, entity attribute, or number}| x /= 4, or entity.hp /= 5|Divides the given variable or entity attribute by the given divisor and sets it to the result|
-| {conditional} and {conditional}|4 { 1 and entity.hp } 10|If both {conditional} statements evaluate to True, returns true. Otherwise, returns False.|
-| {conditional} or {conditional}|4 { 1 or entity.hp } 10|If one or both of the given {conditional} statements evaluates to True, returns True. Otherwise, returns False.|
+| {conditional} and {conditional}|4 < 1 and entity.hp > 10|If both {conditional} statements evaluate to True, returns true. Otherwise, returns False.|
+| {conditional} or {conditional}|4 < 1 or entity.hp > 10|If one or both of the given {conditional} statements evaluates to True, returns True. Otherwise, returns False.|
 | add status "{string}"to {target, self, or entity type}|add status "Dodge" to self, or add status "Poisoned" to target|Adds the status {string} to the entity, or entities in the case of an if all statement. |
 | remove status "{string}" from {target, self, or entity type}|remove status "Poisoned" from self|Removes the status {string} from the entity, or entities in the case of an if all statement. |
 | {target,self, or entity type}.statuses has "{string}"|self.statuses has "Poisoned"|Returns true or false as to whether the given status string is among the current statuses of the entity. |
