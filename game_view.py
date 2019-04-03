@@ -377,14 +377,14 @@ class GameView:
                         text = add_texture_box.text.rstrip()
                         if text in self.images:
                             self.clear_bottom_info()
+                            self.display_message("Please select tile you would like to place this texture")    
                             blit_input = False
                             selected_image = text
-                add_texture_box.handle_event(event)
+                if blit_input:
+                    add_texture_box.handle_event(event)    
             if blit_input:
                 add_texture_box.wipe()
                 add_texture_box.draw()
-            else:
-                self.display_message("Please select tile you would like to place this texture")
             pygame.display.flip()            
 
         return
@@ -470,14 +470,16 @@ class GameView:
                         if selected_type in CONCRETE_TYPES_OF_ENTITIES:
                             blit_input = False
                             self.clear_bottom_info()
+                            self.display_message("Please select tile you would like to place this " + selected_name)
                         else:
                             input_name.text = ""
                             input_type.text = ""
                             input_image_filename.text = ""
                             self._create_entity_help(True, "WRONG TYPE")
-                input_name.handle_event(event)
-                input_type.handle_event(event)
-                input_image_filename.handle_event(event)
+                if blit_input:
+                    input_name.handle_event(event)
+                    input_type.handle_event(event)
+                    input_image_filename.handle_event(event)
             if blit_input:
                 input_name.wipe()
                 input_name.draw()
@@ -485,8 +487,6 @@ class GameView:
                 input_type.draw()
                 input_image_filename.wipe()
                 input_image_filename.draw()
-            else:
-                self.display_message("Please select tile you would like to place this " + selected_name)
             pygame.display.flip()  
 
         return
@@ -1049,11 +1049,11 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global TYPES_OF_ENTITIES
     TYPES_OF_ENTITIES = []
     for entity_type in game.ruleset_copy.entity_types:
-        TYPES_OF_ENTITIES.append(entity_type.get_type())
+        TYPES_OF_ENTITIES.append(entity_type.get_type().lower())
     global CONCRETE_TYPES_OF_ENTITIES
     CONCRETE_TYPES_OF_ENTITIES = []
     for entity_type in game.ruleset_copy.concrete_entity_types:
-        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
+        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type().lower())
 
     print(TYPES_OF_ENTITIES)
     print(CONCRETE_TYPES_OF_ENTITIES)
@@ -1115,6 +1115,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             action_requested = my_entity.get_actions()[option_selected-1]
                             result = game.ruleset_copy.perform_action(action_requested, my_entity)
                             print(TYPES_OF_ENTITIES)
+                            result = result.lower()
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
@@ -1123,6 +1124,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             my_entity = None
                             print(result)
                             if GM_STATUS:
+                                GAMEVIEW.blit_entire_map()
                                 GAMEVIEW.send_update_to_all()
                             else:
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")

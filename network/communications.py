@@ -233,8 +233,10 @@ class DataReadServer(asyncore.dispatcher_with_send):
                     print("received leave command for wrong id")
             elif command_type == 'remove_player':
                 username = command_body
+                print(username)
                 client_id = -1
                 for client in client_dict:
+                    print(client_dict[client][1])
                     if client_dict[client][1] == username:
                         client_id = client_dict[client][0]
                         break
