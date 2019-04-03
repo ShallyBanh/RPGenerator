@@ -232,10 +232,18 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 else:
                     print("received leave command for wrong id")
             elif command_type == 'remove_player':
-                client_id = int(command_body)
-                client = client_dict[rev_client_dict[client_id]]        
-                room = client[2]
-                self.remove_player(client_id, room)
+                username = command_body
+                client_id = -1
+                for client in client_dict:
+                    if client_dict[client][1] == username:
+                        client_id = client_dict[client][0]
+                        break
+                if client_id != -1:
+                    client = self.get_conn_from_client_id(client_id)
+                    room = client[2]
+                    self.remove_player(client_id, room)
+                else:
+                    print("failed to find client_id from username {}".format(username))
                 # print("removing client_id from game @TODO append to transcript")
                 # print("finding client from command_body {}".format(client_id))
                 # print("client_dict: {}".format(client_dict))
