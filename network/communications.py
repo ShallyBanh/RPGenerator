@@ -243,10 +243,8 @@ class DataReadServer(asyncore.dispatcher_with_send):
                         break
                 if client_id != -1:
                     client = self.get_conn_from_client_id(client_id)
-                    print("client {}".format(client))
-                    room = client[2]
-                    print("room {}".format(room))
-                    self.remove_player(client_id, room)
+                    room_id = self.get_room_id_from_client_id(client_id)
+                    self.remove_player(client_id, room_id)
                 else:
                     print("failed to find client_id from username {}".format(username))
                 # print("removing client_id from game @TODO append to transcript")
@@ -264,7 +262,7 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 # print("done leaving game")
                 # rev_client_dict[client_id].send(double_pickle(['removed', '']))
             elif command_type == 'end_game':
-                print("@TODO end game, remove players")
+                # print("@TODO end game, remove players")
                 # requester = command_body[0]
                 client_id = command_body[0]
                 room = command_body[1] # game_id
