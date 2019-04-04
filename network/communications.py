@@ -243,9 +243,9 @@ class DataReadServer(asyncore.dispatcher_with_send):
                         break
                 if client_id != -1:
                     client = self.get_conn_from_client_id(client_id)
-                    print(client)
+                    print("client {}".format(client))
                     room = client[2]
-                    print(room)
+                    print("room {}".format(room))
                     self.remove_player(client_id, room)
                 else:
                     print("failed to find client_id from username {}".format(username))
