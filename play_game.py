@@ -921,6 +921,9 @@ def enter_room(room_number):
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
             if PLAYER_JOIN_FLAG:
+                gameHistoryTuple = client.get_game_history_from_id(int(room_number), currentUsername)
+                if len(gameHistoryTuple) == 0:
+                    client.create_game_history_entry(game.name, currentUsername, int(room_number))
                 # game = client.get_game_from_room_number(game_id)
                 gameView.main(client, game, client_id, False)
                 PLAYER_JOIN_FLAG = False

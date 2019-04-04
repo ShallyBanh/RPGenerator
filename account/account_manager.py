@@ -236,6 +236,17 @@ class AccountManager:
         row = self.database.cur.fetchone()
         return row
     
+    def get_game_history_from_id(self, gameid, username):
+        """Fetches latest game id"""
+        self.database.query("SELECT game_name FROM GameHistory where game_id = ? and username = ?;", (gameid, username,))
+        row = self.database.cur.fetchall()
+        return row
+    
+    def create_game_history_entry(self, gameName, username, gameid):
+        """Fetches latest game id"""
+        self.database.query("INSERT INTO GameHistory(game_name, role, username, game_id, time) VALUES(?, ?, ?, ?, datetime('now'));", (gameName, "PLAYER", username, gameid, ))
+        return 0
+    
     def get_list_of_games_and_their_gms(self):
         """Fetches list of games and their gms"""
         self.database.query("SELECT distinct(game_id), username FROM GameHistory;", [])
