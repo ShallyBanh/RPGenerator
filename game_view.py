@@ -701,12 +701,14 @@ class GameView:
                         selected_player = None
                         blit_input = True
                         remove_player_box.text = ""
+                        event.key = K_RETURN
                         self.clear_bottom_info()
                         surf, tpos = self.display_message("_Remove Player:_ \n")
                     elif event.key == K_n and selected_player:
                         selected_player = None
                         blit_input = True
                         remove_player_box.text = ""
+                        event.key = K_RETURN
                         self.clear_bottom_info()
                         surf, tpos = self.display_message("_Remove Player:_ \n")
                 if blit_input:
