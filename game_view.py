@@ -692,6 +692,7 @@ class GameView:
                             self.clear_bottom_info()
                             blit_input = False
                             selected_player = text
+                            self.display_message("Are you sure you wish to remove {}? Press Y to confirm, or N to cancel.".format(selected_player))
                     elif event.key == K_y and selected_player:
                         async_send(["remove_player", selected_player])
                         game.append_transcript("GM removed: {}".format(selected_player))
@@ -699,15 +700,20 @@ class GameView:
                         PLAYER_LIST.remove(selected_player)
                         selected_player = None
                         blit_input = True
+                        remove_player_box.text = ""
+                        self.clear_bottom_info()
+                        surf, tpos = self.display_message("_Remove Player:_ \n")
                     elif event.key == K_n and selected_player:
                         selected_player = None
                         blit_input = True
-                remove_player_box.handle_event(event)
+                        remove_player_box.text = ""
+                        self.clear_bottom_info()
+                        surf, tpos = self.display_message("_Remove Player:_ \n")
+                if blit_input:
+                    remove_player_box.handle_event(event)
             if blit_input:
                 remove_player_box.wipe()
                 remove_player_box.draw()
-            else:
-                self.display_message("Are you sure you wish to remove this player? Press Y to confirm, or N to cancel.")
             pygame.display.flip()   
 
         return

@@ -222,48 +222,24 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 username = client_dict[connection][1]
                 room = rooms[room_id]
                 if room[0] == connection:
-                    # print("client_id is {}".format(client_id))
-                    # client = client_dict[rev_client_dict[client_id]]
-                    # print("client is {}".format(client))
-                    # room = client[2]
-                    # print("room is {}".format(room))
                     print("player {} is leaving in communications.py".format(username))
                     self.remove_player(client_id, room)
                 else:
                     print("received leave command for wrong id")
             elif command_type == 'remove_player':
                 username = command_body
-                print(username)
                 client_id = -1
                 for client in client_dict:
-                    print(client_dict[client][1])
                     if client_dict[client][1] == username:
-                        print("found client {} {}".format(client_dict[client][1], client_dict[client][0]))
                         client_id = client_dict[client][0]
                         break
                 if client_id != -1:
-                    client = self.get_conn_from_client_id(client_id)
                     room_id = self.get_room_id_from_client_id(client_id)
-                    self.remove_player(client_id, room_id)
+                    room = rooms[room_id]
+                    self.remove_player(client_id, room)
                 else:
                     print("failed to find client_id from username {}".format(username))
-                # print("removing client_id from game @TODO append to transcript")
-                # print("finding client from command_body {}".format(client_id))
-                # print("client_dict: {}".format(client_dict))
-                # print("rev_client_dict: {}".format(rev_client_dict))
-                # client = client_dict[rev_client_dict[client_id]]
-                # print("client is {}, finding room".format(client))
-                # room = client[2]
-                # print("room is {}".format(room))
-                # client[2] = None
-                # print("removing client from room")
-                # # @TODO try/check if exists
-                # rooms[room][2].remove(client_id)
-                # print("done leaving game")
-                # rev_client_dict[client_id].send(double_pickle(['removed', '']))
             elif command_type == 'end_game':
-                # print("@TODO end game, remove players")
-                # requester = command_body[0]
                 client_id = command_body[0]
                 room = command_body[1] # game_id
                 connection = rev_client_dict[client_id]
