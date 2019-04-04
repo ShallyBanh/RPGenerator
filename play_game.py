@@ -810,7 +810,7 @@ def create_new_game_view():
                         break
                     if int(inputList[2]) < 10 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
                         error_surface = True
-                        error_str = "Min width is 10 and height are 5. Max height is 10 and max width is 10"
+                        error_str = "Min width is 10 and height are 5. Max height is 10 and max width is 18"
                         break
 
                     allRulesets = client.load_existing_rulesets(currentUsername)
