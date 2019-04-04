@@ -238,11 +238,14 @@ class DataReadServer(asyncore.dispatcher_with_send):
                 for client in client_dict:
                     print(client_dict[client][1])
                     if client_dict[client][1] == username:
+                        print("found client {} {}".format(client_dict[client][1], client_dict[client][0]))
                         client_id = client_dict[client][0]
                         break
                 if client_id != -1:
                     client = self.get_conn_from_client_id(client_id)
+                    print(client)
                     room = client[2]
+                    print(room)
                     self.remove_player(client_id, room)
                 else:
                     print("failed to find client_id from username {}".format(username))
