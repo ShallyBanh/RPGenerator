@@ -842,7 +842,7 @@ def create_new_game_view():
         # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if error_surface:
-            ptext.draw(error_str, (160, 560), sysfontname="arial", color=COLOR_RED, fontsize=gameView.FONTSIZE*1.25)
+            ptext.draw(error_str, (90, 560), sysfontname="arial", color=COLOR_RED, fontsize=gameView.FONTSIZE*1.25)
         if inputList[0] == "":
             surface.blit(MY_FONT.render('Game Name', 1, COLOR_BLACK), (260,160))  
         else:
