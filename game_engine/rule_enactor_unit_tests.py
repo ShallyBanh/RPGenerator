@@ -212,7 +212,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.assertEqual(self.actor.x, 7)
 		self.assertEqual(self.actor.y, 1)
 		
-	def tast_plus(self):
+	def test_plus(self):
 		self.rule += "x = 0\n"
 		self.rule += "x = 5 + 5\n"
 		self.rule += "y = x + 4\n"
@@ -221,7 +221,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		self.enactor.perform_action_given_target(action, self.actor, self.target)
 		self.assertEqual(self.enactor.variables["x"], 10)
 		self.assertEqual(self.enactor.variables["y"], 14)
-		self.assertEqual(self.enactor.target_of_action.get_attribute("HP"), 15)
+		self.assertEqual(self.enactor.target_of_action.get_attribute("HP").get_attribute_value(), 15)
 		
 	def test_minus(self):
 		self.rule += "x = 0\n"
@@ -492,32 +492,32 @@ class TestRuleInterpreter(unittest.TestCase):
 		# isCorrect &= self.enactor.validate_rule(validator, "interrupt entity.Action if target.statuses has \"Dodge\":\nincrease target.HP by 10", template)
 		
 		
-	def Bianca_test_case(self):
-		enactor = rule_enactor.RuleEnactor()
-		isTemplate = False
-		hp_time = Attribute("HP", 10)	
-		ac_time = Attribute("AC", 11)	
-		template = Entity("", "entity", 1, 1, self.isTemplate, None)
-		template.add_attribute(hp_time)
-		template.add_attribute(ac_time)
+	# def Bianca_test_case(self):
+		# enactor = rule_enactor.RuleEnactor()
+		# isTemplate = False
+		# hp_time = Attribute("HP", 10)	
+		# ac_time = Attribute("AC", 11)	
+		# template = Entity("", "entity", 1, 1, self.isTemplate, None)
+		# template.add_attribute(hp_time)
+		# template.add_attribute(ac_time)
 		
-		template2 = Entity("", "BigEntity", 3, 3, self.isTemplate, None)
-		template2.add_attribute(hp_time)
-		template2.add_attribute(ac_time)
+		# template2 = Entity("", "BigEntity", 3, 3, self.isTemplate, None)
+		# template2.add_attribute(hp_time)
+		# template2.add_attribute(ac_time)
 		
-		attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
-		attack_action = Action("Attack", attack_rule)
-		fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
-		fireball_action = Action("Fireball", fireball_rule)
-		template.add_action(fireball_action)
-		template.add_action(attack_action)
+		# attack_rule = "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8\n"
+		# attack_action = Action("Attack", attack_rule)
+		# fireball_rule = "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6\n"
+		# fireball_action = Action("Fireball", fireball_rule)
+		# template.add_action(fireball_action)
+		# template.add_action(attack_action)
 		
-		template2.add_action(fireball_action)
-		template2.add_action(attack_action)
+		# template2.add_action(fireball_action)
+		# template2.add_action(attack_action)
 		
-		validator.add_entity(template)
-		validator.add_entity(template2)
-		enactor.parse_validator(validator)
+		# validator.add_entity(template)
+		# validator.add_entity(template2)
+		# enactor.parse_validator(validator)
 		
 		
 
