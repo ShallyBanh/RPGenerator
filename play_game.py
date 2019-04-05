@@ -877,7 +877,7 @@ def previous_games_view():
     print(values)
     if values is not None:
         #values[0] = game room number, values[1] = game status i.e gm or player
-        enter_room(values[0])
+        enter_room(str(values[0]))
     return
 
 # -----------------------------------------------------------------------------
