@@ -1,3 +1,8 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.3.3.4: Credential Recovery
+"""
+
 import smtplib
 class EmailSender:
     def __init__(self, smtp_server="smtp.gmail.com", port=465,

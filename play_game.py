@@ -1,3 +1,20 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.3.3.1: Account Creation
+REQ-3.3.3.3: Credential Modification
+REQ-3.3.3.4: Credential Recovery
+REQ-3.3.3.5: Login
+REQ-3.4.3.1: Game Creation
+REQ-3.4.3.2: Join Request
+REQ-3.4.3.3: Join Request Approval
+REQ-3.4.3.4: Join Request Rejection
+REQ-3.4.3.5: Player Removal
+REQ-3.5.3.3: Chat Submission
+REQ-3.6.3.1: Game History View
+REQ-3.6.3.2: Resume Game Session
+REQ-3.6.3.3: Game Role
+"""
+
 # Import pygame and libraries
 import sys, os, pygame, threading, time, select, socket, pickle, jsonpickle
 import text_manipulation.pygame_textinput as pygame_textinput

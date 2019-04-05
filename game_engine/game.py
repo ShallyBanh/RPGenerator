@@ -1,3 +1,11 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.2.3.7: Display Map
+REQ-3.2.3.10: Import visual assets
+REQ-3.5.3.4: Scrollable Chat History
+REQ-3.6.3.3: Game Role
+"""
+
 import json
 from .map import Map
 

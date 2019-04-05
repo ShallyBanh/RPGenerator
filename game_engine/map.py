@@ -1,3 +1,8 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.2.3.7: Display Map
+REQ-3.2.3.9: Fog of War
+"""
 
 class Map:
     """

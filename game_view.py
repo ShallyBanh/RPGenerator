@@ -1,3 +1,23 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.2.3.1: Engine Reads File
+REQ-3.2.3.2: GM Spawn Entity
+REQ-3.2.3.3: GM Edit Active Entity
+REQ-3.2.3.4: Move Entity
+REQ-3.2.3.5: Request Action
+REQ-3.2.3.6: Approve Action
+REQ-3.2.3.7: Display Map
+REQ-3.2.3.9: Fog of War
+REQ-3.2.3.10: Import visual assets
+REQ-3.4.3.3: Join Request Approval
+REQ-3.4.3.4: Join Request Rejection
+REQ-3.4.3.5: Player Removal
+REQ-3.5.3.1: Chat Box
+REQ-3.5.3.2: Chat Input
+REQ-3.5.3.3: Chat Submission
+REQ-3.5.3.4: Scrollable Chat History
+"""
+
 import pygame, sys, random, os, math, re, pyautogui, time, platform, subprocess, clipboard, jsonpickle
 import text_manipulation.ptext as ptext
 import base64, PIL.Image
