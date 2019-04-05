@@ -10,8 +10,8 @@ from models.attribute import Attribute
 from models.entity import Entity
 from models.relationship import Relationship
 import pygame
-import ptext
-import pygame_textinput
+import text_manipulation.ptext as ptext
+import text_manipulation.pygame_textinput as pygame_textinput
 from entity_creation_view import EntityCreationView
 from action_attribute_view import AttributeActionCreationView
 from relationship_creation_view import RelationshipCreationView

@@ -1,5 +1,7 @@
 # Import pygame and libraries
-import sys, os, pygame, pygame_textinput, threading, time, select, socket, pickle, ptext, jsonpickle
+import sys, os, pygame, threading, time, select, socket, pickle, jsonpickle
+import text_manipulation.pygame_textinput as pygame_textinput
+import text_manipulation.ptext as ptext
 from pygame.locals import *
 from random import randrange
 from client import Client
@@ -976,13 +978,16 @@ def signal_handler(sig, frame):
     global client_id
     global game
 
-    leave_message = "{} left the game".format(currentUsername)
-    game.append_transcript(leave_message)
-    async_send(['chat', [client_id, leave_message]])
-    async_send(['leave_game', [client_id]])
-    print('You pressed Ctrl+C!')
+    if sig == signal.SIGINT:
+        # TODO to review for GM handling instead of just a player
+        leave_message = "{} left the game".format(currentUsername)
+        game.append_transcript(leave_message)
+        async_send(['chat', [client_id, leave_message]])
+        async_send(['leave_game', [client_id]])
+        print('You pressed Ctrl+C!')
+        sys.exit(0)
     
-    sys.exit(0)
+    return
 
 # -----------------------------------------------------------------------------
 # OPTION MENU
@@ -1056,6 +1061,7 @@ main_menu.add_option('Login', account_login_view)
 main_menu.add_option('About', about_menu)
 main_menu.add_option('Quit', PYGAME_MENU_EXIT)
 signal.signal(signal.SIGINT, signal_handler)
+# signal.signal(signal.SIGPIPE, signal.SIG_IGN)
 
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":

@@ -6,9 +6,9 @@ from models.action import Action
 from models.attribute import Attribute
 from models.entity import Entity
 import pygame
-import ptext
 import pygame.locals as pl
-import pygame_textinput
+import text_manipulation.ptext as ptext
+import text_manipulation.pygame_textinput as pygame_textinput
 from rule_input_view import RuleInputView
 
 
