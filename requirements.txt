@@ -7,3 +7,4 @@ pyautogui>=0.9.42
 jsonpickle>=1.0
 cryptography>=2.0
 clipboard>=0.0.4
+coverage>=4.5.3

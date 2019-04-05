@@ -1,4 +1,5 @@
-import pygame, sys, random, os, math, re, ptext, pyautogui, time, platform, subprocess, clipboard, jsonpickle
+import pygame, sys, random, os, math, re, pyautogui, time, platform, subprocess, clipboard, jsonpickle
+import text_manipulation.ptext as ptext
 import base64, PIL.Image
 from pygame.locals import *
 from game_engine.map import Map
@@ -126,8 +127,8 @@ class GameView:
 
         try:
             for asset in arr:
-                print(asset[0])
-                print(asset[1])
+                # print(asset[0])
+                # print(asset[1])
                 decoded_image = base64.b64decode(asset[1][0])        
                 with open(direc+asset[0], 'wb') as recreated:
                     recreated.write(bytearray(decoded_image))
@@ -231,7 +232,9 @@ class GameView:
                 elif event.type == KEYDOWN:   
                     if event.key == K_y:
                         # send the request yes
-                        game.append_transcript("player {} joined the game".format(shared_var.MESSAGE_CONTENT[0][1]))
+                        player_name = shared_var.MESSAGE_CONTENT[0][1]
+                        PLAYER_LIST.append(player_name)
+                        game.append_transcript("player {} joined the game".format(player_name))
                         # shared_var.MESSAGE_CONTENT.append(game.get_uniqueID())
                         async_send(['accept_join', shared_var.MESSAGE_CONTENT])
                         running = False
@@ -374,10 +377,11 @@ class GameView:
                         text = add_texture_box.text.rstrip()
                         if text in self.images:
                             self.clear_bottom_info()
+                            self.display_message("Please select tile you would like to place this texture")    
                             blit_input = False
-                            self.display_message("Please select tile you would like to place this texture")
                             selected_image = text
-                add_texture_box.handle_event(event)
+                if blit_input:
+                    add_texture_box.handle_event(event)    
             if blit_input:
                 add_texture_box.wipe()
                 add_texture_box.draw()
@@ -472,9 +476,10 @@ class GameView:
                             input_type.text = ""
                             input_image_filename.text = ""
                             self._create_entity_help(True, "WRONG TYPE")
-                input_name.handle_event(event)
-                input_type.handle_event(event)
-                input_image_filename.handle_event(event)
+                if blit_input:
+                    input_name.handle_event(event)
+                    input_type.handle_event(event)
+                    input_image_filename.handle_event(event)
             if blit_input:
                 input_name.wipe()
                 input_name.draw()
@@ -664,7 +669,55 @@ class GameView:
     
     def remove_player(self):
         self.clear_bottom_info()
-        self.display_message("_Remove Player_\n")
+        surf, tpos = self.display_message("_Remove Player:_ \n")
+
+        remove_player_box = InputBox(MAPOFFSET[0] + 200, tpos[1], game.map.tilesize*game.map.width - 200, 32, DISPLAYSURF)
+
+        RUNNING = True
+        selected_player = None
+        blit_input = True
+        while RUNNING:    
+            for event in pygame.event.get():
+                if event.type == QUIT:
+                    self.leave_game()
+                elif event.type == MOUSEBUTTONDOWN:
+                    pass
+                elif event.type == KEYDOWN:   
+                    if event.key == K_ESCAPE:
+                        self.clear_bottom_info()
+                        return
+                    elif event.key == K_RETURN and selected_player is None:
+                        text = remove_player_box.text.rstrip()
+                        if text in PLAYER_LIST:
+                            self.clear_bottom_info()
+                            blit_input = False
+                            selected_player = text
+                            self.display_message("Are you sure you wish to remove {}? Press Y to confirm, or N to cancel.".format(selected_player))
+                    elif event.key == K_y and selected_player:
+                        async_send(["remove_player", selected_player])
+                        game.append_transcript("GM removed: {}".format(selected_player))
+                        self.send_update_to_all()
+                        PLAYER_LIST.remove(selected_player)
+                        selected_player = None
+                        blit_input = True
+                        remove_player_box.text = ""
+                        event.key = K_RETURN
+                        self.clear_bottom_info()
+                        surf, tpos = self.display_message("_Remove Player:_ \n")
+                    elif event.key == K_n and selected_player:
+                        selected_player = None
+                        blit_input = True
+                        remove_player_box.text = ""
+                        event.key = K_RETURN
+                        self.clear_bottom_info()
+                        surf, tpos = self.display_message("_Remove Player:_ \n")
+                if blit_input:
+                    remove_player_box.handle_event(event)
+            if blit_input:
+                remove_player_box.wipe()
+                remove_player_box.draw()
+            pygame.display.flip()   
+
         return
 
     def roll_dice(self):
@@ -960,6 +1013,7 @@ GM_HOTKEYS = {"f": {"name": "Toggle FOG", "function": GAMEVIEW.toggle_fog},
               "p": {"name": "Remove Player", "function": GAMEVIEW.remove_player},
               "r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
 PLAYER_HOTKEYS = {"r": {"name": "Roll Dice", "function": GAMEVIEW.roll_dice}}
+PLAYER_LIST = []
 DEFAULT_IMAGE = pygame.transform.scale(GAMEVIEW.images["grey.png"], (50,50))
 FOG_IMAGE = pygame.transform.scale(GAMEVIEW.images["fog.png"], (50,50))
 
@@ -970,11 +1024,13 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global GM_STATUS
     global client
     global client_id
+    global PLAYER_LIST
 
     game = gameObj
     GM_STATUS = gmOrPlayer
     client = clientObj
     client_id = clientID
+    PLAYER_LIST = []
 
     GAMEVIEW.load_pictures_from_database()
     
@@ -1001,11 +1057,11 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
     global TYPES_OF_ENTITIES
     TYPES_OF_ENTITIES = []
     for entity_type in game.ruleset_copy.entity_types:
-        TYPES_OF_ENTITIES.append(entity_type.get_type())
+        TYPES_OF_ENTITIES.append(entity_type.get_type().lower())
     global CONCRETE_TYPES_OF_ENTITIES
     CONCRETE_TYPES_OF_ENTITIES = []
     for entity_type in game.ruleset_copy.concrete_entity_types:
-        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type())
+        CONCRETE_TYPES_OF_ENTITIES.append(entity_type.get_type().lower())
 
     print(TYPES_OF_ENTITIES)
     print(CONCRETE_TYPES_OF_ENTITIES)
@@ -1067,6 +1123,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             action_requested = my_entity.get_actions()[option_selected-1]
                             result = game.ruleset_copy.perform_action(action_requested, my_entity)
                             print(TYPES_OF_ENTITIES)
+                            result = result.lower()
                             if result == "point" or result in TYPES_OF_ENTITIES:
                                 item = GAMEVIEW.action_sequence(result)
                                 result = game.ruleset_copy.perform_action_given_target(action_requested, my_entity, item)
@@ -1075,6 +1132,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                             my_entity = None
                             print(result)
                             if GM_STATUS:
+                                GAMEVIEW.blit_entire_map()
                                 GAMEVIEW.send_update_to_all()
                             else:
                                 print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")
@@ -1092,8 +1150,8 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         # remove old image and replace with generic block, then cover with texture if there are any       
                         for i in range(0,my_entity.size.get_width()):
                             for j in range(0,my_entity.size.get_height()):
-                                if (my_entity.x+j, my_entity.y+i) in game.map.textures:
-                                    GAMEVIEW.blit_texture(game.map.textures[(my_entity.x+j, my_entity.y+i)])
+                                if str((my_entity.x+j, my_entity.y+i)) in game.map.textures:
+                                    GAMEVIEW.blit_texture(game.map.textures[str((my_entity.x+j, my_entity.y+i))])
                                 else:
                                     GAMEVIEW.blit_default((my_entity.x+j), (my_entity.y+i))
                         
@@ -1106,6 +1164,7 @@ def main(clientObj, gameObj, clientID, gmOrPlayer = True, validatorObj = None):
                         DISPLAYSURF.blit(my_entity_image, GAMEVIEW.offset_blit(my_entity.y*game.map.tilesize, my_entity.x*game.map.tilesize))
                         
                         if GM_STATUS:
+                            # GAMEVIEW.blit_entire_map()
                             GAMEVIEW.send_update_to_all()
                         else:
                             print("TODO SEND THIS ACTION AS A REQUEST TO THE GM TO APPROVE IF YOU ARE A PLAYER.")

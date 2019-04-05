@@ -69,7 +69,7 @@ python3 play_game.py
 ```
 **Client (online with friends):**
 ```
-python3 play_game.py 204.209.76.191
+python3 play_game.py 159.89.117.152
 ```
 
 ## RUNNING THE TEST SUITE

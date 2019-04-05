@@ -7,7 +7,7 @@ from models.attribute import Attribute
 from models.entity import Entity
 from models.syntax_parser import SyntaxParser
 import pygame
-import ptext
+import text_manipulation.ptext as ptext
 import pygame.locals as pl
 sys.path.append('../game_engine')
 from rule_enactor import RuleEnactor

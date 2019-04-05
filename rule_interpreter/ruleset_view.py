@@ -5,8 +5,8 @@ from models.action import Action
 from models.attribute import Attribute
 from models.entity import Entity
 import pygame
-import ptext
-import pygame_textinput
+import text_manipulation.ptext as ptext
+import text_manipulation.pygame_textinput as pygame_textinput
 from ruleset_creation_edit_view import RulesetCreationEditView
 import jsonpickle
 sys.path.append('/account/')
