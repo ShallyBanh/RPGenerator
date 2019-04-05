@@ -1,3 +1,6 @@
+"""
+This file contains unit tests for the rule enactor
+"""
 import unittest
 import rule_enactor
 import sys

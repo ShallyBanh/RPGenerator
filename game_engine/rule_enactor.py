@@ -1,3 +1,9 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.2.3.5: Request Action
+"""
 import re
 import random
 import sys

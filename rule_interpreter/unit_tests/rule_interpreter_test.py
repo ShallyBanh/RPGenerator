@@ -1,3 +1,6 @@
+"""
+This file contains unit tests for the rule_interpreter syntax parser
+"""
 import unittest
 import os
 import sys
