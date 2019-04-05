@@ -68,6 +68,13 @@ class Client():
         response = requests.post("{}/create_ruleset".format(self.URL), params=payload)
         print("[client] [create_ruleset] response was {}/{}/{}".format(response, response.status_code, response.text))       
         return 0 if (response.status_code == 200) else -1
+
+    def create_game_history_entry(self, gameName, userName, gameId):
+        print("[client] [create_game_history_entry] attempting to create a ruleset with gameName,userName,gameId = {},{},{}".format(gameName, userName, gameId))        
+        payload = {'gameName': gameName, 'username': userName, 'gameid': gameId}
+        response = requests.post("{}/create_game_history_entry".format(self.URL), params=payload)
+        print("[client] [create_game_history_entry] response was {}/{}/{}".format(response, response.status_code, response.text))       
+        return 0 if (response.status_code == 200) else -1
     
     def update_ruleset(self, username, rulesetName, jsonBlob):
         print("[client] [update_ruleset] attempting to update a ruleset with username,rulesetName,jsonBlob = {},{},{}".format(username,rulesetName,jsonBlob))        
@@ -206,6 +213,13 @@ class Client():
         print("[client] [get_game_id] attempting to load game history from user with username {}".format(username))        
         payload = {'username': username}
         response = requests.post("{}/get_game_id".format(self.URL), params=payload)
+        data = json.loads(response.text)
+        return data
+
+    def get_game_history_from_id(self, gameid, username):
+        print("[client] [get_game_id] attempting to load game history from user with username, gameid {}, {}".format(username, gameid))        
+        payload = {'username': username, 'gameid': gameid}
+        response = requests.post("{}/get_game_history_from_id".format(self.URL), params=payload)
         data = json.loads(response.text)
         return data
     

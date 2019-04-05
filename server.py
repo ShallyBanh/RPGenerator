@@ -311,6 +311,35 @@ def create_game():
     response_status = 200 if (response == 0) else 400
     return Response(status=response_status)
 
+@app.route("/get_game_history_from_id", methods=['POST'])
+def get_game_history_from_id():
+    username = request.args.get("username")
+    gameid = request.args.get("gameid")
+    if username is None or gameid is None:
+        return Response(status=400)
+    print("[server] [get_game_history_from_id] got username = {}".format(username))
+    response = server.account_manager.get_game_history_from_id(gameid, username)
+    if response is not None:
+        print(response)
+        return jsonify(response)
+
+    print("[server] [get_game_history_from_id] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
+@app.route("/create_game_history_entry", methods=['POST'])
+def create_game_history_entry():
+    gameName = request.args.get("gameName")
+    username = request.args.get("username")
+    gameid = request.args.get("gameid")
+    if username is None or gameName is None or id is None:
+        return Response(status=400)
+    print("[server] [create_game_history_entry] got gameName, username, gameid = {},{},{}".format(gameName, username, gameid))
+    response = server.account_manager.create_game_history_entry(gameName, username, gameid)
+    print("[server] [create_game_history_entry] response from account_manager was {}".format(response))
+    response_status = 200 if (response == 0) else 400
+    return Response(status=response_status)
+
 @app.route("/update_game", methods=['POST'])
 def update_game():
     gameId = request.args.get("gameId")

@@ -214,8 +214,8 @@ class RulesetCreationEditView:
             self._moreButtonRelationshipList = []
             for relationshipIdx in range(len(self._relationships)):
                 relationship_str += self._relationships[relationshipIdx] + "\n"
-                screen.blit(self._moreImage,(1100, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
-                self._moreButtonRelationshipList.append((1100, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
+                screen.blit(self._moreImage,(1000, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
+                self._moreButtonRelationshipList.append((1000, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
             ptext.draw(relationship_str, (660, 200), fontname="Boogaloo", color="white", fontsize=35)
 
             if self._newRuleset == True:

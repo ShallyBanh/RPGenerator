@@ -812,7 +812,7 @@ def create_new_game_view():
                         break
                     if int(inputList[2]) < 10 or int(inputList[2]) > 18 or int(inputList[3]) < 2 or int(inputList[3]) > 10:
                         error_surface = True
-                        error_str = "Min width is 10 and height are 5. Max height is 10 and max width is 10"
+                        error_str = "Min width is 10 and height are 5. Max height is 10 and max width is 18"
                         break
 
                     allRulesets = client.load_existing_rulesets(currentUsername)
@@ -844,7 +844,7 @@ def create_new_game_view():
         # blit information to the menu based on user input from above
         surface.blit(login_view, ((WINDOW_SIZE[0] - login_view.get_size()[0]) / 2, (WINDOW_SIZE[1] - login_view.get_size()[1]) / 2))
         if error_surface:
-            ptext.draw(error_str, (160, 560), sysfontname="arial", color=COLOR_RED, fontsize=gameView.FONTSIZE*1.25)
+            ptext.draw(error_str, (90, 560), sysfontname="arial", color=COLOR_RED, fontsize=gameView.FONTSIZE*1.25)
         if inputList[0] == "":
             surface.blit(MY_FONT.render('Game Name', 1, COLOR_BLACK), (260,160))  
         else:
@@ -877,7 +877,7 @@ def previous_games_view():
     print(values)
     if values is not None:
         #values[0] = game room number, values[1] = game status i.e gm or player
-        enter_room(values[0])
+        enter_room(str(values[0]))
     return
 
 # -----------------------------------------------------------------------------
@@ -923,6 +923,9 @@ def enter_room(room_number):
         async_send(['join_game', [room_number, client.user.get_username()]])
         while(time.time()-start < join_request_timeout):
             if PLAYER_JOIN_FLAG:
+                gameHistoryTuple = client.get_game_history_from_id(int(room_number), currentUsername)
+                if len(gameHistoryTuple) == 0:
+                    client.create_game_history_entry(game.name, currentUsername, int(room_number))
                 # game = client.get_game_from_room_number(game_id)
                 gameView.main(client, game, client_id, False)
                 PLAYER_JOIN_FLAG = False
