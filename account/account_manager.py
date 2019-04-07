@@ -23,7 +23,7 @@ class AccountManager:
         self.database = Database(database_file)
         self.active_recoveries = {}
         self.recovery_timeout = 10800 # 3 hours (60s/min * 60min/h * 3h)
-        # self.emailer = EmailSender()
+        self.emailer = EmailSender()
     
     def reset_database(self):
         if os.path.exists(self.database.database_file):
