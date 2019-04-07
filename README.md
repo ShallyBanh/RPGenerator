@@ -39,20 +39,6 @@ Test pygame by running:
 py -m pygame.examples.aliens
 ```
 
-### Docker Image Instructions
-A Docker image exists for automated testing. It does not have graphical capability.
-
-**Requirement**: Docker must be installed.
-
-Pull the image:
-```
-docker pull ttetz/capstone-docker
-```
-Launch a container:
-```
-./docker_setup.sh -li
-```
-
 ## RUNNING THE GAME
 
 To run the game locally, spin up one instance of the server and one of the client game menu.
