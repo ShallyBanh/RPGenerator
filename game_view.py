@@ -390,6 +390,7 @@ class GameView:
                             self.display_message(display_string, "*")
                             blit_input = True
                             selected_image = None
+                            event.key = K_RETURN
                         else:
                             self.clear_bottom_info()
                             return
@@ -622,10 +623,13 @@ class GameView:
                     elif event.key == K_RETURN:
                         if saved_entity is not None:
                             game.ruleset_copy.remove_entity(saved_entity)
-                            if (saved_entity.x,saved_entity.y) in game.map.textures:
-                                self.blit_texture(game.map.textures[(saved_entity.x,saved_entity.y)])
-                            else:
-                                self.blit_default(saved_entity.x, saved_entity.y)
+                            # remove old image and replace with generic block, then cover with texture if there are any       
+                            for i in range(0,saved_entity.size.get_width()):
+                                for j in range(0,saved_entity.size.get_height()):
+                                    if str((saved_entity.x+j, saved_entity.y+i)) in game.map.textures:
+                                        self.blit_texture(game.map.textures[str((saved_entity.x+j, saved_entity.y+i))])
+                                    else:
+                                        self.blit_default((saved_entity.x+j), (saved_entity.y+i))
                             self.draw_entity_box(saved_entity.x, saved_entity.y, COLOR_WHITE, width = saved_entity.size.get_width(), height = saved_entity.size.get_height())
                             saved_entity = None
             pygame.display.flip()
