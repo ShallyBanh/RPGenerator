@@ -1,4 +1,22 @@
-"""This module contains the Server class."""
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.5: Ruleset File Output
+REQ-3.1.3.6: Ruleset Sharing
+REQ-3.1.3.7: Remote Ruleset Storage
+REQ-3.1.3.8: Ruleset Encryption
+REQ-3.1.3.9: Ruleset Decryption
+REQ-3.2.3.1: Engine Reads File
+REQ-3.2.3.5: Request Action
+REQ-3.2.3.6: Approve Action
+REQ-3.2.3.10: Import visual assets
+REQ-3.3.3.1: Account Creation
+REQ-3.3.3.2: Credential Storage
+REQ-3.3.3.3: Credential Modification
+REQ-3.3.3.4: Credential Recovery
+REQ-3.3.3.5: Login
+REQ-3.4.3.1: Game Creation
+REQ-3.6.3.1: Game History View
+"""
 import sys
 import time
 from flask import Flask, request, jsonify, Response

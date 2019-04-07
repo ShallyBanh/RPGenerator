@@ -1,4 +1,7 @@
-"""This module contains the Configurator class."""
+"""
+This module contains the Configurator class that is utilized by server.py
+"""
+
 import configparser
 
 class Configurator:

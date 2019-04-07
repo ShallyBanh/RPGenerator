@@ -1,3 +1,11 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.5: Ruleset File Output
+REQ-3.1.3.6: Ruleset Sharing
+REQ-3.1.3.7: Remote Ruleset Storage
+REQ-3.1.3.8: Ruleset Encryption
+REQ-3.1.3.9: Ruleset Decryption
+"""
 import os
 import sys
 from models.validator import Validator

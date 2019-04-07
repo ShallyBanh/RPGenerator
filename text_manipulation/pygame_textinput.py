@@ -1,8 +1,11 @@
-""" Taken from :
+""" 
 https://www.reddit.com/r/pygame/comments/5euuqr/text_input_box/
 https://github.com/Nearoo/pygame-text-input
 Copyright 2017, Silas Gyger, silasgyger@gmail.com, All rights reserved.
 Borrowed from https://github.com/Nearoo/pygame-text-input under the MIT license.
+
+RPGenerator utilizes this framework to ensure better UI experience with the 
+text blitted to the screen.
 
 Refactored for our purposes.
 """

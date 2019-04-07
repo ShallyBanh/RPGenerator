@@ -1,4 +1,8 @@
-"""This module contains the User class."""
+"""
+In this file, the following requirements are covered:
+REQ-3.2.3.10: Import visual assets
+Note: This module contains the User class.
+"""
 
 class Asset:
     """An asset.

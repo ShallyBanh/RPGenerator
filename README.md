@@ -9,7 +9,7 @@ Bianca Angotti, Shally Banh, Andrew McKernan, Thomas Tetz
 
 ## Environment requirements
 ### macOS Install Instructions
-macOS Mojave produces errors with Pygame. 
+macOS Mojave produces errors with Pygame unless you install Python from source, NOT with homebrew. 
 
 Known issue seen here: https://github.com/pygame/pygame/issues/555
 
@@ -39,21 +39,7 @@ Test pygame by running:
 py -m pygame.examples.aliens
 ```
 
-### Docker Image Instructions
-A Docker image exists for automated testing. It does not have graphical capability.
-
-**Requirement**: Docker must be installed.
-
-Pull the image:
-```
-docker pull ttetz/capstone-docker
-```
-Launch a container:
-```
-./docker_setup.sh -li
-```
-
-## RUNNING THE GAME
+## Run the Game
 
 To run the game locally, spin up one instance of the server and one of the client game menu.
 
@@ -72,22 +58,22 @@ python3 play_game.py
 python3 play_game.py 159.89.117.152
 ```
 
-## RUNNING THE TEST SUITE
+## Run the Test Suite
 In order to run our test suite. Run
 ```
 ./testsuite.sh
 ```
 from the root of the directory
 
-# PLAYING THE GAME
+# Play the Game
 
-## CREATING AN ACCOUNT
+### Create an Account
 On the main screen, click on "Create Account" and create an account. After doing so, you will be brought back to the login screen, and will need to log in to your account.
 
-## SETTING UP A GAME
+### Set up the Game
 To start a game, first create a ruleset, as detailed below. Then, create a game session with a chosen name, ruleset, width, and height. Once in the game, you will be able to see the game ID displayed on the screen. Distribute this ID to friends in order to have them join the game using the Join Game menu option. You can rejoin any previously created game by looking at the Game History View and selecting "Join" on the desired game.
 
-## WRITING RULES
+## Writing Rules:
 Rules are written in Actions and in Relationships. They determine the actions that are able to be taken by Entities, and how they interact.
 Every statement is ended by a new line. Indentation is ignored.
 

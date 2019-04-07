@@ -1,4 +1,12 @@
-"""This module contains the User class."""
+"""
+In this file, the following requirements are covered:
+REQ-3.3.3.1: Account Creation
+REQ-3.3.3.2: Credential Storage
+REQ-3.3.3.3: Credential Modification
+REQ-3.3.3.4: Credential Recovery
+REQ-3.3.3.5: Login
+"""
+
 import sys, os, smtplib, ssl, time, hashlib
 sys.path.append('../network')
 from .database import Database

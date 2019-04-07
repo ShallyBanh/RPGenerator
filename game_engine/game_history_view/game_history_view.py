@@ -1,3 +1,9 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.6.3.1: Game History View
+REQ-3.6.3.2: Resume Game Session
+REQ-3.6.3.3: Game Role
+"""
 import os
 import sys
 import pygame
