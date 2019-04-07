@@ -1015,6 +1015,7 @@ elif platform.system() == "Windows":
 FONTTYPE = pygame.font.SysFont('arial', FONTSIZE)
 DISPLAYSIZE = (1300,750)
 DISPLAYSURF = pygame.display.set_mode(DISPLAYSIZE)
+pygame.display.set_caption('RPGenerator')
 OLDSURF = None
 MAPOFFSET = (200,0)
 COLOR_BLACK = (0, 0, 0)
