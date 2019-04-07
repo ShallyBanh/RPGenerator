@@ -487,6 +487,7 @@ class TestRuleInterpreter(unittest.TestCase):
 		isCorrect = True
 		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nroll = d20\nif roll > target.AC then reduce target.HP by 1d8", template)
 		isCorrect &= self.enactor.validate_rule(validator, "target point:\nif all entity within(3, 3) of target and d20 > entity.AC then reduce entity.HP by 6d6", template)
+		# isCorrect &= self.enactor.validate_rule(validator, "target entity:\nreduce target.strength by 1", template)
 		self.assertTrue(isCorrect)
 		isCorrect &= self.enactor.validate_rule(validator, "target entity:\nrol ta.HP by 1d8\n", template)
 		isCorrect &= self.enactor.validate_rule(validator, "YYYYYYYEEEEEEEEEEEEEEEETTTTTTTTTTTTTTT", template)
