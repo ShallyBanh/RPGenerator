@@ -19,11 +19,11 @@ sleep 1
 python3 server.py testkey test/test.conf &
 cd test
 sleep 1
-SERVER_PID = $!
+SERVER_PID=$!
 echo 'SERVER_PID is '
 echo $SERVER_PID
 python3 test_client.py
-kill $SERVER_PID
+kill -SIGTERM $SERVER_PID
 echo "=============================================================="
 echo "===================USER TESTS======================"
 sleep 1
