@@ -11,7 +11,6 @@ import sys, os, smtplib, ssl, time, hashlib
 sys.path.append('../network')
 from .database import Database
 from network.email_sender import EmailSender
-print("do the imports work")
 # from User import User
 
 # @TODO how do we want to do interfaces
@@ -32,7 +31,7 @@ class AccountManager:
         self.database = Database(database_file)
         self.active_recoveries = {}
         self.recovery_timeout = 10800 # 3 hours (60s/min * 60min/h * 3h)
-        # self.emailer = EmailSender()
+        self.emailer = EmailSender()
     
     def reset_database(self):
         if os.path.exists(self.database.database_file):
