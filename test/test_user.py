@@ -15,15 +15,15 @@ class TestUser(unittest.TestCase):
         self.different_username = "different_username"
         
 
-    def test_01_set_username(self):
-        print("======================================================================\ntest_01_set_username (__main__.TestUser)\n----------------------------------------------------------------------")
+    def test_01_get_username(self):
+        print("======================================================================\ntest_01_get_username (__main__.TestUser)\n----------------------------------------------------------------------")
+        self.assertEqual(self.username, self.user.get_username())
+
+    def test_02_set_username(self):
+        print("======================================================================\ntest_02_set_username (__main__.TestUser)\n----------------------------------------------------------------------")
         self.user.set_username(self.different_username)
         self.assertEqual(self.different_username, self.user._username)
 
-    def test_02_get_username(self):
-        print("======================================================================\ntest_01_get_username (__main__.TestUser)\n----------------------------------------------------------------------")
-        self.user.set_username(self.different_username)
-        self.assertEqual(self.different_username, self.user._username)
     # def test_03_set_password(self):
     # def test_04_get_password(self):
     # def test_05_set_email(self):
