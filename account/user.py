@@ -34,7 +34,7 @@ class User:
 
     def set_username(self, username):
         """Set the User's name."""
-        self._name = username
+        self._username = username
 
     def get_username(self):
         """Get the User's name."""

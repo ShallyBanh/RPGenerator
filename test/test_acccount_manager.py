@@ -117,7 +117,7 @@ class TestAccountManager(unittest.TestCase):
         # update asset
         # get asset
         # get assets
-        p = input("wait to check file")
+        # p = input("wait to check file")
         # self.assertEqual(self.account_manager.create_account(*self.credentials), 0)
         # self.account_manager.create_account(*self.credentials)
         # self.assertEqual(self.account_manager.username_available("user1"), -1)

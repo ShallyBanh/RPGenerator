@@ -3,7 +3,6 @@ import sys, os, smtplib, ssl, time, hashlib
 sys.path.append('../network')
 from .database import Database
 from network.email_sender import EmailSender
-print("do the imports work")
 # from User import User
 
 # @TODO how do we want to do interfaces
