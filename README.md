@@ -9,7 +9,7 @@ Bianca Angotti, Shally Banh, Andrew McKernan, Thomas Tetz
 
 ## Environment requirements
 ### macOS Install Instructions
-macOS Mojave produces errors with Pygame. 
+macOS Mojave produces errors with Pygame unless you install Python from source, NOT with homebrew. 
 
 Known issue seen here: https://github.com/pygame/pygame/issues/555
 
