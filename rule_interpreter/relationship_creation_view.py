@@ -1,4 +1,9 @@
-
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.1.3.4: Relationship Creation
+"""
 import os
 import sys
 from models.validator import Validator
@@ -58,6 +63,7 @@ class RelationshipCreationView:
             for event in events:
                 if event.type == pygame.QUIT:
                     self._playing = False
+                    exit()
                 elif event.type == pygame.KEYDOWN :
                     if event.key == pygame.K_ESCAPE:
                         self._playing = False
@@ -117,8 +123,8 @@ class RelationshipCreationView:
             if self._invalidSubmission == True:
                 ptext.draw("Both fields must be complete in order to submit", (60, 700), fontname="Boogaloo", color="red", fontsize=35)
 
-            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=35, width=990)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35, width=990)
 
             
             screen.blit(*titleargs)

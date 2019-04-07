@@ -1,3 +1,9 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.1.3.4: Relationship Creation
+"""
 import os
 import sys
 from models.validator import Validator
@@ -138,22 +144,24 @@ class AttributeActionCreationView:
 
             self._editActionList = []
             actionStr = ""
+            actionNames = [action.get_action_name() for action in currentEntity.get_actions()]
             for actionIdx in range(len(actionNames)):
                 actionStr += actionNames[actionIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 425 + actionIdx * 39))
                 self._editActionList.append((1000, 425 + actionIdx * 39))
-            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(actionStr, (420, 420), fontname="Boogaloo", color="white", fontsize=30, width=570)
 
             self._editAttributeList = []
             attributeStr = ""
+            attributes = [attribute.get_attribute_name() for attribute in currentEntity.get_attributes()]
             for attrIdx in range(len(attributes)):
                 attributeStr += attributes[attrIdx] + "\n"
                 screen.blit(self._editButtonImage,(1000, 65 + attrIdx * 39))
                 self._editAttributeList.append((1000, 65 + attrIdx * 39))
-            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=30)
+            ptext.draw(attributeStr, (420, 60), fontname="Boogaloo", color="white", fontsize=30, width=570)
 
             if entity != -1:
-                ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=20)
+                ptext.draw(entity.get_basic_entity_info_to_str(), (60, 60), fontname="Boogaloo", color="white", fontsize=20, width=290)
                 screen.blit(self._editButtonImageLarge,(57, 640))
 
             pygame.display.flip()

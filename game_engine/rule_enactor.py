@@ -1,3 +1,11 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.2.3.4: Move Entity
+REQ-3.2.3.5: Request Action
+REQ-3.2.3.1: Engine Reads File
+"""
 import re
 import random
 import sys
@@ -286,6 +294,9 @@ class RuleEnactor:
 		# something else (a variable)
 		if not self._is_number(words[0]) and len(words) == 1:
 			return self.variables[words[0]]
+			
+		# if we've made it this far, it's likely something is wrong. 
+		raise Exception("Syntax error.")
 		
 		
 	def _check_for_interrupt(self, relationship):
@@ -315,6 +326,7 @@ class RuleEnactor:
 				if tf:
 					self._evaluate_line(action)
 				self.current_entity_in_loop = None
+			return 
 		else:
 			post_if = line.split('if')[1].strip()
 			conditional_and_action = post_if.split('then')
@@ -323,6 +335,9 @@ class RuleEnactor:
 			
 			if self._evaluate_line(conditional):
 				return self._evaluate_line(action)
+			return
+		# if we make it here, that's an issue.
+		raise Exception("Syntax error.")
 	
 	def _handle_increase(self, written_rule):
 		#handle increasing something. Expecting: increase x by y (by is optional)
@@ -336,6 +351,7 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in self.variables:
 			self.variables[words[1]] += self._evaluate_line(" ".join(rest_of_sentence))
+			return
 		# must be increasing entity
 		else:
 			entity_info = words[1].split('.')
@@ -343,15 +359,27 @@ class RuleEnactor:
 				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			#targeting target entity
 			elif entity_info[0] == 'target':
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
+			return
+		# if we make it here, something is wrong.
+		raise Exception("Syntax error.")
 		
 	def _handle_decrease(self, written_rule):
 		#handle decreasing something. Expecting: decrease x by y (by is optional)
@@ -365,6 +393,7 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in self.variables:
 			self.variables[words[1]] -= self._evaluate_line(" ".join(rest_of_sentence))
+			return
 		# must be decreasing entity
 		else:
 			entity_info = words[1].split('.')
@@ -372,15 +401,27 @@ class RuleEnactor:
 				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			#targeting target entity
 			elif entity_info[0] == 'target':
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
+			return
+		# if we've reached the end, none of it was valid, so throw an exception.
+		raise Exception("Syntax error.")
 		
 	def _handle_multiply(self, written_rule):
 		#handle multiplying something. Expecting: multiply x by y (by is optional)
@@ -394,6 +435,7 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in self.variables:
 			self.variables[words[1]] *= self._evaluate_line(" ".join(rest_of_sentence))
+			return
 		# must be multiplying entity
 		else:
 			entity_info = words[1].split('.')
@@ -401,15 +443,27 @@ class RuleEnactor:
 				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			#targeting target entity
 			elif entity_info[0] == 'target':
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
+			return
+		# if we make it here, that's an issue
+		raise Exception("Syntax error.")
 		
 	def _handle_divide(self, written_rule):
 		#handle dividing something. Expecting: divide x by y (by is optional)
@@ -423,6 +477,7 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if words[1] in self.variables:
 			self.variables[words[1]] /= self._evaluate_line(" ".join(rest_of_sentence))
+			return
 		# must be dividing entity
 		else:
 			entity_info = words[1].split('.')
@@ -430,15 +485,27 @@ class RuleEnactor:
 				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			#targeting target entity
 			elif entity_info[0] == 'target':
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
+			return 
+		# if we make it here, that's an issue
+		raise Exception("Syntax error.")
 		
 	def _handle_set(self, written_rule):
 		#handle setting something. Expecting: set x to y (to is optional)
@@ -452,6 +519,7 @@ class RuleEnactor:
 		rest_of_sentence = words[remove_idx:]
 		if len(words[1].split('.')) < 2:
 			self.variables[words[1]] = self._evaluate_line(" ".join(rest_of_sentence))
+			return
 		# must be setting entity
 		else:
 			entity_info = words[1].split('.')
@@ -459,15 +527,27 @@ class RuleEnactor:
 				for attribute in self.acting_entity.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			#targeting target entity
 			elif entity_info[0] == 'target':
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(" ".join(rest_of_sentence)))
+						return
+				# if we make it here, something is wrong
+				raise Exception("Syntax error.")
+			return
+		# if we make it here, that's an issue
+		raise Exception("Syntax error.")
 		
 	def _handle_within(self, written_rule):
 		# expecting: item1 within(3,3) of item2
@@ -528,12 +608,18 @@ class RuleEnactor:
 				return True
 			return False
 				
+		# something is probably wrong
+		raise Exception("Syntax error.")
 		
 	def _handle_move(self, written_rule):
 		if "towards" in written_rule:
 			self._handle_movetowards(written_rule)
+			return
 		elif "away" in written_rule:
 			self._handle_moveaway(written_rule)
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 		
 	def _handle_moveaway(self, written_rule):
 		# handle moving targets away from a given point or entity
@@ -690,8 +776,12 @@ class RuleEnactor:
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(self._evaluate_line(words[1].strip()))
+			return
 		else:
 			self.variables[words[0].strip()] = self._evaluate_line(words[1].strip())
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 		
 	def _handle_plus_equals(self, written_rule):
 		words = written_rule.split('+=')
@@ -710,8 +800,12 @@ class RuleEnactor:
 				for attribute in self.target_of_action.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() + self._evaluate_line(words[1].strip()))
+			return
 		else:
 			self.variables[words[0].strip()] += self._evaluate_line(words[1].strip())
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 		
 	def _handle_minus_equals(self, written_rule):
 		words = written_rule.split('-=')
@@ -730,8 +824,12 @@ class RuleEnactor:
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() - self._evaluate_line(words[1].strip()))
+			return
 		else:
 			self.variables[words[0].strip()] -= self._evaluate_line(words[1].strip())
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 	
 	def _handle_times_equals(self, written_rule):
 		words = written_rule.split('*=')
@@ -750,8 +848,12 @@ class RuleEnactor:
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() * self._evaluate_line(words[1].strip()))
+			return
 		else:
 			self.variables[words[0].strip()] *= self._evaluate_line(words[1].strip())
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 			
 	def _handle_divide_equals(self, written_rule):
 		words = written_rule.split('/=')
@@ -770,8 +872,12 @@ class RuleEnactor:
 				for attribute in self.current_entity_in_loop.get_attributes():
 					if attribute.get_attribute_name() == entity_info[1]:
 						attribute.set_attribute_value(attribute.get_attribute_value() / self._evaluate_line(words[1].strip()))
+			return
 		else:
 			self.variables[words[0].strip()] /= self._evaluate_line(words[1].strip())
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 	
 	def _handle_and(self, written_rule):
 		words = written_rule.split('and')
@@ -787,10 +893,15 @@ class RuleEnactor:
 		affected_entity_string = words[-1]
 		if affected_entity_string == 'self':
 			self.acting_entity.add_status(status_to_add)
+			return
 		elif affected_entity_string == 'target':
 			self.target_of_action.add_status(status_to_add)
+			return
 		elif self.current_entity_in_loop.is_of_type(affected_entity_string):
 			self.current_entity_in_loop.add_status(status_to_add)
+			return
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 			
 	def _handle_remove_status(self, written_rule):
 		words = written_rule.split()
@@ -817,6 +928,8 @@ class RuleEnactor:
 				return status_to_check in self.target_of_action.get_current_statuses()
 			elif self.current_entity_in_loop.is_of_type(entity_info[0]):
 				return status_to_check in self.current_entity_in_loop.get_current_statuses()
+		# if we make it here, something is wrong
+		raise Exception("Syntax error.")
 	
 	def roll_dice(self, dice_string):
 		roll_data = dice_string.split('d')

@@ -5,3 +5,4 @@ __pycache__
 # examples to not commit
 # pygame_basics/
 /tmp
+/env

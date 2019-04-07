@@ -1,3 +1,9 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.1.3.3: Entity Creation
+"""
 import os
 import sys
 from models.validator import Validator
@@ -140,11 +146,11 @@ class EntityCreationView:
                 ptext.draw(self._invalidSubmissionText, (615, 500), fontname="Boogaloo", color="red", fontsize=35)
 
 
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[1], (60, 145 + 185 * 1), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[2], (60, 125 + 185 * 2), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[3], (60, 100 + 185 * 3), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[4], (610, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35, width=490)
+            ptext.draw(self._allInputList[1], (60, 145 + 185 * 1), fontname="Boogaloo", color="white", fontsize=35, width=490)
+            ptext.draw(self._allInputList[2], (60, 125 + 185 * 2), fontname="Boogaloo", color="white", fontsize=35, width=490)
+            ptext.draw(self._allInputList[3], (60, 100 + 185 * 3), fontname="Boogaloo", color="white", fontsize=35, width=490)
+            ptext.draw(self._allInputList[4], (610, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35, width=490)
 
             screen.blit(*titleargs)
             pygame.display.flip()

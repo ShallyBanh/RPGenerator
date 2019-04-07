@@ -1,3 +1,8 @@
+"""
+RPGenerator utilizes this framework to ensure better UI experience with the 
+text blitted to the screen.
+"""
+
 # ptext module: place this in your import directory.
 
 # ptext.draw(text, pos=None, **options)

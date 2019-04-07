@@ -1,3 +1,11 @@
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.5: Ruleset File Output
+REQ-3.1.3.6: Ruleset Sharing
+REQ-3.1.3.7: Remote Ruleset Storage
+REQ-3.1.3.8: Ruleset Encryption
+REQ-3.1.3.9: Ruleset Decryption
+"""
 import os
 import sys
 from models.validator import Validator
@@ -98,7 +106,7 @@ class RulesetView:
                 ruleNamesString += self._rulesetList[ruleIdx][0] + "\n\n"
                 screen.blit(self._editButton,(1000, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
                 self._rulesetPositionList.append((1000, 210 + ruleIdx * 50 + ruleIdx*0.17*100))
-            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(ruleNamesString, (70, 200), fontname="Boogaloo", color="white", fontsize=35, width=900)
             
             screen.blit(*titleargs)
             pygame.display.flip()

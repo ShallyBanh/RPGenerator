@@ -1,4 +1,9 @@
-
+"""
+In this file, the following requirements are covered:
+REQ-3.1.3.1 Ruleset Syntax
+REQ-3.1.3.2: Ruleset Syntax Validation
+REQ-3.1.3.4: Relationship Creation
+"""
 import os
 import sys
 from models.validator import Validator
@@ -120,8 +125,8 @@ class ActionCreationView:
             if self._invalidSubmission == True:
                 ptext.draw(self._errorStr, (60, 700), fontname="Boogaloo", color="red", fontsize=35)
 
-            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(self._rule, (60, 345), fontname="Boogaloo", color="white", fontsize=35, width=990)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35, width=990)
 
             
             screen.blit(*titleargs)
