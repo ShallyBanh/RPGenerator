@@ -106,8 +106,8 @@ class AttributeCreationView:
             if self._invalidSubmission == True:
                 ptext.draw("All fields must be complete in order to submit", (60, 555), fontname="Boogaloo", color="red", fontsize=35)
 
-            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35)
-            ptext.draw(self._allInputList[1], (60, 150 + 185 * 1), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(self._allInputList[0], (60, 165 + 185 * 0), fontname="Boogaloo", color="white", fontsize=35, width=1050)
+            ptext.draw(self._allInputList[1], (60, 150 + 185 * 1), fontname="Boogaloo", color="white", fontsize=35, width=1050)
             
             screen.blit(*titleargs)
             pygame.display.flip()

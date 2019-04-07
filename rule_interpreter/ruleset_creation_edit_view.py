@@ -167,6 +167,9 @@ class RulesetCreationEditView:
                         self._entity_view = True
                     if x in range(1200, 1250) and y in range(135, 175):
                         self._relationship_view = True
+                        currentRelationshipName = ""
+                        currentRelationshipRule = ""
+                        relationshipIdx = -1
                     #save button
                     if x in range(1100, 1300) and y in range(10, 60):
                         serializedValidator = jsonpickle.encode(Validator())
@@ -215,7 +218,7 @@ class RulesetCreationEditView:
                 entites_str += self._entities[entityIdx] + "\n"
                 screen.blit(self._moreImage,(420, 205 + entityIdx * 30 + entityIdx*0.12*100))
                 self._moreButtonList.append((420, 205 + entityIdx * 30 + entityIdx*0.12*100))
-            ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(entites_str, (70, 200), fontname="Boogaloo", color="white", fontsize=35, width=330)
 
 
             relationship_str = ""
@@ -224,10 +227,10 @@ class RulesetCreationEditView:
                 relationship_str += self._relationships[relationshipIdx] + "\n"
                 screen.blit(self._moreImage,(1000, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
                 self._moreButtonRelationshipList.append((1000, 210 + relationshipIdx * 30 + relationshipIdx*0.1*100))
-            ptext.draw(relationship_str, (660, 200), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(relationship_str, (660, 200), fontname="Boogaloo", color="white", fontsize=35, width=330)
 
             if self._newRuleset == True:
-                ptext.draw(self._rulesetName, (70, 60), fontname="Boogaloo", color="white", fontsize=35)
+                ptext.draw(self._rulesetName, (70, 60), fontname="Boogaloo", color="white", fontsize=35, width=500)
             
             if self._invalidSubmission == True:
                 ptext.draw("Ruleset name cannot be empty", (60, 690), fontname="Boogaloo", color="red", fontsize=35)

@@ -115,7 +115,7 @@ class RuleInputView:
                 ptext.draw(name, size, fontname="Bubblegum_Sans", color="white", owidth=0.5, fontsize=35)
                 ptext.drawbox("", box, fontname="Bubblegum_Sans", color = "white", owidth=0.5)
                 
-            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=35)
+            ptext.draw(self._user_input, (70, 170), fontname="Boogaloo", color="white", fontsize=35, width=990)
 
             if self._unvalid == True:
                 screen.blit(self._errormark,(350,100))
