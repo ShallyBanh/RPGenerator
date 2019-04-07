@@ -63,6 +63,7 @@ class RelationshipCreationView:
             for event in events:
                 if event.type == pygame.QUIT:
                     self._playing = False
+                    exit()
                 elif event.type == pygame.KEYDOWN :
                     if event.key == pygame.K_ESCAPE:
                         self._playing = False
