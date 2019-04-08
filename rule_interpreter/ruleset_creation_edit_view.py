@@ -48,6 +48,7 @@ class RulesetCreationEditView:
         self._client = client
         self._username = username
         self._fontsize = fontsize
+        self._relationshipIdx = -1
     
     def get_entity_with_type(self, entityType):
         allEntities = Validator().get_entities()
@@ -81,7 +82,6 @@ class RulesetCreationEditView:
         currentEntityName = ""
         currentRelationshipName = ""
         currentRelationshipRule = ""
-        relationshipIdx = -1
 
         if self._newRuleset == False:
             titleargs = ptext.draw("{}".format(rulesetName), midtop=(sx/2, 10), color = "0xc0c0c0", gcolor="0xF3F3F3", surf=None, cache = False, fontsize=64, fontname="CherryCreamSoda")
@@ -105,7 +105,7 @@ class RulesetCreationEditView:
             if self._relationship_view == True:
                 relationshipTuple = RelationshipCreationView(self._fontsize).main(currentRelationshipName, currentRelationshipRule)
                 if currentRelationshipName != "" and relationshipTuple[0] is not None:
-                    Validator().update_relationship(relationshipIdx, relationshipTuple[0], relationshipTuple[1])
+                    Validator().update_relationship(self._relationshipIdx, relationshipTuple[0], relationshipTuple[1])
                     self._relationships = [relationship.get_name() for relationship in Validator().get_relationships()]
                 elif relationshipTuple[0] is not None:
                     self._relationships.append(relationshipTuple[0])
@@ -169,7 +169,6 @@ class RulesetCreationEditView:
                         self._relationship_view = True
                         currentRelationshipName = ""
                         currentRelationshipRule = ""
-                        relationshipIdx = -1
                     #save button
                     if x in range(1100, 1300) and y in range(10, 60):
                         serializedValidator = jsonpickle.encode(Validator())
@@ -198,7 +197,7 @@ class RulesetCreationEditView:
                         y1 = int(self._moreButtonRelationshipList[moreIdx][1])
                         if x in range(x1, x1 + 180) and y in range(y1, y1+30):
                             self._relationship_view = True
-                            relationshipIdx = moreIdx
+                            self._relationshipIdx = moreIdx
                             currentRelationshipRule = Validator().get_relationships()[moreIdx].get_rule_content()
                             currentRelationshipName = self._relationships[moreIdx]
 
