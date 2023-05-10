@@ -1,6 +1,6 @@
 # RPGenerator
 
-*Computer Software Enginnering Capstone Project*
+*Computer Software Engineering Capstone Project*
 
 Written by:
 
